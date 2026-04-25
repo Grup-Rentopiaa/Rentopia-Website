@@ -1,0 +1,10 @@
+# Mengizinkan semua mesin pencari untuk merayapi seluruh situs
+User-agent: *
+Allow: /
+
+# Melarang mesin pencari untuk mengindeks halaman Admin agar lebih aman
+Disallow: /admin-panel
+Disallow: /private/
+
+# Lokasi sitemap (jika sudah ada nanti)
+# Sitemap: https://rentopia.com/sitemap.xml
