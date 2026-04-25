@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rentopia – Sign Up</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <section class="auth-page">
+      <header class="auth-brand">
+        <span class="brand-logo">Rentopia.</span>
+        <p class="brand-tagline">Join our rental community.</p>
+      </header>
+      <main class="auth-card">
+        <h2 class="auth-title">Create Account</h2>
+        <input
+          type="email"
+          id="reg-email"
+          placeholder="Email"
+          autocomplete="off"
+        />
+        <input
+          type="text"
+          id="reg-user"
+          placeholder="Username"
+          autocomplete="off"
+        />
+        <input
+          type="password"
+          id="reg-pass"
+          placeholder="Password (min. 6 karakter)"
+          autocomplete="new-password"
+        />
+        <button id="btn-signup" class="btn-primary">Sign Up</button>
+        <p class="auth-switch">
+          Sudah punya akun? <a href="login.html">Login di sini</a>
+        </p>
+      </main>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+    <script>
+      "use strict";
+      let _tt = null;
+      function showToast(msg, isError = false) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.style.borderColor = isError ? "rgba(239,68,68,0.5)" : "";
+        el.classList.add("show");
+        el.classList.remove("hidden");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.remove("show"), 2800);
+      }
+      function setLoading(loading) {
+        const btn = document.getElementById("btn-signup");
+        btn.disabled = loading;
+        btn.textContent = loading ? "Mendaftar..." : "Sign Up";
+      }
+      async function handleSignup() {
+        const email = document.getElementById("reg-email").value.trim();
+        const username = document.getElementById("reg-user").value.trim();
+        const password = document.getElementById("reg-pass").value.trim();
+        if (!email || !username || !password)
+          return showToast("⚠️ Isi semua kolom!", true);
+        if (!/\S+@\S+\.\S+/.test(email))
+          return showToast("⚠️ Format email tidak valid!", true);
+        if (password.length < 6)
+          return showToast("⚠️ Password minimal 6 karakter!", true);
+        setLoading(true);
+        try {
+          const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, email, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) return showToast("❌ " + data.error, true);
+          showToast("🎉 Pendaftaran berhasil!");
+          setTimeout(() => {
+            window.location.href = "profile.html";
+          }, 700);
+        } catch {
+          showToast("❌ Tidak dapat terhubung ke server.", true);
+        } finally {
+          setLoading(false);
+        }
+      }
+      (async () => {
+        try {
+          const res = await fetch("/api/auth/me", { credentials: "include" });
+          if (res.ok) window.location.replace("profile.html");
+        } catch {}
+      })();
+      document
+        .getElementById("btn-signup")
+        .addEventListener("click", handleSignup);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleSignup();
+      });
+    </script>
+  </body>
+</html>

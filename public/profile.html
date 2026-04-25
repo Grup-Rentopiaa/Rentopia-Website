@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rentopia – Profil</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <section id="page-profile">
+      <nav class="navbar">
+        <span class="brand-logo">Rentopia.</span>
+        <menu class="nav-actions">
+          <li><a href="edit.html">Edit Profil</a></li>
+          <li><a href="#" id="btn-logout">Logout</a></li>
+        </menu>
+      </nav>
+      <main id="profile-main">
+        <header class="profile-hero">
+          <label class="avatar-wrap" title="Klik untuk ganti foto">
+            <img
+              id="avatar-img"
+              src=""
+              alt="Avatar"
+              class="avatar-img hidden"
+            />
+            <span id="avatar-initials" class="avatar-initials">?</span>
+            <input
+              type="file"
+              id="avatar-input"
+              accept="image/*"
+              class="hidden"
+            />
+          </label>
+          <h2 id="display-name" class="profile-name">—</h2>
+          <p id="display-location" class="profile-location">📍 —</p>
+          <p id="display-desc" class="profile-desc"></p>
+          <div class="profile-stats">
+            <span class="stat-item"
+              ><strong id="stat-followers">—</strong
+              ><small>Pengikut</small></span
+            >
+            <span class="stat-sep"></span>
+            <span class="stat-item"
+              ><strong id="stat-following">—</strong
+              ><small>Mengikuti</small></span
+            >
+            <span class="stat-sep"></span>
+            <span class="stat-item"
+              ><strong id="stat-listing">—</strong><small>Listing</small></span
+            >
+          </div>
+        </header>
+        <nav class="tab-bar">
+          <button class="tab active" data-tab="listing">My Listing</button>
+          <button class="tab" data-tab="rent">My Rent</button>
+        </nav>
+        <div id="tab-listing" class="tab-panel">
+          <div class="filter-group">
+            <input
+              type="text"
+              id="inp-search"
+              placeholder="Cari barang..."
+              class="search-input"
+            />
+            <select id="sel-category" class="category-select">
+              <option value="all">Semua Kategori</option>
+            </select>
+          </div>
+          <header class="panel-header">
+            <h3>Koleksi Saya</h3>
+            <div class="export-group">
+              <button id="btn-export-json" class="btn-outline">↓ JSON</button>
+              <button id="btn-export-csv" class="btn-outline">↓ CSV</button>
+              <button class="btn-primary btn-disabled" disabled>
+                + Add Listing
+              </button>
+            </div>
+          </header>
+          <div id="listing-grid" class="card-grid">
+            <p style="color: var(--muted); padding: 1rem">Memuat data...</p>
+          </div>
+        </div>
+        <div id="tab-rent" class="tab-panel hidden">
+          <header class="panel-header"><h3>Sedang Saya Sewa</h3></header>
+          <div id="rent-grid" class="card-grid">
+            <p style="color: var(--muted); padding: 1rem">Memuat data...</p>
+          </div>
+        </div>
+      </main>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+    <script>
+      "use strict";
+      const App = {
+        user: null,
+        listings: [],
+        rentals: [],
+        currentTab: "listing",
+      };
+      let _tt = null;
+      function showToast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        el.classList.remove("hidden");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.remove("show"), 2800);
+      }
+      function setCookie(name, value, days) {
+        const exp = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)};expires=${exp};path=/;SameSite=Lax`;
+      }
+      function getCookie(name) {
+        const m = document.cookie.match(
+          new RegExp(
+            "(?:^|; )" +
+              name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+              "=([^;]*)",
+          ),
+        );
+        return m ? decodeURIComponent(m[1]) : null;
+      }
+      async function api(method, url, body) {
+        const opts = {
+          method,
+          credentials: "include",
+          headers: body ? { "Content-Type": "application/json" } : {},
+        };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(url, opts);
+        const data = await res.json();
+        if (res.status === 401) {
+          window.location.replace("login.html");
+          throw new Error("unauth");
+        }
+        if (!res.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+      function renderListingCard(item) {
+        const label = item.status === "available" ? "Tersedia" : "Disewa";
+        return `<article class="card">
+          <span class="card-icon">${item.icon || "👜"}</span>
+          <span class="card-title">${item.title}</span>
+          <span class="card-price">${item.price}</span>
+          <div class="card-meta">
+            <span class="badge brand">${item.brand}</span>
+            <span class="badge ${item.status}">${label}</span>
+          </div>
+        </article>`;
+      }
+      function renderRentalCard(item) {
+        return `<article class="card">
+          <span class="card-icon">${item.icon || "📦"}</span>
+          <span class="card-title">${item.title}</span>
+          <span class="card-price">${item.price}</span>
+          <div class="card-meta">
+            <span class="badge store">${item.store}</span>
+            <span class="badge ${item.status}">${item.note || ""}</span>
+          </div>
+        </article>`;
+      }
+      function rebuildCategoryOptions() {
+        const sel = document.getElementById("sel-category");
+        const brands = [
+          ...new Set(App.listings.map((i) => i.brand).filter(Boolean)),
+        ].sort();
+        sel.innerHTML =
+          '<option value="all">Semua Kategori</option>' +
+          brands.map((b) => `<option value="${b}">${b}</option>`).join("");
+      }
+      function applyFilter() {
+        const query = document.getElementById("inp-search").value.toLowerCase();
+        const cat = document.getElementById("sel-category").value;
+        const list = App.listings.filter(
+          (i) =>
+            i.title.toLowerCase().includes(query) &&
+            (cat === "all" || i.brand === cat),
+        );
+        document.getElementById("listing-grid").innerHTML = list.length
+          ? list.map(renderListingCard).join("")
+          : '<p style="color:var(--muted);padding:1rem">Barang tidak ditemukan.</p>';
+      }
+      function renderTab(tab) {
+        if (tab === "listing") {
+          document.getElementById("listing-grid").innerHTML = App.listings
+            .length
+            ? App.listings.map(renderListingCard).join("")
+            : '<p style="color:var(--muted);padding:1rem">Belum ada listing.</p>';
+          document.getElementById("stat-listing").textContent =
+            App.listings.length;
+          rebuildCategoryOptions();
+        } else {
+          document.getElementById("rent-grid").innerHTML = App.rentals.length
+            ? App.rentals.map(renderRentalCard).join("")
+            : '<p style="color:var(--muted);padding:1rem">Belum ada rental aktif.</p>';
+        }
+      }
+      function switchTab(tab, save = true) {
+        App.currentTab = tab;
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));
+        document
+          .getElementById("tab-listing")
+          .classList.toggle("hidden", tab !== "listing");
+        document
+          .getElementById("tab-rent")
+          .classList.toggle("hidden", tab !== "rent");
+        renderTab(tab);
+        if (save) setCookie("last_visited_tab", tab, 30);
+      }
+      function renderProfile(user) {
+        App.user = user;
+        document.getElementById("display-name").textContent =
+          user.name || user.username;
+        document.getElementById("display-location").textContent =
+          `📍 ${user.city || "Belum ada lokasi"}`;
+        document.getElementById("display-desc").textContent =
+          user.description || "Belum ada deskripsi.";
+        document.getElementById("stat-followers").textContent =
+          user.followers ?? 0;
+        document.getElementById("stat-following").textContent =
+          user.following ?? 0;
+        const imgEl = document.getElementById("avatar-img");
+        const initials = document.getElementById("avatar-initials");
+        const chars = (user.name || user.username)
+          .trim()
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+        if (user.avatar_b64) {
+          imgEl.src = user.avatar_b64;
+          imgEl.classList.remove("hidden");
+          initials.classList.add("hidden");
+        } else {
+          imgEl.classList.add("hidden");
+          initials.classList.remove("hidden");
+          initials.textContent = chars || "?";
+        }
+      }
+      document
+        .getElementById("avatar-input")
+        .addEventListener("change", async function () {
+          const file = this.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              await api("PUT", "/api/profile", { avatar_b64: e.target.result });
+              const imgEl = document.getElementById("avatar-img");
+              const initials = document.getElementById("avatar-initials");
+              imgEl.src = e.target.result;
+              imgEl.classList.remove("hidden");
+              initials.classList.add("hidden");
+              showToast("📷 Foto profil diperbarui!");
+            } catch (err) {
+              showToast("❌ Gagal menyimpan foto: " + err.message);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      document
+        .getElementById("btn-logout")
+        .addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await api("POST", "/api/auth/logout");
+          } catch {}
+          window.location.href = "login.html";
+        });
+      function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      document
+        .getElementById("btn-export-json")
+        .addEventListener("click", () => {
+          triggerDownload(
+            new Blob([JSON.stringify(App.listings, null, 2)], {
+              type: "application/json",
+            }),
+            "rentopia-listings.json",
+          );
+          showToast("📥 JSON berhasil diunduh!");
+        });
+      document
+        .getElementById("btn-export-csv")
+        .addEventListener("click", () => {
+          const h = ["id", "icon", "title", "price", "brand", "status"];
+          const rows = App.listings.map((i) =>
+            h
+              .map((k) => `"${String(i[k] ?? "").replace(/"/g, '""')}"`)
+              .join(","),
+          );
+          triggerDownload(
+            new Blob([[h.join(","), ...rows].join("\n")], {
+              type: "text/csv;charset=utf-8;",
+            }),
+            "rentopia-listings.csv",
+          );
+          showToast("📥 CSV berhasil diunduh!");
+        });
+      document
+        .querySelectorAll(".tab")
+        .forEach((btn) =>
+          btn.addEventListener("click", () => switchTab(btn.dataset.tab)),
+        );
+      document
+        .getElementById("inp-search")
+        .addEventListener("input", applyFilter);
+      document
+        .getElementById("sel-category")
+        .addEventListener("change", applyFilter);
+      // ── SSE: realtime update tanpa refresh ──────────────────────
+      function initSSE() {
+        const es = new EventSource("/api/events", { withCredentials: true });
+
+        es.addEventListener("listing:created", (e) => {
+          const item = JSON.parse(e.data);
+          App.listings.unshift(item);
+          if (App.currentTab === "listing") renderTab("listing");
+          showToast("🆕 Listing baru ditambahkan!");
+        });
+
+        es.addEventListener("listing:updated", (e) => {
+          const item = JSON.parse(e.data);
+          const idx = App.listings.findIndex((l) => l.id === item.id);
+          if (idx !== -1) App.listings[idx] = item;
+          if (App.currentTab === "listing") renderTab("listing");
+        });
+
+        es.addEventListener("listing:deleted", (e) => {
+          const { id } = JSON.parse(e.data);
+          App.listings = App.listings.filter((l) => l.id !== id);
+          if (App.currentTab === "listing") renderTab("listing");
+        });
+
+        es.addEventListener("rental:created", (e) => {
+          const item = JSON.parse(e.data);
+          App.rentals.unshift(item);
+          if (App.currentTab === "rent") renderTab("rent");
+          showToast("🆕 Rental baru ditambahkan!");
+        });
+
+        es.addEventListener("rental:updated", (e) => {
+          const item = JSON.parse(e.data);
+          const idx = App.rentals.findIndex((r) => r.id === item.id);
+          if (idx !== -1) App.rentals[idx] = item;
+          if (App.currentTab === "rent") renderTab("rent");
+        });
+
+        es.addEventListener("rental:deleted", (e) => {
+          const { id } = JSON.parse(e.data);
+          App.rentals = App.rentals.filter((r) => r.id !== id);
+          if (App.currentTab === "rent") renderTab("rent");
+        });
+
+        es.onerror = () => {
+          // Browser otomatis reconnect — tidak perlu handle manual
+          console.warn("[SSE] Koneksi terputus, mencoba reconnect...");
+        };
+
+        // Tutup SSE saat tab ditutup agar tidak ada ghost connection
+        window.addEventListener("beforeunload", () => es.close());
+      }
+
+      async function boot() {
+        try {
+          const user = await api("GET", "/api/auth/me");
+          renderProfile(user);
+          const [listings, rentals] = await Promise.all([
+            api("GET", "/api/listings"),
+            api("GET", "/api/rentals"),
+          ]);
+          App.listings = listings;
+          App.rentals = rentals;
+          switchTab(getCookie("last_visited_tab") || "listing", false);
+
+          // Mulai SSE setelah data awal dimuat
+          initSSE();
+        } catch (err) {
+          if (err.message !== "unauth") {
+            console.error(err);
+            showToast("❌ Gagal memuat data dari server.");
+          }
+        }
+      }
+      boot();
+    </script>
+  </body>
+</html>

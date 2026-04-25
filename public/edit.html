@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rentopia – Edit Profil</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <section id="page-edit">
+      <nav class="navbar">
+        <span class="brand-logo">Rentopia.</span>
+        <button class="btn-ghost" id="btn-back">← Kembali</button>
+      </nav>
+      <main class="edit-card">
+        <h2 class="edit-title">Edit Profil</h2>
+        <label class="field-label"
+          >Nama Lengkap
+          <input
+            type="text"
+            id="input-name"
+            placeholder="Masukkan namamu atau nama tokomu..."
+          />
+        </label>
+        <label class="field-label"
+          >Kota
+          <input type="text" id="input-city" placeholder="Contoh: Jakarta" />
+        </label>
+        <label class="field-label"
+          >Deskripsi
+          <input
+            type="text"
+            id="input-desc"
+            placeholder="Contoh: Tempat Rental Tas Mewah Terpercaya"
+          />
+        </label>
+        <button class="btn-primary" id="btn-save">Simpan Perubahan</button>
+      </main>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+    <script>
+      "use strict";
+      let _tt = null;
+      function showToast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        el.classList.remove("hidden");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.remove("show"), 2800);
+      }
+      async function api(method, url, body) {
+        const opts = {
+          method,
+          credentials: "include",
+          headers: body ? { "Content-Type": "application/json" } : {},
+        };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(url, opts);
+        const data = await res.json();
+        if (res.status === 401) {
+          window.location.replace("login.html");
+          throw new Error("unauth");
+        }
+        if (!res.ok) throw new Error(data.error || "Request failed");
+        return data;
+      }
+      function setLoading(loading) {
+        const btn = document.getElementById("btn-save");
+        btn.disabled = loading;
+        btn.textContent = loading ? "Menyimpan..." : "Simpan Perubahan";
+      }
+      async function populateForm() {
+        try {
+          const user = await api("GET", "/api/auth/me");
+          document.getElementById("input-name").value = user.name || "";
+          document.getElementById("input-city").value = user.city || "";
+          document.getElementById("input-desc").value = user.description || "";
+        } catch (err) {
+          if (err.message !== "unauth") showToast("❌ Gagal memuat profil.");
+        }
+      }
+      async function saveProfile() {
+        const name = document.getElementById("input-name").value.trim();
+        const city = document.getElementById("input-city").value.trim();
+        const description = document.getElementById("input-desc").value.trim();
+        const payload = {};
+        if (name) payload.name = name;
+        if (city) payload.city = city;
+        if (description) payload.description = description;
+        const finalPayload = {
+          name: name || null,
+          city: city || null,
+          description: description || null,
+        };
+        setLoading(true);
+        try {
+          await api("PUT", "/api/profile", finalPayload);
+          showToast("✅ Profil berhasil disimpan!");
+          setTimeout(() => {
+            window.location.href = "profile.html";
+          }, 800);
+        } catch (err) {
+          showToast("❌ " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+      document.getElementById("btn-back").addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = "profile.html";
+      });
+      document
+        .getElementById("btn-save")
+        .addEventListener("click", saveProfile);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") saveProfile();
+      });
+      populateForm();
+    </script>
+  </body>
+</html>

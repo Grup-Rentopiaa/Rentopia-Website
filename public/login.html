@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rentopia – Login</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <section class="auth-page">
+      <header class="auth-brand">
+        <span class="brand-logo">Rentopia.</span>
+        <p class="brand-tagline">Rented with trust.</p>
+      </header>
+      <main class="auth-card">
+        <h2 class="auth-title">Welcome Back</h2>
+        <input
+          type="text"
+          id="log-user"
+          placeholder="Username"
+          autocomplete="off"
+        />
+        <input
+          type="password"
+          id="log-pass"
+          placeholder="Password"
+          autocomplete="new-password"
+        />
+        <button id="btn-login" class="btn-primary">Login</button>
+        <p class="auth-switch">
+          Belum punya akun? <a href="signup.html">Daftar di sini</a>
+        </p>
+      </main>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+    <script>
+      "use strict";
+      let _tt = null;
+      function showToast(msg, isError = false) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.style.borderColor = isError ? "rgba(239,68,68,0.5)" : "";
+        el.classList.add("show");
+        el.classList.remove("hidden");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.remove("show"), 2800);
+      }
+      function setLoading(loading) {
+        const btn = document.getElementById("btn-login");
+        btn.disabled = loading;
+        btn.textContent = loading ? "Memproses..." : "Login";
+      }
+      async function handleLogin() {
+        const username = document.getElementById("log-user").value.trim();
+        const password = document.getElementById("log-pass").value.trim();
+        if (!username || !password)
+          return showToast("⚠️ Isi username dan password!", true);
+        setLoading(true);
+        try {
+          const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, password }),
+          });
+          const data = await res.json();
+          if (!res.ok) return showToast("❌ " + data.error, true);
+          showToast(`👋 Selamat datang, ${data.username}!`);
+          setTimeout(() => {
+            window.location.href = "profile.html";
+          }, 700);
+        } catch {
+          showToast("❌ Tidak dapat terhubung ke server.", true);
+        } finally {
+          setLoading(false);
+        }
+      }
+      (async () => {
+        try {
+          const res = await fetch("/api/auth/me", { credentials: "include" });
+          if (res.ok) window.location.replace("profile.html");
+        } catch {}
+      })();
+      document
+        .getElementById("btn-login")
+        .addEventListener("click", handleLogin);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
+      });
+    </script>
+  </body>
+</html>
