@@ -1,0 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=Andika&display=swap');
+@import "tailwindcss";
+
+body {
+  font-family: "Andika", sans-serif;
+  background: #ffffff;
+}
+
+@layer components {
+  .auth-page {
+    @apply min-h-screen flex justify-center items-center bg-white;
+  }
+
+  .auth-container {
+    @apply w-[350px] p-10 text-center rounded-[20px] shadow-[0_0_40px_rgba(0,0,0,0.2)] bg-gradient-to-r from-[#1e3c72] to-[#2a5298];
+  }
+
+  .auth-title {
+    @apply text-white mb-[30px] text-2xl font-bold;
+  }
+
+  .auth-input {
+    @apply w-full px-3 py-3 my-[15px] rounded-[10px] bg-white/20 text-white text-[14px] border-none outline-none placeholder:text-[#ddd];
+  }
+
+  .auth-input-tight {
+    @apply w-full px-3 py-3 my-3 rounded-[10px] bg-white/20 text-white text-[14px] border-none outline-none placeholder:text-[#ddd];
+  }
+
+  .auth-button {
+    @apply w-full px-3 py-3 mt-5 rounded-[30px] bg-[#2196f3] text-white text-[16px] cursor-pointer transition duration-300 hover:bg-[#0b7dda];
+  }
+
+  .auth-link {
+    @apply mt-[10px] text-[14px] text-white cursor-pointer;
+  }
+
+  .auth-link a {
+    @apply underline text-white;
+  }
+
+  .auth-error {
+    @apply mt-[15px] text-[#ffb3b3] text-[14px];
+  }
+
+  .chat-page {
+    @apply bg-white;
+  }
+
+  .chat-root {
+    @apply flex w-full h-screen;
+  }
+
+  .chat-sidebar {
+    @apply fixed left-0 top-0 w-[260px] h-full bg-white border-r border-[#e5e7eb] flex flex-col z-[999];
+  }
+
+  .chat-wrapper {
+    @apply ml-[260px] w-[calc(100%-260px)];
+  }
+
+  .chat-container {
+    @apply flex flex-col w-full h-screen;
+  }
+
+  .chat-list-header {
+    @apply p-4 font-bold text-[16px] bg-gradient-to-r from-[#1e3c72] to-[#2a5298] text-white;
+  }
+
+  .chat-items {
+    @apply flex-1 overflow-y-auto;
+  }
+
+  .chat-item {
+    @apply flex flex-col justify-center px-[14px] py-3 cursor-pointer transition duration-200 border-b border-[#f1f5f9];
+  }
+
+  .chat-item:hover {
+    @apply bg-[#f8fafc];
+  }
+
+  .chat-item-active {
+    @apply bg-[#e0ecff];
+  }
+
+  .chat-text {
+    @apply flex flex-col;
+  }
+
+  .chat-name {
+    @apply font-semibold text-[14px];
+  }
+
+  .chat-last {
+    @apply text-[12px] text-[#64748b] mt-[2px] whitespace-nowrap overflow-hidden text-ellipsis;
+  }
+
+  .chat-header {
+    @apply p-4 bg-gradient-to-r from-[#1e3c72] to-[#2a5298] text-white;
+  }
+
+  .user-info {
+    @apply flex items-center gap-[10px];
+  }
+
+  .username {
+    @apply text-[16px] font-bold;
+  }
+
+  .product-section {
+    @apply flex gap-3.5 p-[14px] border-b border-[#eee];
+  }
+
+  .product-image {
+    @apply w-[80px] h-[80px] rounded-[10px] object-cover;
+  }
+
+  .product-info {
+    @apply flex flex-col justify-between;
+  }
+
+  .product-name {
+    @apply font-bold;
+  }
+
+  .product-price {
+    @apply font-bold text-[#1e3c72];
+  }
+
+  .primary-pill-button {
+    @apply px-[18px] py-2 border-none rounded-[30px] bg-[#2196f3] text-white font-semibold cursor-pointer transition duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.08)] hover:bg-[#0b7dda];
+  }
+
+  .chat-body {
+    @apply flex flex-col flex-1 overflow-hidden;
+  }
+
+  .messages {
+    @apply flex-1 overflow-y-auto p-[10px] flex flex-col gap-2 [scrollbar-width:none];
+  }
+
+  .messages::-webkit-scrollbar {
+    display: none;
+  }
+
+  .message {
+    @apply max-w-[60%] px-[14px] py-[10px] rounded-[18px] text-[14px] leading-[1.4] break-words;
+  }
+
+  .message-sent {
+    @apply self-end bg-[#2196f3] text-white rounded-br-[6px];
+  }
+
+  .message-received {
+    @apply self-start bg-[#f1f5f9] text-[#333] rounded-bl-[6px];
+  }
+
+  .bottom-area {
+    @apply p-[10px] bg-white border-t border-[#eee];
+  }
+
+  .info-text {
+    @apply mb-2 text-[12px] text-center text-[#64748b];
+  }
+
+  .quick-replies {
+    @apply flex flex-wrap gap-[6px] mb-[10px];
+  }
+
+  .quick-reply {
+    @apply px-[10px] py-[6px] text-[12px] rounded-[20px] border border-[#2196f3] bg-white text-[#2196f3] cursor-pointer transition duration-300 hover:bg-[#2196f3] hover:text-white;
+  }
+
+  .input-area {
+    @apply flex gap-2;
+  }
+
+  .chat-input {
+    @apply flex-1 p-[10px] border border-[#ccc] rounded-[20px] outline-none focus:border-[#2196f3];
+  }
+}
+/* =========================
+   OFFER (Penawaran)
+========================= */
+
+@layer components {
+  .offer-overlay {
+    @apply fixed top-0 left-0 w-full h-full flex justify-center items-center bg-transparent;
+  }
+
+  .offer-box {
+    @apply w-[320px] p-[30px] rounded-[20px] text-center text-white shadow-[0_0_40px_rgba(0,0,0,0.2)] bg-gradient-to-r from-[#1e3c72] to-[#2a5298] animate-[popup_0.3s_ease];
+  }
+
+  .offer-box h3 {
+    @apply mb-[15px];
+  }
+
+  .offer-box p {
+    @apply mb-[6px] text-[#ddd];
+  }
+
+  .offer-box input {
+    @apply w-full px-3 py-3 mt-3 mb-[18px] rounded-[10px] border-none outline-none bg-white/20 text-white text-[14px] placeholder:text-[#ddd];
+  }
+
+  .offer-box input:focus {
+    @apply border border-[#4facfe];
+  }
+
+  .offer-actions {
+    @apply flex gap-[10px];
+  }
+
+  .offer-submit {
+    @apply flex-1 px-[10px] py-[10px] rounded-[30px] bg-[#2196f3] text-white font-semibold cursor-pointer transition duration-300 hover:bg-[#0b7dda];
+  }
+
+  .offer-cancel {
+    @apply flex-1 px-[10px] py-[10px] rounded-[30px] bg-white/30 text-white font-semibold cursor-pointer transition duration-300 hover:bg-white/50;
+  }
+
+  .offer-error {
+    @apply text-[#ffb3b3] text-[14px] mb-2;
+  }
+}
+
+/* animation tetap */
+@keyframes popup {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
