@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENTOPIA | Sewa Apa Saja</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+</head>
+
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <nav class="navbar-left">
+        <div class="nav-brand-container">
+            <div class="menu-icon" onclick="toggleMenu()">
+                <ion-icon name="menu-outline"
+                    style="font-size: 28px; color: var(--primary); cursor: pointer;"></ion-icon>
+            </div>
+            <h3 class="logo-title">RENTOPIA</h3>
+        </div>
+    </nav>
+
+    </div>
+    </nav>
+
+    <nav class="nav-auth-area">
+        <div class="auth-flex-container" id="auth-nav-group">
+            <a href="login.html" class="link-auth">Login</a>
+            <span class="divider">|</span>
+            <a href="register.html" class="link-auth highlight">Daftar</a>
+        </div>
+    </nav>
+
+    <nav class="nav-icons-area">
+        <div class="icons-flex-container">
+            <div class="icon-btn" onclick="handleProtectedAction('wishlist.html')" title="Daftar Favorit">
+                <ion-icon name="heart-outline"></ion-icon>
+                <span class="badge" id="wishlist-badge">0</span>
+            </div>
+
+            <div class="icon-btn" onclick="handleProtectedAction('cart.html')" title="Keranjang">
+                <ion-icon name="cart-outline"></ion-icon>
+                <span class="badge" id="cart-count">0</span>
+            </div>
+
+            <div class="icon-btn" onclick="handleProtectedAction('notifications.html')" title="Notifikasi">
+                <ion-icon name="notifications-outline"></ion-icon>
+                <span class="dot-red"></span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-web">
+        <div class="container-web">
+            <div class="hero-box-full"
+                style="background-image: linear-gradient(rgba(2,33,75,0.4), rgba(2,33,75,0.4)), url('https://i.pinimg.com/736x/a6/81/c8/a681c8503599e815c036e3a6fd21611c.jpg');">
+                <div class="hero-overlay-content">
+                    <h1 class="hero-tagline">SEWA APA SAJA!</h1>
+                    <p class="hero-subtext">Temukan barang impian sesuai kebutuhan mu di Rentopia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="catalog-header" style="margin-top: 50px;">
+        <div class="main-container" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-weight: 800; font-size: 24px;">🔥 Penawaran Terpopuler</h3>
+            <a href="login.html"
+                style="color: var(--primary); font-size: 14px; text-decoration: none; font-weight: 600;">Lihat Semua
+                Katalog →</a>
+        </div>
+    </section>
+
+    <section class="products">
+        <div class="main-container">
+            <div id="index-hot-deals" class="catalog-grid-full">
+                <p style="color: var(--text-muted); text-align: center; grid-column: 1/-1; padding: 40px;">
+                    Mencari penawaran terbaik
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-area" style="padding: 40px 0; background: rgba(0, 212, 255, 0.05); text-align: center;">
+        <div class="main-container" style="display: flex; justify-content: space-around; gap: 20px; flex-wrap: wrap;">
+            <div>
+                <h2 style="color: var(--primary);">1k+</h2>
+                <p style="font-size: 12px;">Barang Tersedia</p>
+            </div>
+            <div>
+                <h2 style="color: var(--primary);">500+</h2>
+                <p style="font-size: 12px;">Renter Aktif</p>
+            </div>
+            <div>
+                <h2 style="color: var(--primary);">4.9</h2>
+                <p style="font-size: 12px;">Rating Kepuasan</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" style="padding: 60px 0; text-align: center;">
+        <h3 style="margin-bottom: 30px; font-weight: 800;">Cara Sewa di Rentopia</h3>
+        <div class="main-container"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="step">
+                <ion-icon name="log-in-outline" style="font-size: 40px; color: var(--primary);"></ion-icon>
+                <p style="font-weight: 600; margin-top: 10px;">1. Buat Akun</p>
+            </div>
+            <div class="step">
+                <ion-icon name="search-outline" style="font-size: 40px; color: var(--primary);"></ion-icon>
+                <p style="font-weight: 600; margin-top: 10px;">2. Pilih Barang</p>
+            </div>
+            <div class="step">
+                <ion-icon name="card-outline" style="font-size: 40px; color: var(--primary);"></ion-icon>
+                <p style="font-weight: 600; margin-top: 10px;">3. Bayar & Ambil</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="footer-main">
+        <a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg></a>
+        <a href="#"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v9h4v-9h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+            </svg></a>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2026 Rentopia Team 3 - UINSA Surabaya</p>
+    </div>
+    </div>
+    </footer>
+
+    <div id="wishlist-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modal-icon" style="font-size: 60px; margin-bottom: 15px;"></div>
+            <h3 id="modal-title" style="color: white; font-weight: 800;"></h3>
+            <p id="modal-message" style="color: #aaa; margin-bottom: 25px;"></p>
+            <button onclick="closeWishlistModal()" class="rent-action-btn" style="width: 100%; padding: 15px;">Oke,
+                OKE LANJUT</button>
+        </div>
+    </div>
+
+    <section id="login-warning-modal" class="modal-overlay">
+        <div class="modal-content-box">
+            <div style="font-size: 50px; margin-bottom: 10px;">🔒</div>
+            <h3 style="color: white; margin-bottom: 10px;">Akses Terbatas</h3>
+            <p style="color: #ccc; margin-bottom: 20px;">Silahkan login dulu untuk menggunakan fitur ini.</p>
+            <button class="rent-action-btn" onclick="closeLoginModal()">OKE LANJUT</button>
+        </div>
+    </section>
+
+    <div id="cookie-banner" class="cookie-mobile-box">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+                <h4>Persetujuan Cookies</h4>
+                <p>Rentopia menggunakan cookies untuk kenyamanan menyewa barang.</p>
+            </div>
+        </div>
+        <div class="cookie-actions">
+            <button onclick="acceptCookies()" class="cookie-btn-accept">SETUJU</button>
+            <button onclick="closeCookieBanner()" class="cookie-btn-later">NANTI</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

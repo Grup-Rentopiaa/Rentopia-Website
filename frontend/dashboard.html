@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENTOPIA | Dashboard Renter</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body>
+    <div id="toast-container" class="toast-container"></div>
+
+    <nav class="navbar-main"
+        style="position: fixed; top: 0; width: 100%; height: 75px; background: rgba(2, 33, 75, 0.9); backdrop-filter: blur(15px); z-index: 1000; display: flex; align-items: center; padding: 0 25px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="flex: 1; display: flex; align-items: center; gap: 15px;">
+            <div class="menu-icon" onclick="toggleMenu()" style="cursor: pointer; display: flex; align-items: center;">
+                <ion-icon name="menu-outline" style="font-size: 28px; color: var(--primary);"></ion-icon>
+            </div>
+            <h3 class="logo-title" style="margin: 0;">RENTOPIA</h3>
+        </div>
+
+        <div style="flex: 1; display: flex; justify-content: flex-end; gap: 20px; align-items: center;">
+            <div class="icon-btn" onclick="location.href='wishlist.html'" style="position: relative; cursor: pointer;">
+                <ion-icon name="heart-outline" style="font-size: 24px; color: var(--primary);"></ion-icon>
+                <span class="badge" id="wishlist-badge">0</span>
+            </div>
+            <div class="icon-btn" onclick="location.href='cart.html'" style="position: relative; cursor: pointer;">
+                <ion-icon name="cart-outline" style="font-size: 24px; color: var(--primary);"></ion-icon>
+                <span class="badge" id="cart-count">0</span>
+            </div>
+            <div class="icon-btn" style="cursor: pointer;">
+                <ion-icon name="notifications-outline" style="font-size: 24px; color: var(--primary);"></ion-icon>
+                <span class="dot-red"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container" style="padding-top: 100px;">
+
+        <section class="profile-card"
+            style="background: var(--card-bg); border-radius: 25px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05);">
+            <div class="glass-header-container"
+                style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="profile-text-group">
+                    <h2 class="greet-text" style="font-size: 18px; color: var(--text-muted);">SELAMAT DATANG</h2>
+                    <h1 class="name-text" id="display-user-name"
+                        style="font-size: 28px; font-weight: 800; color: var(--white);">SIAP MENYEWA? ✨</h1>
+
+                    <div id="logout-area" style="margin-top: 15px;">
+                        <button onclick="handleLogout()" class="logout-action-btn"
+                            style="padding: 8px 18px; background: #ff4d4d; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;">
+                            <ion-icon name="log-out-outline" style="vertical-align: middle;"></ion-icon> Logout Akun
+                        </button>
+                    </div>
+                </div>
+
+                <div class="avatar-wrapper">
+                    <img id="user-avatar" src="https://ui-avatars.com/api/?name=Titha&background=00d4ff&color=fff"
+                        class="avatar-circle"
+                        style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;">
+                </div>
+            </div>
+        </section>
+
+        <section class="hero-web" style="margin-bottom: 40px;">
+            <div class="hero-box-full"
+                style="height: 300px; border-radius: 30px; background-image: linear-gradient(rgba(2,33,75,0.4), rgba(2,33,75,0.4)), url('https://i.pinimg.com/736x/a6/81/c8/a681c8503599e815c036e3a6fd21611c.jpg'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; text-align: center;">
+                <div class="hero-overlay-content">
+                    <h1 class="hero-tagline"
+                        style="font-size: 40px; font-weight: 900; color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                        SEWA APA SAJA!</h1>
+                    <p class="hero-subtext" style="color: var(--primary); font-weight: 600;">Barang impian, harga teman
+                        di Rentopia.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="reco-section" style="margin-bottom: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-weight: 800;">Rekomendasi Untukmu</h3>
+
+                <div class="tabs-group-wrapper">
+                    <button class="reco-tab active" onclick="applyFilter('Semua', this)">Semua</button>
+                    <button class="reco-tab" onclick="applyFilter('Peringkat Atas', this)">Atas</button>
+                    <button class="reco-tab" onclick="applyFilter('Terdekat', this)">Terdekat</button>
+                    <button class="reco-tab" onclick="applyFilter('Ikuti', this)">Ikuti</button>
+                </div>
+            </div>
+            <div class="reco-scroll-wrapper">
+                <div id="reco-product-list" class="reco-grid-horizontal">
+                </div>
+            </div>
+        </section>
+
+        <section class="search-section">
+            <div class="search-filter-wrapper">
+                <div class="search-input-group">
+                    <ion-icon name="search-outline"></ion-icon>
+                    <input type="text" id="searchInput" placeholder="Cari barang sewaanmu...">
+                </div>
+
+                <button class="filter-trigger-btn" onclick="toggleFilterMenu()">
+                    <ion-icon name="options-outline"></ion-icon>
+                </button>
+            </div>
+
+            <div id="filter-dropdown" class="filter-expandable-menu">
+                <div class="filter-controls-group">
+                    <select id="categoryFilter">
+                        <option value="all">Semua Kategori</option>
+                        <option value="electronics">Elektronik</option>
+                        <option value="camping">Camping</option>
+                        <option value="men's clothing">Pakaian Pria</option>
+                    </select>
+                    <select id="sortOptions">
+                        <option value="default">Urutkan</option>
+                        <option value="priceLowHigh">Harga Terendah</option>
+                        <option value="priceHighLow">Harga Tertinggi</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="catalog-section" style="margin-bottom: 60px;">
+            <h3 style="font-weight: 800; margin-bottom: 20px;">Eksplor Produk Terbaru</h3>
+            <div id="main-product-list" class="catalog-grid-full">
+            </div>
+        </section>
+
+    </main>
+
+    <div id="wishlist-modal" class="modal-overlay">
+        <div class="modal-content-box">
+            <div id="modal-icon" style="font-size: 60px; margin-bottom: 15px;">❤️</div>
+            <h3 id="modal-title" style="color: white; font-weight: 800;">Berhasil!</h3>
+            <p id="modal-message" style="color: #aaa; margin-bottom: 25px;">Barang telah ditambahkan ke wishlist</p>
+            <button onclick="closeWishlistModal()" class="rent-action-btn"
+                style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--primary); color: var(--dark-bg); font-weight: 800; cursor: pointer;">Oke,
+                OKE LANJUT</button>
+        </div>
+    </div>
+
+    <div id="cookie-banner" class="cookie-mobile-box">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+                <h4>Persetujuan Cookies</h4>
+                <p>Rentopia menggunakan cookies untuk kenyamanan menyewa barang impianmu.</p>
+            </div>
+        </div>
+        <div class="cookie-actions">
+            <button onclick="acceptCookies()" class="cookie-btn-accept">SETUJU</button>
+            <button onclick="closeCookieBanner()" class="cookie-btn-later">NANTI</button>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
