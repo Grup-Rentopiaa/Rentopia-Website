@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id          Int    @id @default(autoincrement())
+  username    String    @unique
+  name        String?
+  city        String?
+  description String?
+  followers   Int    @default(0)
+  following   Int    @default(0)
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  listings  Listing[]
+  rentals   Rental[]
+
+  @@map("users")
+}
+model Listing {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @map("user_id")
+  icon      String           @default("👜")
+  title     String
+  price     String
+  brand     String
+  status    ListingStatus @default(available)
+  createdAt DateTime           @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("listings")
+}
+
+model Rental {
+  id        Int          @id @default(autoincrement())
+  userId    Int          @map("user_id")
+  title     String
+  price     String
+  store     String
+  status    RentalStatus @default(ongoing)
+  note      String?
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("rentals")
+}
+
+enum ListingStatus { 
+  available  
+  rented 
+}
+enum RentalStatus  { 
+  ongoing  
+  done  
+  urgent 
+}
