@@ -2,27 +2,25 @@ import { useState, useEffect, useCallback } from 'react'
 import { api } from '../../../lib/axios'
 
 export function useListings(userId) {
-  const [listings, setListings] = useState(???)  // nilai awal array kosong
-  const [loading,  setLoading]  = useState(???)  // nilai awal true
-  const [error,    setError]    = useState(???)  // nilai awal null
-
+  const [listings, setListings] = useState([])  
+  const [loading,  setLoading]  = useState(true) 
+  const [error,    setError]    = useState(null)  
   const fetchListings = useCallback(async () => {
     if (!userId) return
     setLoading(true)
     try {
-      const { data } = await api.get(???)  // endpoint GET listings
-      setListings(data)
+      const { data } = await api.get('/api/listings', { params: { userId } }) 
+      setListings(data) 
     } catch (err) {
       setError(err.message)
     } finally {
-      setLoading(???)  // setelah selesai, loading jadi apa?
+      setLoading(false)  
     }
   }, [userId])
 
   useEffect(() => {
     fetchListings()
-  }, [???])  // dependency array — kapan fetchListings dipanggil ulang?
-
+  }, [fetchListings])  
   async function create(payload) {
     const { data } = await api.post(`/api/users/${userId}/listings`, payload)
     return data
