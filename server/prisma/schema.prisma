@@ -11,8 +11,12 @@ model User {
   name        String?
   city        String?
   description String?
+  phone       String?  @db.VarChar(20)   
+  avatarB64   String?  @map("avatar_b64") 
   followers   Int    @default(0)
   following   Int    @default(0)
+  rating      Float    @default(0)      
+  totalSewa   Int      @default(0)        @map("total_sewa") 
   createdAt   DateTime    @default(now()) @map("created_at")
 
   listings  Listing[]
@@ -20,33 +24,36 @@ model User {
 
   @@map("users")
 }
+
 model Listing {
   id        Int           @id @default(autoincrement())
   userId    Int           @map("user_id")
-  icon      String           @default("👜")
-  title     String
-  price     String
-  brand     String
+  title     String        @db.VarChar(255)
+  price     String        @db.VarChar(64)
+  brand     String        @db.VarChar(64)
+  image     String?
   status    ListingStatus @default(available)
-  createdAt DateTime           @default(now()) @map("created_at")
-  
+  createdAt DateTime      @default(now()) @map("created_at")
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("listings")
 }
 
 model Rental {
   id        Int          @id @default(autoincrement())
   userId    Int          @map("user_id")
-  title     String
-  price     String
-  store     String
+  title     String       @db.VarChar(255)
+  price     String       @db.VarChar(64)
+  store     String       @db.VarChar(128)
   status    RentalStatus @default(ongoing)
-  note      String?
-  createdAt DateTime          @default(now()) @map("created_at")
+  note      String?      @db.VarChar(128)
+  createdAt DateTime     @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("rentals")
 }
 

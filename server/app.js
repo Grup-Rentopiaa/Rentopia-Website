@@ -5,6 +5,7 @@ const helmet       = require('helmet')
 const cors         = require('cors')
 const rateLimit    = require('express-rate-limit')
 
+const userRoutes    = require('./routes/user.routes')  
 const listingRoutes    = require('./routes/listing.routes')
 const rentalRoutes     = require('./routes/rental.routes')
 const { errorHandler } = require('./middlewares/errorHandler')
@@ -19,6 +20,7 @@ app.use(cors({
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
 app.use(express.json({ limit: '2mb' }))
 
+app.use('/api/users',                  userRoutes)       
 app.use('/api/listings',              listingRoutes)
 app.use('/api/rentals',               rentalRoutes)
 app.use('/api/users/:userId/listings', listingRoutes)
