@@ -2,28 +2,33 @@ import { useState, useRef } from 'react'
 import { useUser }     from '../hooks/useUser'
 import { useListings } from '../hooks/useListings'
 import { useRentals }  from '../hooks/useRentals'
-import ListingCard from './ListingCard'
-import RentalCard  from './RentalCard'
+import ListingCard     from './ListingCard'
+import RentalCard      from './RentalCard'
 import EditProfileForm from './EditProfileForm'
 
 const TEMP_USER_ID = 1
 
 export default function DashboardPage() {
-  const [tab,        setTab]        = useState('listings')
-  const [showForm,   setShowForm]   = useState(false)
-  const [editItem,   setEditItem]   = useState(null)
-  const [form,       setForm]       = useState({ title: '', price: '', brand: '',category: 'Lainnya',  status: 'available', image: null })
-  const [preview,    setPreview]    = useState(null)
-  const [saving,     setSaving]     = useState(false)
+
+  // ── State ──────────────────────────────────────────────────────
+  const [tab,             setTab]             = useState('listings')
+  const [showForm,        setShowForm]        = useState(false)
   const [showEditProfile, setShowEditProfile] = useState(false)
-  const [formError,  setFormError]  = useState(null)
+  const [editItem,        setEditItem]        = useState(null)
+  const [form,            setForm]            = useState({ title: '', price: '', brand: '', category: '', status: 'available', image: null })
+  const [preview,         setPreview]         = useState(null)
+  const [saving,          setSaving]          = useState(false)
+  const [formError,       setFormError]       = useState(null)
+  const [search,          setSearch]          = useState('')
+  const [filterCat,       setFilterCat]       = useState('')
   const fileRef = useRef()
 
+  // ── Hooks ──────────────────────────────────────────────────────
   const { user, updateUser } = useUser()
   const { listings, loading: lLoad, create: createListing, update: updateListing, remove: removeListing, refresh: refreshListings } = useListings(TEMP_USER_ID)
   const { rentals,  loading: rLoad } = useRentals(TEMP_USER_ID)
 
-  // ── Avatar upload ──────────────────────────────────────────────
+  // ── Avatar ─────────────────────────────────────────────────────
   function handleAvatarClick() { fileRef.current.click() }
   function handleAvatarChange(e) {
     const file = e.target.files[0]
@@ -38,7 +43,7 @@ export default function DashboardPage() {
   // ── Listing form ───────────────────────────────────────────────
   function openCreate() {
     setEditItem(null)
-    setForm({ title: '', price: '', brand: '', status: 'available', image: null })
+    setForm({ title: '', price: '', brand: '', category: '', status: 'available', image: null })
     setPreview(null)
     setFormError(null)
     setShowForm(true)
@@ -46,7 +51,14 @@ export default function DashboardPage() {
 
   function openEdit(listing) {
     setEditItem(listing)
-    setForm({ title: listing.title, price: listing.price, brand: listing.brand, category: listing.category || 'Lainnya', status: listing.status, image: listing.image })
+    setForm({
+      title:    listing.title,
+      price:    listing.price,
+      brand:    listing.brand,
+      category: listing.category || '',
+      status:   listing.status,
+      image:    listing.image,
+    })
     setPreview(listing.image)
     setFormError(null)
     setShowForm(true)
@@ -84,9 +96,21 @@ export default function DashboardPage() {
     } finally { setSaving(false) }
   }
 
+  // ── Filter & search ────────────────────────────────────────────
+  const filteredListings = listings.filter(l => {
+    const matchSearch = l.title.toLowerCase().includes(search.toLowerCase()) ||
+                        l.brand.toLowerCase().includes(search.toLowerCase())
+    const matchCat    = filterCat ? l.category === filterCat : true
+    return matchSearch && matchCat
+  })
+
+  const categories = [...new Set(listings.map(l => l.category).filter(Boolean))]
+
+  // ── Helpers ────────────────────────────────────────────────────
   const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100'
   const initials   = (user?.name || user?.username || '?')[0]?.toUpperCase()
 
+  // ── Render ─────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
 
@@ -106,7 +130,7 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-screen-xl px-6 py-8">
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
 
-            {/* Avatar — klik untuk ganti */}
+            {/* Avatar */}
             <div className="relative shrink-0 cursor-pointer group" onClick={handleAvatarClick}>
               {user?.avatarB64 ? (
                 <img src={user.avatarB64} className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-blue-50" alt="avatar" />
@@ -128,12 +152,11 @@ export default function DashboardPage() {
               {user?.city        && <p className="mt-1 text-sm text-slate-500">📍 {user.city}</p>}
               {user?.phone       && <p className="mt-1 text-sm text-slate-500">📞 {user.phone}</p>}
               {user?.description && <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-600">{user.description}</p>}
-
               <button
-                onClick={() => setShowEditProfile(true)}
+                onClick={() => setShowEditProfile(prev => !prev)}
                 className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all"
               >
-                ✏️ Edit Profil
+                {showEditProfile ? '✕ Tutup' : '✏️ Edit Profil'}
               </button>
             </div>
 
@@ -159,20 +182,22 @@ export default function DashboardPage() {
       </div>
 
       <div className="mx-auto max-w-screen-xl px-6 py-8">
+
         {/* EDIT PROFILE FORM */}
-{showEditProfile && (
-  <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-    <h3 className="mb-4 text-sm font-extrabold text-slate-900">Edit Profil</h3>
-    <EditProfileForm
-      user={user}
-      onSave={async (data) => {
-        await updateUser(data)
-        setShowEditProfile(false)
-      }}
-      onCancel={() => setShowEditProfile(false)}
-    />
-  </div>
-)}
+        {showEditProfile && (
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-sm font-extrabold text-slate-900">Edit Profil</h3>
+            <EditProfileForm
+              user={user}
+              onSave={async (data) => {
+                await updateUser(data)
+                setShowEditProfile(false)
+              }}
+              onCancel={() => setShowEditProfile(false)}
+            />
+          </div>
+        )}
+
         {/* TABS */}
         <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
           <button onClick={() => setTab('listings')}
@@ -184,10 +209,12 @@ export default function DashboardPage() {
             Sedang Saya Sewa ({rentals.length})
           </button>
         </div>
-        
+
         {/* LISTINGS TAB */}
         {tab === 'listings' && (
           <section>
+
+            {/* Header */}
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-base font-extrabold text-slate-900">Daftar Barang</h2>
               <button onClick={openCreate}
@@ -196,7 +223,35 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            {/* FORM TAMBAH / EDIT */}
+            {/* Search & Filter */}
+            <div className="mb-5 flex gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[200px]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Cari nama atau brand..."
+                  className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {categories.length > 0 && (
+  <select
+    value={filterCat}
+    onChange={e => setFilterCat(e.target.value)}
+    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white text-slate-600 font-semibold"
+  >
+    <option value="">Semua Kategori</option>
+    {categories.map(cat => (
+      <option key={cat} value={cat}>{cat}</option>
+    ))}
+  </select>
+)}
+            </div>
+
+            {/* Form Tambah / Edit */}
             {showForm && (
               <form onSubmit={handleFormSubmit} className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 className="mb-4 text-sm font-extrabold text-slate-900">
@@ -229,20 +284,14 @@ export default function DashboardPage() {
                     <input name="brand" value={form.brand} onChange={handleFormChange} placeholder="Gucci, Nike..." className={inputClass} />
                   </div>
                   <div>
-  <label className="mb-1 block text-xs font-semibold text-slate-500">Kategori</label>
-  <input
-    name="category"
-    value={form.category || ''}
-    onChange={handleFormChange}
-    placeholder="Contoh: Tas, Kamera, Elektronik..."
-    className={inputClass}
-  />
-</div>
+                    <label className="mb-1 block text-xs font-semibold text-slate-500">Kategori</label>
+                    <input name="category" value={form.category || ''} onChange={handleFormChange} placeholder="Tas, Kamera, Elektronik..." className={inputClass} />
+                  </div>
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-500">Harga Sewa</label>
                     <input name="price" value={form.price} onChange={handleFormChange} placeholder="Rp 75.000/hari" className={inputClass} />
                   </div>
-                  <div className="col-span-2">
+                  <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-500">Status</label>
                     <select name="status" value={form.status} onChange={handleFormChange} className={inputClass}>
                       <option value="available">Tersedia</option>
@@ -264,13 +313,16 @@ export default function DashboardPage() {
               </form>
             )}
 
+            {/* Listing Cards */}
             {lLoad ? (
               <p className="py-16 text-center text-sm text-slate-400">Memuat...</p>
+            ) : filteredListings.length === 0 && listings.length > 0 ? (
+              <p className="py-16 text-center text-sm text-slate-400">Tidak ada barang yang cocok.</p>
             ) : listings.length === 0 ? (
               <p className="py-16 text-center text-sm text-slate-400">Belum ada barang. Klik "+ Tambah Barang" untuk mulai!</p>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {listings.map(l => (
+                {filteredListings.map(l => (
                   <ListingCard
                     key={l.id}
                     listing={l}
@@ -298,6 +350,7 @@ export default function DashboardPage() {
             )}
           </section>
         )}
+
       </div>
     </div>
   )
