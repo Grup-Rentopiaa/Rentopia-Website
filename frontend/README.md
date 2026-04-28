@@ -1,16 +1,28 @@
-# React + Vite
+# Rentopia - Web Kelompok
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Rentopia adalah platform penyewaan barang (kamera, tenda, perlengkapan outdoor, dll.) yang dibangun dengan arsitektur modular menggunakan React (Frontend) dan Node.js/Express + PostgreSQL (Backend).
 
-Currently, two official plugins are available:
+## Struktur Proyek
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Proyek ini dipisah menjadi dua bagian utama:
+- `frontend/`: Aplikasi React (menggunakan Vite) untuk antarmuka pengguna.
+- `backend/`: Server Express.js untuk API dan tracking, terhubung ke PostgreSQL.
 
-## React Compiler
+## Cara Menjalankan Aplikasi
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Backend
+1. Masuk ke folder backend: `cd backend`
+2. Install dependencies: `npm install` (Pastikan untuk menginstall `pg` dengan `npm install pg` jika belum ada)
+3. Buat database PostgreSQL bernama `pemweb` dan sesuaikan kredensial di `config/db.js`.
+4. Jalankan server: `npm start`
+5. Backend akan berjalan di `http://localhost:3001`
 
-## Expanding the ESLint configuration
+### 2. Frontend
+1. Buka terminal baru dan masuk ke folder frontend: `cd frontend`
+2. Install dependencies: `npm install`
+3. Jalankan development server: `npm run dev`
+4. Buka URL yang muncul (biasanya `http://localhost:5173`) di browser.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Teknologi
+- **Frontend**: React, Vite, Tailwind CSS, Lucide React
+- **Backend**: Node.js, Express, PostgreSQL
