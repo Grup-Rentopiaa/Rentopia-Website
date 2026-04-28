@@ -1,7 +1,5 @@
+import DashboardPage from './features/dashboard/components/DashboardPage'
+
 export default function App() {
-  return (
-    <div>
-      <h1>Rentopia</h1>
-    </div>
-  )
+  return <DashboardPage />
 }
