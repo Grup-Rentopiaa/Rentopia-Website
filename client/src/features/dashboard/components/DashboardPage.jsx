@@ -4,6 +4,7 @@ import { useListings } from '../hooks/useListings'
 import { useRentals }  from '../hooks/useRentals'
 import ListingCard from './ListingCard'
 import RentalCard  from './RentalCard'
+import EditProfileForm from './EditProfileForm'
 
 const TEMP_USER_ID = 1
 
@@ -11,9 +12,10 @@ export default function DashboardPage() {
   const [tab,        setTab]        = useState('listings')
   const [showForm,   setShowForm]   = useState(false)
   const [editItem,   setEditItem]   = useState(null)
-  const [form,       setForm]       = useState({ title: '', price: '', brand: '', status: 'available', image: null })
+  const [form,       setForm]       = useState({ title: '', price: '', brand: '',category: 'Lainnya',  status: 'available', image: null })
   const [preview,    setPreview]    = useState(null)
   const [saving,     setSaving]     = useState(false)
+  const [showEditProfile, setShowEditProfile] = useState(false)
   const [formError,  setFormError]  = useState(null)
   const fileRef = useRef()
 
@@ -44,7 +46,7 @@ export default function DashboardPage() {
 
   function openEdit(listing) {
     setEditItem(listing)
-    setForm({ title: listing.title, price: listing.price, brand: listing.brand, status: listing.status, image: listing.image })
+    setForm({ title: listing.title, price: listing.price, brand: listing.brand, category: listing.category || 'Lainnya', status: listing.status, image: listing.image })
     setPreview(listing.image)
     setFormError(null)
     setShowForm(true)
@@ -126,6 +128,13 @@ export default function DashboardPage() {
               {user?.city        && <p className="mt-1 text-sm text-slate-500">📍 {user.city}</p>}
               {user?.phone       && <p className="mt-1 text-sm text-slate-500">📞 {user.phone}</p>}
               {user?.description && <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-600">{user.description}</p>}
+
+              <button
+                onClick={() => setShowEditProfile(true)}
+                className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all"
+              >
+                ✏️ Edit Profil
+              </button>
             </div>
 
             {/* Stats */}
@@ -150,7 +159,20 @@ export default function DashboardPage() {
       </div>
 
       <div className="mx-auto max-w-screen-xl px-6 py-8">
-
+        {/* EDIT PROFILE FORM */}
+{showEditProfile && (
+  <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <h3 className="mb-4 text-sm font-extrabold text-slate-900">Edit Profil</h3>
+    <EditProfileForm
+      user={user}
+      onSave={async (data) => {
+        await updateUser(data)
+        setShowEditProfile(false)
+      }}
+      onCancel={() => setShowEditProfile(false)}
+    />
+  </div>
+)}
         {/* TABS */}
         <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
           <button onClick={() => setTab('listings')}
@@ -162,7 +184,7 @@ export default function DashboardPage() {
             Sedang Saya Sewa ({rentals.length})
           </button>
         </div>
-
+        
         {/* LISTINGS TAB */}
         {tab === 'listings' && (
           <section>
@@ -206,6 +228,16 @@ export default function DashboardPage() {
                     <label className="mb-1 block text-xs font-semibold text-slate-500">Brand</label>
                     <input name="brand" value={form.brand} onChange={handleFormChange} placeholder="Gucci, Nike..." className={inputClass} />
                   </div>
+                  <div>
+  <label className="mb-1 block text-xs font-semibold text-slate-500">Kategori</label>
+  <input
+    name="category"
+    value={form.category || ''}
+    onChange={handleFormChange}
+    placeholder="Contoh: Tas, Kamera, Elektronik..."
+    className={inputClass}
+  />
+</div>
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-500">Harga Sewa</label>
                     <input name="price" value={form.price} onChange={handleFormChange} placeholder="Rp 75.000/hari" className={inputClass} />

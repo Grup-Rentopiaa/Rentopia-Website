@@ -14,9 +14,16 @@ const userService = {
   },
 
   async update(id, data) {
-    await userService.getById(id)
-    return userRepository.update(id, data)
-  },
+  await userService.getById(id)
+  try {
+    return await userRepository.update(id, data)
+  } catch (err) {
+    if (err.code === 'P2002') {
+      throw AppError.conflict('Username sudah digunakan, pilih yang lain.')
+    }
+    throw err
+  }
+},
 }
 
 module.exports = { userService }

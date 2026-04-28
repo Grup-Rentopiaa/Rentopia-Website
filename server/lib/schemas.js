@@ -10,6 +10,7 @@ const CreateUserSchema = z.object({
 })
 
 const UpdateUserSchema = z.object({
+  username:    z.string().min(3).max(64).regex(/^\w+$/, 'Hanya huruf, angka, underscore').optional(),
   name:        z.string().max(128).nullable().optional(),
   city:        z.string().max(64).nullable().optional(),
   description: z.string().max(500).nullable().optional(),
@@ -21,6 +22,7 @@ const ListingSchema = z.object({
   title:  z.string().min(1, 'Title wajib diisi').max(255),
   price:  z.string().min(1, 'Price wajib diisi').max(64),
   brand:  z.string().min(1, 'Brand wajib diisi').max(64),
+  category: z.string().max(64).default('Lainnya'),
   image:  z.string().nullable().optional(),
   status: z.enum(['available', 'rented']).default('available'),
 })

@@ -25,6 +25,11 @@ export default function ListingCard({ listing, onEdit, onDelete }) {
         <div>
           <p className="font-bold text-slate-900 leading-tight text-sm">{listing.title}</p>
           <p className="text-xs text-slate-400 mt-0.5">{listing.brand}</p>
+            {listing.category && (
+    <span className="mt-1 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+      {listing.category}
+    </span>
+  )}
         </div>
         <p className="text-sm font-bold text-blue-600">{listing.price}</p>
         <div className="flex items-center justify-between mt-auto pt-2">

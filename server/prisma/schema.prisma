@@ -31,6 +31,7 @@ model Listing {
   title     String        @db.VarChar(255)
   price     String        @db.VarChar(64)
   brand     String        @db.VarChar(64)
+  category  String        @db.VarChar(64) @default("Lainnya")
   image     String?
   status    ListingStatus @default(available)
   createdAt DateTime      @default(now()) @map("created_at")
@@ -49,6 +50,7 @@ model Rental {
   store     String       @db.VarChar(128)
   status    RentalStatus @default(ongoing)
   note      String?      @db.VarChar(128)
+  image     String?                        
   createdAt DateTime     @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
