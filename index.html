@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RENTOPIA - Platform Penyewaan Terstruktur</title>
+    <!-- Gunakan path relatif tanpa garis miring di depan -->
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">RENTOPIA</h1>
+            <nav>
+                <ul>
+                    <li><a href="#admin-panel">Admin</a></li>
+                    <li><a href="#user-panel">Rating</a></li>
+                    <li><a href="#log-panel">Riwayat</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <section class="hero-section">
+            <div class="hero-text">
+                <h2>Solusi Sewa Barang Terpercaya</h2>
+                <p>Ubah kebiasaan menyewa yang berantakan menjadi terstruktur dan transparan.</p>
+            </div>
+        </section>
+
+        <!-- Form Jaminan -->
+        <section id="admin-panel" class="module-section">
+            <h3>Admin: Pengelolaan Jaminan</h3>
+            <div class="card">
+                <form id="jaminanForm" class="rentopia-form">
+                    <div class="input-group">
+                        <label>Nama Penyewa</label>
+                        <input type="text" id="namaPenyewa" placeholder="Input nama lengkap...">
+                    </div>
+                    <div class="input-group">
+                        <label>ID Barang</label>
+                        <input type="text" id="idBarang" placeholder="Contoh: RT-102">
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" onclick="handleAdminAction('Success')">Simpan Jaminan</button>
+                        <button type="button" class="btn-alt" onclick="handleAdminAction('Error')">Gagal Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Form Ulasan -->
+        <section id="user-panel" class="module-section">
+            <h3>User: Berikan Ulasan</h3>
+            <div class="card">
+                <textarea id="ulasanText" placeholder="Tulis ulasan Anda di sini..."></textarea>
+                <div class="btn-group">
+                    <button type="button" onclick="handleUserAction('Success')">Kirim Rating</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Log Aktivitas -->
+        <section id="log-panel" class="module-section">
+            <h3>Log Aktivitas (Real-time dari Server)</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Aksi</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logData">
+                        <!-- Data otomatis -->
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn-clear" onclick="clearLogs()">Reset Riwayat</button>
+        </section>
+    </main>
+
+    <div id="notifContainer"></div>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2026 RENTOPIA - Project Web Apps.</p>
+            <nav class="footer-nav">
+                <a href="#">Privasi</a> | <a href="#">Syarat</a> | <a href="#">Bantuan</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

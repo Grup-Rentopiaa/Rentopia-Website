@@ -1,4 +1,4 @@
-/* style.css - RENTOPIA UI (Fixed for API) */
+/* style.css - RENTOPIA UI FIXED */
 :root { 
     --primary: #ffd700; 
     --bg: #212121; 
@@ -6,74 +6,117 @@
     --card-bg: #2c2c2c;
 }
 
-/* Reset sederhana, jangan pakai overflow-x: hidden di semua elemen */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    width: 100%; min-height: 100vh; 
-    background: var(--bg);
-    color: var(--white); 
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden; /* Cukup di body saja */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
 }
 
-header { padding: 1.5rem; background: #1a1a1a; border-bottom: 1px solid #444; }
-.logo { color: var(--primary); letter-spacing: 2px; font-weight: bold; }
-.module-section { padding: 2rem; border-bottom: 1px solid #333; }
-.card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-top: 1rem; }
+body {
+    width: 100%; 
+    min-height: 100vh; 
+    background-color: var(--bg) !important; /* Pakai !important untuk memaksa warna muncul */
+    color: var(--white); 
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+}
+
+header { 
+    padding: 1.5rem; 
+    background: #1a1a1a; 
+    border-bottom: 1px solid #444; 
+}
+
+.logo { 
+    color: var(--primary); 
+    letter-spacing: 2px; 
+    font-weight: bold; 
+    font-size: 1.5rem;
+}
+
+.module-section { 
+    padding: 2rem; 
+    border-bottom: 1px solid #333; 
+}
+
+.card { 
+    background: var(--card-bg); 
+    padding: 1.5rem; 
+    border-radius: 8px; 
+    margin-top: 1rem; 
+}
 
 /* Input Styling */
 .input-group { margin-bottom: 1rem; }
 label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #aaa; }
 input, textarea { 
-    width: 100%; padding: 0.8rem; background: #333; 
-    border: 1px solid #444; color: white; border-radius: 4px;
+    width: 100%; 
+    padding: 0.8rem; 
+    background: #333; 
+    border: 1px solid #444; 
+    color: white; 
+    border-radius: 4px;
 }
 
 /* Button UI */
-#btnContainer, .btn-group { margin: 1rem 0; display: flex; gap: 0.8rem; }
+.btn-group { margin: 1rem 0; display: flex; gap: 0.8rem; }
 button {
-    border: 0; background: var(--primary); padding: 0.6rem 1.2rem;
-    cursor: pointer; font-weight: bold; border-radius: 4px; transition: 0.2s;
+    border: 0; 
+    background: var(--primary); 
+    padding: 0.6rem 1.2rem;
+    cursor: pointer; 
+    font-weight: bold; 
+    border-radius: 4px; 
+    transition: 0.2s;
 }
 button:hover { background: #fff; transform: translateY(-2px); }
+.btn-alt { background: #555; color: white; }
 .btn-clear { background: #f44336; color: white; margin-top: 1rem; }
 
-/* --- NOTIFICATION SYSTEM (FIXED) --- */
+/* NOTIFICATION SYSTEM */
 #notifContainer {
     position: fixed; 
-    right: 20px; /* Posisi standarnya di kanan */
+    right: 20px; 
     bottom: 20px; 
     z-index: 1000;
 }
 
 .notification {
-    display: flex; align-items: center; 
-    background: var(--white); color: #333;
-    width: 320px; padding: 1rem; margin-top: 10px;
-    border-radius: 4px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    position: relative; overflow: hidden;
-    /* Mulai dari luar layar sebelah kanan */
+    display: flex; 
+    align-items: center; 
+    background: var(--white); 
+    color: #333;
+    width: 320px; 
+    padding: 1rem; 
+    margin-top: 10px;
+    border-radius: 4px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    position: relative; 
+    overflow: hidden;
     transform: translateX(120%); 
     transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Muncul ke tengah saat ada class .move dari JS */
 .notification.move { transform: translateX(0); }
-
 .notification img { width: 40px; height: 40px; margin-right: 15px; }
-.notification p { font-size: 0.9rem; margin: 0; line-height: 1.4; }
 
-/* Progress Bar Animasi */
 .notification span {
-    display: block; width: 100%; height: 4px; 
-    position: absolute; left: 0; bottom: 0;
+    display: block; 
+    width: 100%; 
+    height: 4px; 
+    position: absolute; 
+    left: 0; 
+    bottom: 0;
 }
-/* Jalan dari penuh ke nol selama 3 detik */
 .notification span.move { width: 0; transition: 3s linear; }
 
-/* --- TABLE LOG --- */
-.table-container { margin-top: 1.5rem; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
+/* TABLE LOG */
+.table-container { 
+    margin-top: 1.5rem; 
+    background: #1a1a1a; 
+    border-radius: 8px; 
+    overflow: hidden; 
+}
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 12px; border: 1px solid #333; text-align: left; font-size: 0.85rem; }
 th { background: #262626; color: var(--primary); }

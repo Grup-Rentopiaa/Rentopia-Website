@@ -3,8 +3,10 @@ import React, { createContext, useState, useContext } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Menyimpan data user yang login
-  const [token, setToken] = useState(localStorage.getItem('token') || '');
+  // Mengubah default state agar langsung terisi data "dummy"
+  // Ini membuat aplikasi menganggap user sudah login secara otomatis
+  const [user, setUser] = useState({ name: 'Guest User', role: 'public' }); 
+  const [token, setToken] = useState('dummy-token-akses-bebas');
 
   const login = (userData, userToken) => {
     setUser(userData);
@@ -13,9 +15,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setUser(null);
-    setToken('');
-    localStorage.removeItem('token');
+    // Agar benar-benar bebas akses, kita bisa buat logout tidak menghapus data
+    // atau biarkan seperti ini jika ingin simulasi saja.
+    setUser({ name: 'Guest User', role: 'public' });
+    setToken('dummy-token-akses-bebas');
   };
 
   return (
