@@ -4,12 +4,11 @@ const pool = require('../db');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const { search, category, sort, min_price, max_price, min_rating, lat, lng } = req.query;
+  const { search, category, sort, min_price, max_price, lat, lng } = req.query;
 
   let query = `
     SELECT i.id, i.title, i.description, i.price_per_day, i.location,
-           i.latitude, i.longitude, i.image_url, i.created_at,
-           i.rating, i.rating_count,
+           i.latitude, i.longitude, i.created_at,
            c.name AS category_name, u.name AS owner_name
     FROM items i
     LEFT JOIN categories c ON i.category_id = c.id
@@ -43,18 +42,11 @@ router.get('/', async (req, res) => {
     paramIndex++;
   }
 
-  if (min_rating) {
-    query += ` AND i.rating >= $${paramIndex}`;
-    params.push(min_rating);
-    paramIndex++;
-  }
 
   if (sort === 'price_asc') {
     query += ' ORDER BY i.price_per_day ASC';
   } else if (sort === 'price_desc') {
     query += ' ORDER BY i.price_per_day DESC';
-  } else if (sort === 'rating') {
-    query += ' ORDER BY i.rating DESC, i.rating_count DESC';
   } else if (sort === 'nearest' && lat && lng) {
     query += ` ORDER BY (
       (i.latitude - $${paramIndex})^2 + (i.longitude - $${paramIndex + 1})^2

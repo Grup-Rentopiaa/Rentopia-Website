@@ -53,31 +53,6 @@ setInterval(() => {
   }
 }, 30000);
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  try {
-    await pool.query('ALTER TABLE items ADD COLUMN IF NOT EXISTS rating NUMERIC(3,1) DEFAULT 0');
-    await pool.query('ALTER TABLE items ADD COLUMN IF NOT EXISTS rating_count INT DEFAULT 0');
-    console.log('Database schema verified (rating columns present)');
-
-    const newImages = {
-      'Kamera Sony Alpha A7III': '/images/kamera.jpg',
-      'Drone DJI Mavic 3': '/images/drone.jpg',
-      'Motor Honda Beat 2022': '/images/motor.jpg',
-      'Laptop MacBook Pro M2': '/images/laptop.jpg',
-      'Proyektor Epson EB-X41': '/images/proyektor.jpg',
-      'Tenda Camping 4 Orang': '/images/tenda.jpg',
-      'Set Gitar Akustik Yamaha F310': '/images/gitar.jpg',
-      'PlayStation 5 + 2 Controller': '/images/ps5.jpg',
-      'Baju Adat Jawa Pria': '/images/baju.jpg',
-      'Stroller Bayi Joie': '/images/stroller.jpg',
-      'Speaker Bluetooth JBL Xtreme 3': '/images/speaker.jpg',
-      'Stand Up Paddleboard 10ft': '/images/paddleboard.jpg'
-    };
-    for (const [title, url] of Object.entries(newImages)) {
-      await pool.query('UPDATE items SET image_url = $1 WHERE title = $2', [url, title]);
-    }
-  } catch (e) {
-    console.error('Migration failed:', e.message);
-  }
 });

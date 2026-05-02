@@ -18,7 +18,6 @@ export default function useProducts(search, category, filter) {
       if (filterVal?.sort && filterVal.sort !== 'best_match') params.set('sort', filterVal.sort);
       if (filterVal?.minPrice)             params.set('min_price',  filterVal.minPrice);
       if (filterVal?.maxPrice)             params.set('max_price',  filterVal.maxPrice);
-      if (filterVal?.minRating)            params.set('min_rating', filterVal.minRating);
 
       const data = await apiFetch(`/api/items?${params.toString()}`);
       setItems(data);

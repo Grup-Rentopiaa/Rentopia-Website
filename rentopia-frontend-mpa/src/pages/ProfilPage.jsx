@@ -46,11 +46,10 @@ export default function ProfilPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-2 gap-3 mb-5">
         {[
           { label: 'Produk', value: '0' },
           { label: 'Disewa', value: '0' },
-          { label: 'Rating', value: '-' },
         ].map(({ label, value }) => (
           <div key={label} className="bg-white rounded-2xl border border-gray-200 p-4 text-center"
                style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
