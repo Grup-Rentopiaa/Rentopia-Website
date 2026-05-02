@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 
@@ -6,5 +7,5 @@ const authRoutes = require('./routes/auth')
 app.use('/api/auth', authRoutes)
 
 app.listen(3000, () =>{
-    console.log('server jalan')
+    console.log(`🚀 Server running at http://localhost:3000`)
 })

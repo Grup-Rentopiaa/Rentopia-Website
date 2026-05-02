@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {findByEmail, createUser, createAuth, findAuthByUserId,  saveOtp, findAuthByOtp} = require('../models/user')
+const {findByEmail, createUser, createAuth, findAuthByUserId,  saveOtp, findAuthByOtp, updatePassword} = require('../models/user')
 const sendEmail = require('../utils/sendEmail')
 
 const signup = async (req, res) => {

@@ -1,5 +1,5 @@
 {
-  "name": "jam-ajaib",
+  "name": "auth",
   "version": "1.0.0",
   "main": "db.js",
   "scripts": {
@@ -8,19 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RiskaAml/Jam-Ajaib.git"
+    "url": "git+https://github.com/Grup-Rentopiaa/Web-Kelompok.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RiskaAml/Jam-Ajaib/issues"
+    "url": "https://github.com/Grup-Rentopiaa/Web-Kelompok/issues"
   },
-  "homepage": "https://github.com/RiskaAml/Jam-Ajaib#readme",
+  "homepage": "https://github.com/Grup-Rentopiaa/Web-Kelompok#readme",
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "bcrypt": "^6.0.0",
+    "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.5",
