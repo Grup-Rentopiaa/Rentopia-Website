@@ -40,4 +40,10 @@ const findAuthByOtp = async (otp) => {
         where: {otp: otp}
     })
 }
-module.exports = {findByEmail, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp}
+const updatePassword = async (userId, hashedPassword) => {
+    return await prisma.auth.update({
+        where: { user_id: userId },
+        data: { password: hashedPassword }
+    })
+}
+module.exports = {findByEmail, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword}

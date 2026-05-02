@@ -48,6 +48,44 @@ const verifyOtp = async (req, res) => {
     }
     res.status(200).json({message: 'Verifikasi Sukses'})
 }
+const forgotPassword = async (req, res) => {
+    const { email } = req.body
+    const existingUser = await findByEmail(email)
+    if (!existingUser) {
+        return res.status(400).json({ message: 'email tidak ditemukan' })
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const expiredAt = new Date(Date.now() + 5 * 60 * 1000)
+    await saveOtp(existingUser.id, otp, expiredAt)
+    await sendEmail(existingUser.email, otp)
+    res.status(200).json({ message: 'OTP telah dikirim ke email' })
+}
+
+const verifyOtpForgot = async (req, res) => {
+    const { otp } = req.body
+    const existingAuth = await findAuthByOtp(otp)
+    if (!existingAuth) {
+        return res.status(400).json({ message: 'OTP tidak valid' })
+    }
+    if (existingAuth.otp_expired_at < new Date()) {
+        return res.status(400).json({ message: 'OTP sudah expired' })
+    }
+    const resetToken = jwt.sign({ userId: existingAuth.user_id }, process.env.JWT_SECRET, { expiresIn: '10m' })
+    res.status(200).json({ message: 'OTP valid', resetToken })
+}
+
+const resetPassword = async (req, res) => {
+    const { resetToken, newPassword } = req.body
+    let decoded
+    try {
+        decoded = jwt.verify(resetToken, process.env.JWT_SECRET)
+    } catch (err) {
+        return res.status(400).json({ message: 'Token tidak valid atau sudah expired' })
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    await updatePassword(decoded.userId, hashedPassword)
+    res.status(200).json({ message: 'Password berhasil diubah' })
+}
 
 
-module.exports = { signup, login, verifyOtp}
+module.exports = {signup, login, verifyOtp, forgotPassword, verifyOtpForgot, resetPassword}
