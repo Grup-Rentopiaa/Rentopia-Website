@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
 import InputField from "../components/InputField";
 import AlertBanner from "../components/AlertBanner";
@@ -9,15 +9,21 @@ import { useForm } from "../hooks/useForm";
 
 function validate(values) {
   const errs = {};
+  if (!values.username.trim()) errs.username = "Username wajib diisi";
   if (!values.email.trim()) errs.email = "Email wajib diisi";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errs.email = "Format email tidak valid";
   if (!values.password) errs.password = "Password wajib diisi";
+  else if (values.password.length < 6) errs.password = "Minimal 6 karakter";
+  if (values.password !== values.confirmPassword) errs.confirmPassword = "Password tidak sama";
   return errs;
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   const navigate = useNavigate();
-  const { loading, error, login } = useAuth();
-  const { values, errors, handleChange, setFieldError } = useForm({ email: "", password: "" });
+  const { loading, error, signup } = useAuth();
+  const { values, errors, handleChange, setFieldError } = useForm({
+    username: "", email: "", password: "", confirmPassword: "",
+  });
   const [showPass, setShowPass] = useState(false);
 
   async function handleSubmit(e) {
@@ -27,47 +33,44 @@ export default function LoginPage() {
       Object.entries(errs).forEach(([k, v]) => setFieldError(k, v));
       return;
     }
-    const result = await login({ email: values.email, password: values.password });
-    if (result) navigate("/verify-otp", { state: { email: values.email, from: "login" } });
+    const result = await signup({ username: values.username, email: values.email, password: values.password });
+    if (result) navigate("/verify-otp", { state: { email: values.email, from: "register" } });
   }
 
   return (
     <AuthLayout>
-      {/* Header Strip */}
       <div className="bg-blue-600 px-8 py-6">
-        <h1 className="text-white text-xl font-bold">Selamat Datang Kembali!</h1>
-        <p className="text-blue-200 text-sm mt-1">Masuk ke akun Rentopia kamu</p>
+        <h1 className="text-white text-xl font-bold">Buat Akun Baru</h1>
+        <p className="text-blue-200 text-sm mt-1">Daftar sekarang dan mulai sewa dengan mudah</p>
       </div>
 
-      {/* Body */}
       <div className="px-8 py-6 space-y-4">
         <AlertBanner type="error" message={error} />
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <InputField
-            label="Email" name="email" type="email"
-            placeholder="contoh@email.com"
+            label="Username" name="username" placeholder="Masukkan username"
+            value={values.username} onChange={handleChange}
+            error={errors.username} icon={User} required autoComplete="username"
+          />
+          <InputField
+            label="Email" name="email" type="email" placeholder="contoh@email.com"
             value={values.email} onChange={handleChange}
             error={errors.email} icon={Mail} required autoComplete="email"
           />
 
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-semibold text-slate-700">
-                Password <span className="text-red-400">*</span>
-              </label>
-              <Link to="/forgot-password" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
-                Lupa password?
-              </Link>
-            </div>
+            <label htmlFor="password" className="text-sm font-semibold text-slate-700">
+              Password <span className="text-red-400">*</span>
+            </label>
             <div className="relative flex items-center">
               <Lock className="absolute left-3 text-slate-400 pointer-events-none" size={16} />
               <input
                 id="password" name="password"
                 type={showPass ? "text" : "password"}
-                placeholder="Masukkan password"
+                placeholder="Min. 6 karakter"
                 value={values.password} onChange={handleChange}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 className={`w-full rounded-xl border px-4 py-3 pl-9 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${errors.password ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-blue-500 focus:ring-blue-50"}`}
               />
               <button type="button" onClick={() => setShowPass((v) => !v)}
@@ -78,9 +81,16 @@ export default function LoginPage() {
             {errors.password && <p className="text-xs text-red-500 font-medium flex items-center gap-1"><span>⚠</span> {errors.password}</p>}
           </div>
 
+          <InputField
+            label="Konfirmasi Password" name="confirmPassword" type="password"
+            placeholder="Ulangi password" value={values.confirmPassword}
+            onChange={handleChange} error={errors.confirmPassword}
+            icon={Lock} required autoComplete="new-password"
+          />
+
           <button type="submit" disabled={loading}
             className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            {loading ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Masuk...</> : "Masuk"}
+            {loading ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Mendaftarkan...</> : "Daftar Sekarang"}
           </button>
         </form>
 
@@ -100,12 +110,12 @@ export default function LoginPage() {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Masuk dengan Google
+          Daftar dengan Google
         </button>
 
         <p className="text-center text-sm text-slate-500">
-          Belum punya akun?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700">Daftar gratis</Link>
+          Sudah punya akun?{" "}
+          <Link to="/login" className="text-blue-600 font-semibold hover:text-blue-700">Masuk sekarang</Link>
         </p>
       </div>
     </AuthLayout>
