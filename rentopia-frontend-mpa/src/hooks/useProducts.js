@@ -1,44 +1,44 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import apiFetch from '../api';
-import advancedFeatures from '../utils/advancedFeatures';
+import { saveCatalogToIndexedDB, getCatalogFromIndexedDB, triggerDataChanged } from '../utils/Features';
 
 const DEBOUNCE_MS = 300;
 
 export default function useProducts(search, category, filter) {
-  const [items, setItems]     = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const debounceTimer         = useRef(null);
+  const debounceTimer = useRef(null);
 
   const loadItems = useCallback(async (searchVal, categoryVal, filterVal) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (searchVal?.trim())               params.set('search',     searchVal.trim());
-      if (categoryVal)                     params.set('category',   categoryVal);
+      if (searchVal?.trim()) params.set('search', searchVal.trim());
+      if (categoryVal) params.set('category', categoryVal);
       if (filterVal?.sort && filterVal.sort !== 'best_match') params.set('sort', filterVal.sort);
-      if (filterVal?.minPrice)             params.set('min_price',  filterVal.minPrice);
-      if (filterVal?.maxPrice)             params.set('max_price',  filterVal.maxPrice);
+      if (filterVal?.minPrice) params.set('min_price', filterVal.minPrice);
+      if (filterVal?.maxPrice) params.set('max_price', filterVal.maxPrice);
 
       const data = await apiFetch(`/api/items?${params.toString()}`);
       setItems(data);
 
-      await advancedFeatures.saveCatalogToIndexedDB(data);
-      advancedFeatures.triggerDataChanged('rentopia:toast', {
+      await saveCatalogToIndexedDB(data);
+      triggerDataChanged('rentopia:toast', {
         message: 'Katalog berhasil dimuat',
         type: 'success',
       });
     } catch {
       try {
-        const cached = await advancedFeatures.getCatalogFromIndexedDB();
+        const cached = await getCatalogFromIndexedDB();
         if (cached?.length > 0) {
           setItems(cached);
-          advancedFeatures.triggerDataChanged('rentopia:toast', {
+          triggerDataChanged('rentopia:toast', {
             message: 'Offline: Menampilkan data cache',
             type: 'warning',
           });
         }
       } catch {
-        advancedFeatures.triggerDataChanged('rentopia:toast', {
+        triggerDataChanged('rentopia:toast', {
           message: 'Gagal memuat katalog',
           type: 'error',
         });
