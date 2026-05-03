@@ -1,12 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { TRACKING_SERVER } from "../constants/landingData";
 
-
 function setCookie(name, value, days) {
-  const expires = new Date(
-    Date.now() + days * 24 * 60 * 60 * 1000
-  ).toUTCString();
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
 }
 
@@ -16,13 +12,11 @@ function getCookie(name) {
   return found ? decodeURIComponent(found.split("=")[1]) : null;
 }
 
-
 async function trackVisitor() {
   const consent = localStorage.getItem("cookieConsent");
   if (consent !== "accepted") return;
 
-  let visitorId =
-    localStorage.getItem("landingVisitorId") || getCookie("landingVisitorId");
+  let visitorId = localStorage.getItem("landingVisitorId") || getCookie("landingVisitorId");
 
   if (!visitorId) {
     visitorId = `visitor-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
@@ -58,17 +52,11 @@ async function trackVisitor() {
   }
 }
 
-
 export function useCookieConsent() {
   const [showCookie, setShowCookie] = useState(false);
 
   useEffect(() => {
-    localStorage.removeItem("cookieConsent");
-    document.cookie =
-      "cookieConsent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    const consent =
-      localStorage.getItem("cookieConsent") || getCookie("cookieConsent");
+    const consent = localStorage.getItem("cookieConsent") || getCookie("cookieConsent");
 
     if (consent !== "accepted") {
       setShowCookie(true);
