@@ -20,3 +20,15 @@ model Users {
     username String
     email String @unique
 }
+model Visitor {
+  id            Int      @id @default(autoincrement())
+  visitor_id    String
+  page          String
+  path          String?
+  browser       String?
+  language      String?
+  screen_width  Int?
+  screen_height Int?
+  visited_at    String?
+  created_at    DateTime @default(now())
+}
