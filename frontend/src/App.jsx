@@ -6,12 +6,14 @@ import VerifyOtpPage from "./pages/VerifyOtpPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import VerifyOtpForgotPage from "./pages/VerifyOtpForgotPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import HomePage from "./pages/HomePage";
 import "./index.css";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Landing & Auth */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<SignUpPage />} />
@@ -19,6 +21,10 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-otp-forgot" element={<VerifyOtpForgotPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Main App */}
+        <Route path="/home" element={<HomePage />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
