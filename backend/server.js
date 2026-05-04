@@ -1,58 +1,60 @@
-require('dotenv').config();
-const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
-const pool    = require('./db');
+require('dotenv').config()
+const express = require('express')
+const cors = require('cors')
+const app = express()
 
-const itemsRoutes         = require('./routes/items');
-const keywordsRoutes      = require('./routes/keywords');
-const notificationsRoutes = require('./routes/notifications');
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}))
+app.use(express.json())
 
-const app  = express();
-const PORT = process.env.PORT || 5000;
+// Auth routes
+const authRoutes = require('./routes/auth')
+app.use('/api/auth', authRoutes)
 
-app.use(cors({ origin: '*', methods: ['GET','POST','PUT','DELETE','PATCH'] }));
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '..')));
+// Tracking routes
+const trackingRoutes = require('./routes/tracking')
+app.use('/api/tracking', trackingRoutes)
 
-app.use('/api/items',         itemsRoutes);
-app.use('/api/keywords',      keywordsRoutes);
-app.use('/api/notifications', notificationsRoutes);
+// Homepage routes
+const itemRoutes = require('./routes/item')
+const keywordRoutes = require('./routes/keyword')
+const notificationRoutes = require('./routes/notification')
+app.use('/api/items', itemRoutes)
+app.use('/api/keywords', keywordRoutes)
+app.use('/api/notifications', notificationRoutes)
 
-const sseClients = new Set();
+// SSE for real-time notifications
+const sseClients = new Set()
 
 app.get('/api/events', (req, res) => {
-  res.setHeader('Content-Type',  'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection',    'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.flushHeaders();
-
-  res.write(`event: connected\ndata: {"status":"ok"}\n\n`);
-  sseClients.add(res);
-
-  req.on('close', () => {
-    sseClients.delete(res);
-  });
-});
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no')
+  res.flushHeaders()
+  res.write(`event: connected\ndata: {"status":"ok"}\n\n`)
+  sseClients.add(res)
+  req.on('close', () => sseClients.delete(res))
+})
 
 function broadcastSSE(event, data) {
-  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
   sseClients.forEach(client => {
-    try { client.write(payload); } catch (_) { sseClients.delete(client); }
-  });
+    try { client.write(payload) } catch (_) { sseClients.delete(client) }
+  })
 }
 
-app.locals.broadcastSSE = broadcastSSE;
-
-app.get('/api', (req, res) => res.json({ message: 'Rentopia MPA API aktif', sse_clients: sseClients.size }));
+app.locals.broadcastSSE = broadcastSSE
 
 setInterval(() => {
   if (sseClients.size > 0) {
-    broadcastSSE('heartbeat', { time: new Date().toISOString(), clients: sseClients.size });
+    broadcastSSE('heartbeat', { time: new Date().toISOString(), clients: sseClients.size })
   }
-}, 30000);
+}, 30000)
 
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  console.log(`🚀 Server running at http://localhost:${PORT}`)
+})
