@@ -170,7 +170,7 @@ async function getCurrentUser(req) {
   const auth = getAuthPayload(req);
 
   const result = await pool.query(
-    "SELECT id, name, email, address, latitude, longitude FROM users WHERE id = $1",
+    "SELECT id, name, email, address FROM users WHERE id = $1",
     [auth.id]
   );
 
@@ -201,7 +201,7 @@ function generatePenawaranId() {
 
 app.post("/register", async (req, res) => {
   try {
-    const { name, email, password, address, latitude, longitude } = req.body;
+    const { name, email, password, address } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -221,9 +221,9 @@ app.post("/register", async (req, res) => {
     const { hash, salt } = hashPassword(password);
 
     await pool.query(
-      `INSERT INTO users (name, email, password, salt, address, latitude, longitude)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [name, email, hash, salt, address || null, latitude || null, longitude || null]
+      `INSERT INTO users (name, email, password, salt, address)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [name, email, hash, salt, address || null]
     );
 
     return res.status(200).json({ message: "Registrasi berhasil" });
@@ -274,9 +274,7 @@ app.post("/login", async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        address: user.address,
-        latitude: user.latitude,
-        longitude: user.longitude
+        address: user.address
       },
       token
     });
@@ -291,7 +289,7 @@ app.get("/me", async (req, res) => {
     const auth = getAuthPayload(req);
 
     const result = await pool.query(
-      "SELECT id, name, email, address, latitude, longitude FROM users WHERE id = $1",
+      "SELECT id, name, email, address FROM users WHERE id = $1",
       [auth.id]
     );
 
@@ -319,8 +317,6 @@ app.get("/users", async (req, res) => {
          u.name,
          u.email,
          u.address,
-         u.latitude,
-         u.longitude,
          (
            SELECT m.isi_pesan
            FROM messages m

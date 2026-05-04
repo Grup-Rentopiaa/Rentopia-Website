@@ -3,7 +3,7 @@ import {
   getMeService,
   loginService,
   logoutService,
-  registerService
+  registerService,
 } from "../services/authService";
 
 const AuthContext = createContext(null);
@@ -30,7 +30,8 @@ function AuthProvider({ children }) {
   }
 
   async function register(values) {
-    return await registerService(values);
+    const data = await registerService(values);
+    return data;
   }
 
   async function logout() {
@@ -50,7 +51,7 @@ function AuthProvider({ children }) {
         login,
         register,
         logout,
-        checkAuth
+        checkAuth,
       }}
     >
       {children}

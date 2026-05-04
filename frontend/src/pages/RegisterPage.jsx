@@ -11,8 +11,6 @@ export default function RegisterPage() {
     email: "",
     password: "",
     address: "",
-    latitude: "",
-    longitude: "",
   });
 
   const [error, setError] = useState("");
@@ -26,7 +24,7 @@ export default function RegisterPage() {
 
   function validate() {
     if (!form.name || !form.email || !form.password) {
-      return "Semua field wajib diisi!";
+      return "Nama, email, dan password wajib diisi!";
     }
 
     if (!form.email.includes("@")) {
@@ -56,11 +54,8 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
         address: form.address || null,
-        latitude: form.latitude || null,
-        longitude: form.longitude || null,
       });
 
-      
       navigate("/login");
     } catch (err) {
       setError(err.message || "Register gagal");
@@ -104,24 +99,6 @@ export default function RegisterPage() {
           name="address"
           placeholder="Alamat"
           value={form.address}
-          onChange={handleChange}
-          className="auth-input-tight"
-        />
-
-        <input
-          type="text"
-          name="latitude"
-          placeholder="Latitude"
-          value={form.latitude}
-          onChange={handleChange}
-          className="auth-input-tight"
-        />
-
-        <input
-          type="text"
-          name="longitude"
-          placeholder="Longitude"
-          value={form.longitude}
           onChange={handleChange}
           className="auth-input-tight"
         />
