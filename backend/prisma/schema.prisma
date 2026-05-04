@@ -4,22 +4,28 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
+
 model Auth {
-  id Int @id @default(autoincrement())
-  user_id Int @unique
-  user Users @relation(fields: [user_id], references: [id])
-  password String
-  otp String?
+  id             Int       @id @default(autoincrement())
+  user_id        Int       @unique
+  user           Users     @relation(fields: [user_id], references: [id])
+  password       String
+  otp            String?
   otp_expired_at DateTime?
 }
+
 model Users {
-    id Int @id @default(autoincrement())
-    auth Auth?
-    username String
-    email String @unique
+  id            Int            @id @default(autoincrement())
+  auth          Auth?
+  username      String
+  email         String         @unique
+  items         Item[]
+  savedKeywords SavedKeyword[]
+  notifications Notification[]
 }
+
 model Visitor {
   id            Int      @id @default(autoincrement())
   visitor_id    String
@@ -31,4 +37,45 @@ model Visitor {
   screen_height Int?
   visited_at    String?
   created_at    DateTime @default(now())
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  items Item[]
+}
+
+model Item {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  price_per_day Decimal        @db.Decimal(10, 2)
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  created_at    DateTime       @default(now())
+  category      Category?      @relation(fields: [category_id], references: [id])
+  category_id   Int?
+  owner         Users?         @relation(fields: [owner_id], references: [id])
+  owner_id      Int?
+  notifications Notification[]
+}
+
+model SavedKeyword {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  keyword    String
+  created_at DateTime @default(now())
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  keyword    String
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  item_id    Int
+  item       Item     @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
