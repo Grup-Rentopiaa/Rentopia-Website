@@ -46,7 +46,13 @@ const verifyOtp = async (req, res) => {
     if (existingAuth.otp_expired_at < new Date()) {
         return res.status(400).json({message: 'Kode OTP sudah expired'})
     }
-    res.status(200).json({message: 'Verifikasi Sukses'})
+    const user = await prisma.users.findUnique({
+        where: { id: existingAuth.user_id }
+    })
+    res.status(200).json({ 
+        message: 'Verifikasi Sukses', 
+        user: { id: user.id, username: user.username, email: user.email } 
+    })
 }
 const forgotPassword = async (req, res) => {
     const { email } = req.body

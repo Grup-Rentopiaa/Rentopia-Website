@@ -11,6 +11,8 @@ export default function Navbar({ search, onSearchChange, notifications, category
   const inputRef       = useRef(null);
   const dropdownRef    = useRef(null);
   const sidebarRef     = useRef(null);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const username = user?.username || 'Pengguna';
 
   const unreadCount = (notifications || []).filter(n => !n.is_read).length;
 
@@ -88,7 +90,7 @@ export default function Navbar({ search, onSearchChange, notifications, category
                 <User size={24} />
               </div>
               <div>
-                <p className="font-bold text-lg leading-tight">Halo, Admin Rentopia!</p>
+                <p className="font-bold text-lg leading-tight">Halo, {username}!</p>
                 <p className="text-xs text-blue-100">Selamat datang di Rentopia</p>
               </div>
             </div>

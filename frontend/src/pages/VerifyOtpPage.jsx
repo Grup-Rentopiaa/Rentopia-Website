@@ -30,8 +30,9 @@ export default function VerifyOtpPage() {
     }
     const result = await verifyOtp(otp);
     if (result) {
+      if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
       setSuccess("Verifikasi berhasil! Mengalihkan...");
-      setTimeout(() => navigate("/login"), 1500);
+      setTimeout(() => navigate("/home"), 1500);
     }
   }
 
