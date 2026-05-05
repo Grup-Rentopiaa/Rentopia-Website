@@ -16,6 +16,14 @@ app.use('/api/auth', authRoutes)
 const trackingRoutes = require('./routes/tracking')
 app.use('/api/tracking', trackingRoutes)
 
+const itemRoutes = require('./routes/item')
+app.use('/api/items', itemRoutes)
+
+const keywordRoutes = require('./routes/keyword')
+app.use('/api/keywords', keywordRoutes)
+
+const notificationRoutes = require('./routes/notification')
+app.use('/api/notifications', notificationRoutes)
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`)
