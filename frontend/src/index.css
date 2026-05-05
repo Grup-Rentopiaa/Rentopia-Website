@@ -179,9 +179,6 @@ body {
     @apply flex-1 p-[10px] border border-[#ccc] rounded-[20px] outline-none focus:border-[#2196f3];
   }
 }
-/* =========================
-   OFFER (Penawaran)
-========================= */
 
 @layer components {
   .offer-overlay {
@@ -225,7 +222,7 @@ body {
   }
 }
 
-/* animation tetap */
+
 @keyframes popup {
   from {
     transform: scale(0.8);
