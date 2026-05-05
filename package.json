@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/Grup-Rentopiaa/titha-web/issues"
   },
-  "homepage": "https://github.com/Grup-Rentopiaa/titha-web#readme"
+  "homepage": "https://github.com/Grup-Rentopiaa/titha-web#readme",
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.4"
+  }
 }
