@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {findByEmail, createUser, createAuth, findAuthByUserId,  saveOtp, findAuthByOtp, updatePassword} = require('../models/user')
+const {findByEmail, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword, findById} = require('../models/user')
 const sendEmail = require('../utils/sendEmail')
 
 const signup = async (req, res) => {
@@ -35,7 +35,16 @@ const login = async (req, res) => {
     const expiredAt = new Date(Date.now() + 5 * 60 * 1000)
     await saveOtp(existingUser.id, otp, expiredAt)
     await sendEmail(existingUser.email, otp)
-    res.status(200).json({message: 'login berhasil'})
+    // Tambah token di body juga untuk mobile
+    res.status(200).json({
+        message: 'login berhasil, cek email untuk OTP',
+        token,
+        user: {
+            id: existingUser.id,
+            username: existingUser.username,
+            email: existingUser.email
+        }
+    })
 }
 const verifyOtp = async (req, res) => {
     const {otp} = req.body
@@ -92,6 +101,28 @@ const resetPassword = async (req, res) => {
     await updatePassword(decoded.userId, hashedPassword)
     res.status(200).json({ message: 'Password berhasil diubah' })
 }
+const getMe = async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Token tidak ditemukan' })
+        }
+        const token = authHeader.split(' ')[1]
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const user = await findById(decoded.userId)
+        if (!user) {
+            return res.status(404).json({ message: 'User tidak ditemukan' })
+        }
+        res.status(200).json({
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
+        })
+    } catch (err) {
+        return res.status(401).json({ message: 'Token tidak valid' })
+    }
+}
 
-
-module.exports = {signup, login, verifyOtp, forgotPassword, verifyOtpForgot, resetPassword}
+module.exports = {signup, login, verifyOtp, forgotPassword, verifyOtpForgot, resetPassword, getMe}

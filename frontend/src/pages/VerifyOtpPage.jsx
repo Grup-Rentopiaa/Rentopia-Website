@@ -29,6 +29,7 @@ export default function VerifyOtpPage() {
       return;
     }
     const result = await verifyOtp(otp);
+    console.log('OTP result:', result); // add this
     if (result) {
       if (result.user) localStorage.setItem('user', JSON.stringify(result.user));
       setSuccess("Verifikasi berhasil! Mengalihkan...");
