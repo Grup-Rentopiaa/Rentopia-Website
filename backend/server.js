@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const http = require("http");
 const https = require("https");
 const cors = require("cors");
@@ -51,11 +52,11 @@ const httpsServer = https.createServer(
   app
 );
 
-const wss = new WebSocket.Server({ port: 3002 });
+const wss = new WebSocket.Server({ port: process.env.WS_PORT || 3002 });
 
 wss.on("connection", (ws, req) => {
   try {
-    const fullUrl = new URL(req.url, "ws://127.0.0.1:3002");
+    const fullUrl = new URL(req.url, `ws://127.0.0.1:${process.env.WS_PORT || 3002}`);
     const token = fullUrl.searchParams.get("token");
 
     if (!token) {
@@ -109,12 +110,12 @@ wss.on("connection", (ws, req) => {
   }
 });
 
-httpServer.listen(3001, () => {
-  console.log("Server is running on http://localhost:3001");
+httpServer.listen(process.env.HTTP_PORT || 3001, () => {
+  console.log(`Server is running on http://localhost:${process.env.HTTP_PORT || 3001}`);
 });
 
-httpsServer.listen(3443, () => {
-  console.log("Server is running on https://localhost:3443");
+httpsServer.listen(process.env.HTTPS_PORT || 3443, () => {
+  console.log(`Server is running on https://localhost:${process.env.HTTPS_PORT || 3443}`);
 });
 
 process.on("uncaughtException", (err) => {
