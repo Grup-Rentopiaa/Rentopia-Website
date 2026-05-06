@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { uploadProduct } from '../services/api';
 import { getVisitorId } from '../utils/visitor';
 
 const CATEGORIES = [
@@ -71,9 +71,7 @@ function UploadPage() {
       formData.append('visitorId', visitorId);
       photos.forEach((photo) => formData.append('photos', photo));
 
-      await axios.post('/api/products', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await uploadProduct(formData);
 
       setSuccess('Produk berhasil diupload! 🎉');
       setTimeout(() => { window.location.href = '/'; }, 1500);
@@ -85,27 +83,27 @@ function UploadPage() {
   }
 
   return (
-    <div className="page">
-      <div style={{ maxWidth: 600, margin: '0 auto' }}>
-        <div className="page-header">
-          <h1 className="page-title">📤 Upload Produk</h1>
+    <div className="py-8 px-6 max-w-[1200px] mx-auto">
+      <div className="max-w-[600px] mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-[22px] font-bold text-[#1a1a2e]">📤 Upload Produk</h1>
         </div>
 
-        {error && <div className="error-msg">{error}</div>}
-        {success && <div className="success-msg">{success}</div>}
+        {error && <div className="bg-red-50 text-red-600 px-3.5 py-2.5 rounded-lg text-sm mb-4">{error}</div>}
+        {success && <div className="bg-green-50 text-green-600 px-3.5 py-2.5 rounded-lg text-sm mb-4">{success}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Foto Produk (maks. 5 foto)</label>
+          <div className="mb-4.5">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Foto Produk (maks. 5 foto)</label>
 
             {previews.length > 0 && (
-              <div className="photo-preview-grid">
+              <div className="grid grid-cols-5 gap-2.5 mb-4.5">
                 {previews.map((url, i) => (
-                  <div key={i} className="photo-preview-item">
-                    <img src={url} alt={`preview-${i}`} />
+                  <div key={i} className="relative rounded-lg overflow-hidden aspect-square">
+                    <img src={url} alt={`preview-${i}`} className="w-full h-full object-cover" />
                     <button
                       type="button"
-                      className="photo-remove-btn"
+                      className="absolute top-1 right-1 bg-black/60 text-white border-none rounded-full w-[22px] h-[22px] cursor-pointer text-xs flex items-center justify-center"
                       onClick={() => removePhoto(i)}
                     >
                       ✕
@@ -116,29 +114,30 @@ function UploadPage() {
             )}
 
             {photos.length < 5 && (
-              <label className="upload-photo-area">
+              <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer transition-colors bg-gray-50 hover:border-blue-600 hover:bg-blue-50 mb-4.5 block">
                 <input
                   type="file"
                   accept="image/*"
                   multiple
-                  style={{ display: 'none' }}
+                  className="hidden"
                   onChange={handlePhotoChange}
                 />
-                <span style={{ fontSize: 32 }}>📷</span>
-                <p style={{ marginTop: 8, fontSize: 14, color: '#6b7280' }}>
+                <span className="text-[32px]">📷</span>
+                <p className="mt-2 text-sm text-gray-500">
                   Klik untuk pilih foto ({photos.length}/5)
                 </p>
               </label>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="category">Kategori</label>
+          <div className="mb-4.5">
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1.5">Kategori</label>
             <select
               id="category"
               name="category"
               value={form.category}
               onChange={handleChange}
+              className="w-full px-3.5 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans bg-white outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10"
               required
             >
               <option value="">-- Pilih Kategori --</option>
@@ -148,8 +147,8 @@ function UploadPage() {
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="name">Nama Produk</label>
+          <div className="mb-4.5">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">Nama Produk</label>
             <input
               id="name"
               type="text"
@@ -157,12 +156,13 @@ function UploadPage() {
               placeholder="Contoh: Kamera DSLR Canon 700D"
               value={form.name}
               onChange={handleChange}
+              className="w-full px-3.5 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans bg-white outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="price">Harga Sewa per Hari (Rp)</label>
+          <div className="mb-4.5">
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1.5">Harga Sewa per Hari (Rp)</label>
             <input
               id="price"
               type="number"
@@ -171,12 +171,13 @@ function UploadPage() {
               value={form.price}
               onChange={handleChange}
               min={0}
+              className="w-full px-3.5 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans bg-white outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="location">Lokasi</label>
+          <div className="mb-4.5">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1.5">Lokasi</label>
             <input
               id="location"
               type="text"
@@ -184,12 +185,13 @@ function UploadPage() {
               placeholder="Contoh: Bandung, Jawa Barat"
               value={form.location}
               onChange={handleChange}
+              className="w-full px-3.5 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans bg-white outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10"
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Deskripsi Produk</label>
+          <div className="mb-4.5">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">Deskripsi Produk</label>
             <textarea
               id="description"
               name="description"
@@ -197,14 +199,14 @@ function UploadPage() {
               value={form.description}
               onChange={handleChange}
               rows={4}
+              className="w-full px-3.5 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans bg-white outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10 resize-y min-h-[100px]"
             />
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary btn-full"
+            className="w-full flex items-center justify-center gap-2 px-5 py-3.5 mt-2 bg-[#1d6bcf] text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-colors hover:bg-[#155db8] disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={loading}
-            style={{ marginTop: 8, padding: '14px' }}
           >
             {loading ? 'Mengupload...' : '📤 Upload Produk'}
           </button>

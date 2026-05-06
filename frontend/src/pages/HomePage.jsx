@@ -1,156 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { getProducts, getLikedProducts, toggleLike, getProductDetail } from '../services/api';
+import ProductCard from '../components/ProductCard';
+import ProductModal from '../components/ProductModal';
 import { getVisitorId } from '../utils/visitor';
-
-const IMG_BASE = 'http://localhost:5000/uploads/';
-
-function formatRupiah(num) {
-  return 'Rp ' + Number(num).toLocaleString('id-ID');
-}
-
-function ProductCard({ product, onLikeToggle, isLiked, onCardClick }) {
-  return (
-    <div className="product-card" onClick={() => onCardClick(product)}>
-      {product.first_photo ? (
-        <img
-          className="product-card-img"
-          src={IMG_BASE + product.first_photo}
-          alt={product.name}
-        />
-      ) : (
-        <div className="product-card-img-placeholder">📦</div>
-      )}
-
-      <div className="product-card-body">
-        <div className="product-card-name">{product.name}</div>
-        <div className="product-card-price">{formatRupiah(product.price)}/hari</div>
-        <div className="product-card-location">📍 {product.location}</div>
-
-        <div style={{ 
-          fontSize: '11px', 
-          fontWeight: 'bold', 
-          marginBottom: '8px',
-          color: (product.status === 'tidak tersedia' || product.status === 'sudah disewa') ? '#dc2626' : '#16a34a'        }}>
-          ● {(product.status === 'tidak tersedia' || product.status === 'sudah disewa') ? 'Sudah Disewa' : 'Tersedia'}        </div>
-
-        <span className="badge">{product.category}</span>
-
-        <div className="product-card-footer">
-          <span style={{ fontSize: '12px', color: '#9ca3af' }}>
-            👁 {product.view_count} dilihat
-          </span>
-          <button
-            className={`like-btn ${isLiked ? 'liked' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onLikeToggle(product.id);
-            }}
-          >
-            {isLiked ? '❤️' : '🤍'} {product.like_count}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductModal({ product, isLiked, onLikeToggle, onClose }) {
-  const [photoIndex, setPhotoIndex] = useState(0);
-
-  if (!product) return null;
-
-  const photos = product.photos || [];
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3 style={{ fontWeight: 600, fontSize: '16px' }}>{product.name}</h3>
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          {photos.length > 0 ? (
-            <>
-              <div className="photo-slider">
-                <img src={IMG_BASE + photos[photoIndex]} alt={product.name} />
-              </div>
-              {photos.length > 1 && (
-                <div className="photo-nav">
-                  {photos.map((_, i) => (
-                    <button
-                      key={i}
-                      className={`photo-dot ${i === photoIndex ? 'active' : ''}`}
-                      onClick={() => setPhotoIndex(i)}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div
-              style={{
-                height: 200,
-                background: '#f3f4f6',
-                borderRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 48,
-                marginBottom: 16,
-              }}
-            >
-              📦
-            </div>
-          )}
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#1d6bcf' }}>
-              {formatRupiah(product.price)}/hari
-            </span>
-            <button
-              className={`like-btn ${isLiked ? 'liked' : ''}`}
-              onClick={() => onLikeToggle(product.id)}
-              style={{ fontSize: 16 }}
-            >
-              {isLiked ? '❤️' : '🤍'} Suka
-            </button>
-          </div>
-
-          <div style={{ marginBottom: 12 }}>
-            <span style={{
-              padding: '4px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              backgroundColor: product.status === 'tersedia' ? '#dcfce7' : '#fee2e2',
-              color: product.status === 'tersedia' ? '#166534' : '#991b1b',
-              border: `1px solid ${product.status === 'tersedia' ? '#bbf7d0' : '#fecaca'}`
-           }}>
-             {product.status === 'tersedia' ? '🟢 Tersedia' : '🔴 Sudah Disewa'}
-            </span>
-          </div>
-
-          <div style={{ marginBottom: 8 }}>
-            <span className="badge">{product.category}</span>
-          </div>
-
-          <p style={{ fontSize: 13, color: '#6b7280', margin: '8px 0' }}>
-            📍 {product.location}
-          </p>
-          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 12 }}>
-            👁 {product.view_count} dilihat • ❤️ {product.like_count} suka
-          </p>
-
-          {product.description && (
-            <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.6 }}>
-              {product.description}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HomePage() {
   const [products, setProducts] = useState([]);
@@ -164,7 +16,7 @@ function HomePage() {
     setLoading(true);
     try {
       const params = search ? { search } : {};
-      const res = await axios.get('/api/products', { params });
+      const res = await getProducts(params);
       setProducts(res.data);
     } catch (err) {
       console.error('Gagal ambil produk:', err);
@@ -176,7 +28,7 @@ function HomePage() {
   const fetchLikes = useCallback(async () => {
     try {
       const visitorId = getVisitorId();
-      const res = await axios.get('/api/likes', { params: { visitorId } });
+      const res = await getLikedProducts({ visitorId });
       setLikedIds(new Set(res.data.map((p) => p.id)));
     } catch (err) {
       console.error('Gagal ambil likes:', err);
@@ -191,7 +43,7 @@ function HomePage() {
   async function handleLikeToggle(productId) {
     try {
       const visitorId = getVisitorId();
-      const res = await axios.post(`/api/likes/${productId}`, { visitorId });
+      const res = await toggleLike(productId, { visitorId });
       setLikedIds((prev) => {
         const next = new Set(prev);
         if (res.data.liked) {
@@ -216,7 +68,7 @@ function HomePage() {
   async function handleCardClick(product) {
     try {
       const visitorId = getVisitorId();
-      const res = await axios.get(`/api/products/${product.id}`, { params: { visitorId } });
+      const res = await getProductDetail(product.id, { visitorId });
       setSelectedProduct(res.data);
     } catch (err) {
       setSelectedProduct(product);
@@ -229,27 +81,28 @@ function HomePage() {
   }
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1 className="page-title">🏠 Semua Produk Sewa</h1>
-        <a href="/upload.html" className="btn btn-primary">
+    <div className="py-8 px-6 max-w-[1200px] mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-[22px] font-bold text-[#1a1a2e]">🏠 Semua Produk Sewa</h1>
+        <a href="/upload" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer transition-all border-none font-sans bg-[#1d6bcf] text-white hover:bg-[#155db8] no-underline">
           📤 Upload Produk
         </a>
       </div>
 
-      <form className="search-bar" onSubmit={handleSearch}>
+      <form className="flex gap-2 mb-1" onSubmit={handleSearch}>
         <input
           type="text"
           placeholder="Cari produk (nama atau kategori)..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
+          className="flex-1 px-4 py-2.5 border-[1.5px] border-gray-300 rounded-lg text-sm font-sans outline-none transition-colors focus:border-[#1d6bcf] focus:ring-[3px] focus:ring-[#1d6bcf]/10"
         />
-        <button type="submit">🔍 Cari</button>
+        <button type="submit" className="px-5 py-2.5 bg-[#1d6bcf] text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-colors hover:bg-[#155db8]">🔍 Cari</button>
         {search && (
           <button
             type="button"
             onClick={() => { setSearch(''); setSearchInput(''); }}
-            style={{ background: '#6b7280' }}
+            className="px-5 py-2.5 bg-gray-500 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-colors hover:bg-gray-600"
           >
             ✕ Reset
           </button>
@@ -257,20 +110,20 @@ function HomePage() {
       </form>
 
       {search && (
-        <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>
+        <p className="text-[13px] text-gray-500 mb-2">
           Hasil pencarian: "{search}"
         </p>
       )}
 
       {loading ? (
-        <div className="spinner">Memuat produk...</div>
+        <div className="text-center p-15 text-gray-500 text-sm">Memuat produk...</div>
       ) : products.length === 0 ? (
-        <div className="empty-state">
-          <span>📦</span>
-          <p>{search ? 'Produk tidak ditemukan' : 'Belum ada produk. Jadilah yang pertama upload!'}</p>
+        <div className="text-center py-15 px-6 text-gray-400">
+          <span className="text-5xl block mb-3">📦</span>
+          <p className="text-base">{search ? 'Produk tidak ditemukan' : 'Belum ada produk. Jadilah yang pertama upload!'}</p>
         </div>
       ) : (
-        <div className="product-grid">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5 mt-6">
           {products.map((product) => (
             <ProductCard
               key={product.id}
