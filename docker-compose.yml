@@ -48,8 +48,12 @@ services:
     restart: unless-stopped
     ports:
       - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api/auth
+      - VITE_TRACKING_URL=http://localhost:3000/api/tracking/track-visitor
     depends_on:
-      - backend
+      backend:
+        condition: service_started
 
 volumes:
   postgres_data:
