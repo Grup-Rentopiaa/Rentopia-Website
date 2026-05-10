@@ -28,7 +28,11 @@ export default function LoginPage() {
       return;
     }
     const result = await login({ email: values.email, password: values.password });
-    if (result) navigate("/verify-otp", { state: { email: values.email, from: "login" } });
+    if (result) {
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+      navigate("/home");
+    }
   }
 
   return (

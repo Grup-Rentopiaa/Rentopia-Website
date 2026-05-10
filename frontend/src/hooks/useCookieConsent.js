@@ -13,9 +13,10 @@ function getCookie(name) {
 }
 
 async function trackVisitor() {
-  const consent = localStorage.getItem("cookieConsent");
-  if (consent !== "accepted") return;
+  const consentStatus = localStorage.getItem("cookieConsent");
+  if (consentStatus !== "accepted") return;
 
+  const preferences = JSON.parse(localStorage.getItem("cookiePreferences") || "{}");
   let visitorId = localStorage.getItem("landingVisitorId") || getCookie("landingVisitorId");
 
   if (!visitorId) {
@@ -34,7 +35,7 @@ async function trackVisitor() {
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
     visitedAt: new Date().toISOString(),
-    cookieConsent: getCookie("cookieConsent"),
+    consent: preferences
   };
 
   localStorage.setItem("landingLastVisit", JSON.stringify(visitorData));
@@ -66,8 +67,12 @@ export function useCookieConsent() {
     trackVisitor();
   }, []);
 
-  function acceptCookie() {
+  function acceptCookie(preferences) {
+    // Default to all allowed if no preferences provided (Allow All button)
+    const finalPrefs = preferences || { necessary: true, prefs: true, stats: true, marketing: true };
+    
     localStorage.setItem("cookieConsent", "accepted");
+    localStorage.setItem("cookiePreferences", JSON.stringify(finalPrefs));
     setCookie("cookieConsent", "accepted", 7);
     setShowCookie(false);
     trackVisitor();

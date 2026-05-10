@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, MessageCircle, X, Clock, Bookmark, Camera, Menu, User, Home, Upload, LogOut } from 'lucide-react';
+import { Search, Bell, MessageCircle, X, Clock, Bookmark, Menu, User, Home, Upload, LogOut, Heart, Gavel } from 'lucide-react';
 import apiFetch from '../api';
 import { CATEGORIES } from './Categories';
 
@@ -106,12 +106,17 @@ export default function Navbar({ search, onSearchChange, notifications, category
               <div className="space-y-1">
                 {[
                   { id: 'home',   label: 'Beranda', Icon: Home },
-                  { id: 'upload', label: 'Upload Produk', Icon: Upload },
+                  { id: 'upload', label: 'Sediakan Barang', Icon: Upload },
+                  { id: 'chat', label: 'Pesan / Chat', Icon: MessageCircle },
+                  { id: 'offer', label: 'Penawaran Saya', Icon: Gavel },
                   { id: 'profil', label: 'Profil Saya', Icon: User },
                 ].map(({ id, label, Icon }) => (
                   <button
                     key={id}
-                    onClick={() => { setActivePage(id); setShowSidebar(false); }}
+                    onClick={() => { 
+                      if (id === 'chat') window.location.href = '/chat';
+                      else { setActivePage(id); setShowSidebar(false); }
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors
                       ${activePage === id ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50'}
                     `}
@@ -203,13 +208,6 @@ export default function Navbar({ search, onSearchChange, notifications, category
                 </button>
               )}
               <button
-                className="px-3 border-l border-gray-200 text-gray-400 hover:text-blue-600 transition-colors bg-transparent"
-                title="Cari dengan Gambar"
-                onClick={() => alert('Fitur pencarian gambar akan segera hadir!')}
-              >
-                <Camera size={18} />
-              </button>
-              <button
                 onClick={() => setShowDropdown(false)}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 text-sm font-semibold transition-colors flex-shrink-0 flex items-center gap-1.5"
               >
@@ -273,6 +271,9 @@ export default function Navbar({ search, onSearchChange, notifications, category
 
           {/* Right icons */}
           <div className="flex items-center gap-1 flex-shrink-0">
+            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600" title="Wishlist">
+              <Heart size={22} />
+            </button>
             <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600" title="Notifikasi">
               <Bell size={22} />
               {unreadCount > 0 && (
@@ -281,8 +282,19 @@ export default function Navbar({ search, onSearchChange, notifications, category
                 </span>
               )}
             </button>
-            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600" title="Chat">
+            <button 
+              onClick={() => window.location.href = '/chat'}
+              className={`relative p-2 rounded-xl transition-colors ${activePage === 'chat' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`} 
+              title="Chat"
+            >
               <MessageCircle size={22} />
+            </button>
+            <button 
+              onClick={() => setActivePage('profil')}
+              className={`p-2 rounded-xl transition-colors ${activePage === 'profil' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`} 
+              title="Profil"
+            >
+              <User size={22} />
             </button>
           </div>
         </div>

@@ -12,6 +12,8 @@ import Banner from '../components/Banner';
 import HomepageFooter from '../components/HomepageFooter';
 import UploadPage from './UploadPage';
 import ProfilPage from './ProfilPage';
+import ChatPage from './ChatPage';
+import OfferPage from './OfferPage';
 
 export default function HomePage() {
   const [activePage, setActivePage] = useState('home');
@@ -117,6 +119,16 @@ export default function HomePage() {
         {activePage === 'profil' && (
           <div className="bg-gray-50 min-h-screen">
             <ProfilPage />
+          </div>
+        )}
+        {activePage === 'chat' && (
+          <div className="bg-gray-50 min-h-screen">
+            <ChatPage setActivePage={setActivePage} />
+          </div>
+        )}
+        {activePage === 'offer' && (
+          <div className="bg-gray-50 min-h-screen">
+            <OfferPage setActivePage={setActivePage} />
           </div>
         )}
       </div>

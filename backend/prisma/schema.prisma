@@ -17,26 +17,33 @@ model Auth {
 }
 
 model Users {
-  id            Int            @id @default(autoincrement())
-  auth          Auth?
-  username      String
-  email         String         @unique
-  items         Item[]
-  savedKeywords SavedKeyword[]
-  notifications Notification[]
+  id               Int            @id @default(autoincrement())
+  auth             Auth?
+  username         String
+  email            String         @unique
+  items            Item[]
+  savedKeywords    SavedKeyword[]
+  notifications    Notification[]
+  sentMessages     Message[]      @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  penawaran        Penawaran[]
 }
 
 model Visitor {
-  id            Int      @id @default(autoincrement())
-  visitor_id    String
-  page          String
-  path          String?
-  browser       String?
-  language      String?
-  screen_width  Int?
-  screen_height Int?
-  visited_at    String?
-  created_at    DateTime @default(now())
+  id                  Int      @id @default(autoincrement())
+  visitor_id          String
+  page                String
+  path                String?
+  browser             String?
+  language            String?
+  screen_width        Int?
+  screen_height       Int?
+  visited_at          String?
+  consent_necessary   Boolean  @default(true)
+  consent_preferences Boolean  @default(false)
+  consent_statistics Boolean  @default(false)
+  consent_marketing   Boolean  @default(false)
+  created_at          DateTime @default(now())
 }
 
 model Category {
@@ -59,6 +66,27 @@ model Item {
   owner         Users?         @relation(fields: [owner_id], references: [id])
   owner_id      Int?
   notifications Notification[]
+  penawaran     Penawaran[]
+}
+
+model Message {
+  pesan_id    Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  sender      Users    @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  isi_pesan   String
+  waktu       DateTime @default(now())
+}
+
+model Penawaran {
+  penawaran_id String   @id
+  produk_id    Int?
+  user_id      Int
+  user         Users    @relation(fields: [user_id], references: [id])
+  item         Item?    @relation(fields: [produk_id], references: [id])
+  harga        Int
+  waktu        DateTime @default(now())
 }
 
 model SavedKeyword {

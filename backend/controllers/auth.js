@@ -32,13 +32,10 @@ const login = async (req, res) => {
     }
     const token = jwt.sign({ userId: existingUser.id}, process.env.JWT_SECRET, {expiresIn: '1d'})
     res.cookie('token', token, {httpOnly: true, secure: true})
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    const expiredAt = new Date(Date.now() + 5 * 60 * 1000)
-    await saveOtp(existingUser.id, otp, expiredAt)
-    await sendEmail(existingUser.email, otp)
+    
     // Tambah token di body juga untuk mobile
     res.status(200).json({
-        message: 'login berhasil, cek email untuk OTP',
+        message: 'login berhasil',
         token,
         user: {
             id: existingUser.id,

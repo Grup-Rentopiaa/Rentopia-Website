@@ -1,6 +1,6 @@
 const prisma = require('../db')
 
-const saveVisitor = async (visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt) => {
+const saveVisitor = async (visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent) => {
     return await prisma.visitor.create({
         data: {
             visitor_id: visitorId,
@@ -10,7 +10,11 @@ const saveVisitor = async (visitorId, page, path, browser, language, screenWidth
             language,
             screen_width: screenWidth,
             screen_height: screenHeight,
-            visited_at: visitedAt
+            visited_at: visitedAt,
+            consent_necessary: consent?.necessary ?? true,
+            consent_preferences: consent?.prefs ?? false,
+            consent_statistics: consent?.stats ?? false,
+            consent_marketing: consent?.marketing ?? false
         }
     })
 }

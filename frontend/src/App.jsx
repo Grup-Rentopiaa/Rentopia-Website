@@ -7,6 +7,8 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import VerifyOtpForgotPage from "./pages/VerifyOtpForgotPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/HomePage";
+import ChatPage from "./pages/ChatPage";
+import OfferPage from "./pages/OfferPage";
 import "./index.css";
 
 export default function App() {
@@ -24,6 +26,8 @@ export default function App() {
 
         {/* Main App */}
         <Route path="/home" element={<HomePage />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/offer" element={<OfferPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
