@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
 import { useChat } from "../hooks/useChat";
 import ChatList from "../components/ChatList";
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
 
 export default function ChatPage() {
-  const { user, loading } = useAuth();
+  const user = { id: 1, name: "Guest User" };
+  const loading = false;
   const [text, setText] = useState("");
 
   const {
@@ -26,13 +26,7 @@ export default function ChatPage() {
     return await sendMessage(textMessage);
   }
 
-  if (loading) {
-    return <div className="p-5">Loading...</div>;
-  }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
 
   return (
     <div className="chat-page">

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
+
 import { sendOfferService } from "../services/offerService";
 
 export default function OfferPage() {
-  const { user, loading } = useAuth();
+  const user = { id: 1, name: "Guest User" };
+  const loading = false;
   const navigate = useNavigate();
 
   const [harga, setHarga] = useState("");
@@ -39,8 +40,7 @@ export default function OfferPage() {
     }
   }
 
-  if (loading) return <div className="p-5">Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
+
 
   return (
     <div className="offer-overlay">

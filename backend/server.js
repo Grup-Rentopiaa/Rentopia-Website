@@ -10,7 +10,7 @@ const selfsigned = require("selfsigned");
 const { allowedOrigins } = require("./src/config");
 const { wsClients, verifyToken } = require("./src/utils");
 
-const authRoutes = require("./src/routes/auth");
+
 const chatRoutes = require("./src/routes/chat");
 const penawaranRoutes = require("./src/routes/penawaran");
 
@@ -35,7 +35,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/", authRoutes);
+
 app.use("/", chatRoutes);
 app.use("/", penawaranRoutes);
 
@@ -52,71 +52,76 @@ const httpsServer = https.createServer(
   app
 );
 
-const wss = new WebSocket.Server({ port: process.env.WS_PORT || 3002 });
 
-wss.on("connection", (ws, req) => {
-  try {
-    const fullUrl = new URL(req.url, `ws://127.0.0.1:${process.env.WS_PORT || 3002}`);
-    const token = fullUrl.searchParams.get("token");
+if (require.main === module) {
+  const wss = new WebSocket.Server({ port: process.env.WS_PORT || 3002 });
 
-    if (!token) {
-      ws.close();
-      return;
-    }
+  wss.on("connection", (ws, req) => {
+    try {
+      const fullUrl = new URL(req.url, `ws://127.0.0.1:${process.env.WS_PORT || 3002}`);
+      const token = fullUrl.searchParams.get("token");
 
-    const payload = verifyToken(token);
-    const myId = Number(payload.id);
-
-    wsClients.set(myId, ws);
-    console.log("WS connected user:", myId);
-
-    ws.on("message", async (rawMessage) => {
-      try {
-        const data = JSON.parse(rawMessage.toString());
-        if (data.type === "init") return;
-
-        const from = Number(data.from);
-        const to = Number(data.to);
-        const text = String(data.text || "").trim();
-
-        if (!from || !to || !text || from !== myId) return;
-
-        const payloadMessage = {
-          from,
-          to,
-          text,
-          time: new Date().toISOString()
-        };
-
-        const clientWs = wsClients.get(to);
-        if (clientWs && clientWs.readyState === WebSocket.OPEN) {
-          clientWs.send(JSON.stringify(payloadMessage));
-        }
-      } catch (err) {
-        console.error("WS MESSAGE ERROR:", err);
+      if (!token) {
+        ws.close();
+        return;
       }
-    });
 
-    ws.on("close", () => {
-      wsClients.delete(myId);
-    });
+      const payload = verifyToken(token);
+      const myId = Number(payload.id);
 
-    ws.on("error", (err) => {
-      console.error("WS ERROR:", err);
-    });
-  } catch (err) {
-    console.error("WS CONNECTION ERROR:", err);
-    ws.close();
-  }
-});
+      wsClients.set(myId, ws);
+      console.log("WS connected user:", myId);
 
-httpServer.listen(process.env.HTTP_PORT || 3001, () => {
-  console.log(`Server is running on http://localhost:${process.env.HTTP_PORT || 3001}`);
-});
+      ws.on("message", async (rawMessage) => {
+        try {
+          const data = JSON.parse(rawMessage.toString());
+          if (data.type === "init") return;
 
-httpsServer.listen(process.env.HTTPS_PORT || 3443, () => {
-  console.log(`Server is running on https://localhost:${process.env.HTTPS_PORT || 3443}`);
-});
+          const from = Number(data.from);
+          const to = Number(data.to);
+          const text = String(data.text || "").trim();
+
+          if (!from || !to || !text || from !== myId) return;
+
+          const payloadMessage = {
+            from,
+            to,
+            text,
+            time: new Date().toISOString()
+          };
+
+          const clientWs = wsClients.get(to);
+          if (clientWs && clientWs.readyState === WebSocket.OPEN) {
+            clientWs.send(JSON.stringify(payloadMessage));
+          }
+        } catch (err) {
+          console.error("WS MESSAGE ERROR:", err);
+        }
+      });
+
+      ws.on("close", () => {
+        wsClients.delete(myId);
+      });
+
+      ws.on("error", (err) => {
+        console.error("WS ERROR:", err);
+      });
+    } catch (err) {
+      console.error("WS CONNECTION ERROR:", err);
+      ws.close();
+    }
+  });
+
+  httpServer.listen(process.env.HTTP_PORT || 3001, () => {
+    console.log(`Server is running on http://localhost:${process.env.HTTP_PORT || 3001}`);
+  });
+
+  httpsServer.listen(process.env.HTTPS_PORT || 3443, () => {
+    console.log(`Server is running on https://localhost:${process.env.HTTPS_PORT || 3443}`);
+  });
+}
+
+module.exports = app;
 
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
