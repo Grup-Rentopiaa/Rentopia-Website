@@ -30,6 +30,7 @@ app.use('/api/tracking', trackingRoutes)
 
 const itemRoutes = require('./routes/item')
 app.use('/api/items', itemRoutes)
+app.use('/api/users/:userId/items', itemRoutes)
 
 const keywordRoutes = require('./routes/keyword')
 app.use('/api/keywords', keywordRoutes)

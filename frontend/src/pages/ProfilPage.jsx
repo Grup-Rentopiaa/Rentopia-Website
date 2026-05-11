@@ -1,15 +1,18 @@
 import { useUser }     from '../hooks/useUser'
-import { useListings } from '../hooks/useListings'
+import { useItems }    from '../hooks/useItems'
 import { useRentals }  from '../hooks/useRentals'
-import ListingCard from './ListingCard'
-import RentalCard  from './RentalCard'
-import { useState } from 'react'
+import ItemCard        from './ItemCard'
+import RentalCard      from './RentalCard'
+import { useState }    from 'react'
+import { useNavigate } from 'react-router-dom'
+import { LogOut }      from 'lucide-react'
 
-export default function ProfilePage({ onNavigate }) {
+export default function ProfilePage() {
+  const navigate = useNavigate()
   const { user, loading, userId } = useUser()
-  const { listings } = useListings(userId)
+  const { items }    = useItems(userId)
   const { rentals }  = useRentals(userId)
-  const [tab, setTab] = useState('listings')
+  const [tab, setTab] = useState('items')
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -19,6 +22,11 @@ export default function ProfilePage({ onNavigate }) {
 
   const initials = (user?.name || user?.username || '?')[0].toUpperCase()
 
+  function handleLogout() {
+    localStorage.removeItem('token')
+    navigate('/login')
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
 
@@ -26,21 +34,26 @@ export default function ProfilePage({ onNavigate }) {
       <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
           <button
-            onClick={() => onNavigate('dashboard')}
+            onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors"
           >
             ← Kembali
           </button>
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 font-black text-white">R</div>
-            <span className="text-xl font-black tracking-tight text-blue-600">Rentopia.</span>
+            <span className="text-xl font-black tracking-tight text-blue-600 cursor-pointer" onClick={() => navigate('/home')}>Rentopia.</span>
           </div>
-          <button
-            onClick={() => onNavigate('edit-profile')}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all"
-          >
-            Edit Profil
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/edit-profile')}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all hidden sm:block"
+            >
+              Edit Profil
+            </button>
+            <button onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors">
+              <LogOut size={16} /> Logout
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -86,7 +99,7 @@ export default function ProfilePage({ onNavigate }) {
             {/* Stats */}
             <div className="flex gap-6 rounded-2xl border border-slate-100 bg-slate-50 px-6 py-4 shadow-sm">
               <div className="text-center">
-                <p className="text-2xl font-black text-blue-600">{listings.length}</p>
+                <p className="text-2xl font-black text-blue-600">{items.length}</p>
                 <p className="text-xs font-semibold text-slate-500">Barang</p>
               </div>
               <div className="w-px bg-slate-200" />
@@ -113,12 +126,12 @@ export default function ProfilePage({ onNavigate }) {
       <div className="mx-auto max-w-screen-xl px-6 py-8">
         <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
           <button
-            onClick={() => setTab('listings')}
+            onClick={() => setTab('items')}
             className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${
-              tab === 'listings' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'
+              tab === 'items' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'
             }`}
           >
-            Barang Dijual ({listings.length})
+            Barang Dijual ({items.length})
           </button>
           <button
             onClick={() => setTab('rentals')}
@@ -130,12 +143,12 @@ export default function ProfilePage({ onNavigate }) {
           </button>
         </div>
 
-        {tab === 'listings' && (
-          listings.length === 0 ? (
+        {tab === 'items' && (
+          items.length === 0 ? (
             <p className="py-16 text-center text-sm text-slate-400">Belum ada barang.</p>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {listings.map(l => <ListingCard key={l.id} listing={l} />)}
+              {items.map(l => <ItemCard key={l.id} item={l} />)}
             </div>
           )
         )}

@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma')
+const { prisma } = require('../lib/prisma')
 
 const findAllKeywords = async () => {
   return await prisma.savedKeyword.findMany({ orderBy: { created_at: 'desc' } })

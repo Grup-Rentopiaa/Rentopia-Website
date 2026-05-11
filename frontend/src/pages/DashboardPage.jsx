@@ -1,32 +1,30 @@
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUser }     from '../hooks/useUser'
-import { useListings } from '../hooks/useListings'
+import { useItems }    from '../hooks/useItems'
 import { useRentals }  from '../hooks/useRentals'
-import ListingCard     from './ListingCard'
+import ItemCard        from './ItemCard'
 import RentalCard      from './RentalCard'
 import EditProfileForm from './EditProfileForm'
+import { LogOut }      from 'lucide-react'
 
+// Using TEMP_USER_ID until full auth context is integrated
 const TEMP_USER_ID = 1
 
 export default function DashboardPage() {
+  const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────
-  const [tab,             setTab]             = useState('listings')
-  const [showForm,        setShowForm]        = useState(false)
+  const [tab,             setTab]             = useState('items')
   const [showEditProfile, setShowEditProfile] = useState(false)
-  const [editItem,        setEditItem]        = useState(null)
-  const [form,            setForm]            = useState({ title: '', price: '', brand: '', category: '', status: 'available', image: null })
-  const [preview,         setPreview]         = useState(null)
-  const [saving,          setSaving]          = useState(false)
-  const [formError,       setFormError]       = useState(null)
   const [search,          setSearch]          = useState('')
   const [filterCat,       setFilterCat]       = useState('')
   const fileRef = useRef()
 
   // ── Hooks ──────────────────────────────────────────────────────
   const { user, updateUser } = useUser()
-  const { listings, loading: lLoad, create: createListing, update: updateListing, remove: removeListing, refresh: refreshListings } = useListings(TEMP_USER_ID)
-  const { rentals,  loading: rLoad } = useRentals(TEMP_USER_ID)
+  const { items, loading: iLoad, remove: removeItem } = useItems(TEMP_USER_ID)
+  const { rentals, loading: rLoad } = useRentals(TEMP_USER_ID)
 
   // ── Avatar ─────────────────────────────────────────────────────
   function handleAvatarClick() { fileRef.current.click() }
@@ -40,74 +38,23 @@ export default function DashboardPage() {
     reader.readAsDataURL(file)
   }
 
-  // ── Listing form ───────────────────────────────────────────────
-  function openCreate() {
-    setEditItem(null)
-    setForm({ title: '', price: '', brand: '', category: '', status: 'available', image: null })
-    setPreview(null)
-    setFormError(null)
-    setShowForm(true)
-  }
-
-  function openEdit(listing) {
-    setEditItem(listing)
-    setForm({
-      title:    listing.title,
-      price:    listing.price,
-      brand:    listing.brand,
-      category: listing.category || '',
-      status:   listing.status,
-      image:    listing.image,
-    })
-    setPreview(listing.image)
-    setFormError(null)
-    setShowForm(true)
-  }
-
-  function handleFormChange(e) {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  function handleFormImage(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      setPreview(ev.target.result)
-      setForm(prev => ({ ...prev, image: ev.target.result }))
-    }
-    reader.readAsDataURL(file)
-  }
-
-  async function handleFormSubmit(e) {
-    e.preventDefault()
-    if (!form.title || !form.price || !form.brand) return setFormError('Title, price, dan brand wajib diisi.')
-    setSaving(true)
-    try {
-      if (editItem) {
-        await updateListing(editItem.id, form)
-      } else {
-        await createListing(form)
-      }
-      await refreshListings()
-      setShowForm(false)
-    } catch (err) {
-      setFormError(err.message)
-    } finally { setSaving(false) }
+  // ── Logout ─────────────────────────────────────────────────────
+  function handleLogout() {
+    localStorage.removeItem('token')
+    navigate('/login')
   }
 
   // ── Filter & search ────────────────────────────────────────────
-  const filteredListings = listings.filter(l => {
+  const filteredItems = items.filter(l => {
     const matchSearch = l.title.toLowerCase().includes(search.toLowerCase()) ||
-                        l.brand.toLowerCase().includes(search.toLowerCase())
-    const matchCat    = filterCat ? l.category === filterCat : true
+                        (l.description || '').toLowerCase().includes(search.toLowerCase())
+    const matchCat    = filterCat ? l.category_name === filterCat : true
     return matchSearch && matchCat
   })
 
-  const categories = [...new Set(listings.map(l => l.category).filter(Boolean))]
+  const categories = [...new Set(items.map(l => l.category_name).filter(Boolean))]
 
   // ── Helpers ────────────────────────────────────────────────────
-  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100'
   const initials   = (user?.name || user?.username || '?')[0]?.toUpperCase()
 
   // ── Render ─────────────────────────────────────────────────────
@@ -119,9 +66,14 @@ export default function DashboardPage() {
         <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 font-black text-white">R</div>
-            <span className="text-xl font-black tracking-tight text-blue-600">Rentopia.</span>
+            <span className="text-xl font-black tracking-tight text-blue-600 cursor-pointer" onClick={() => navigate('/home')}>Rentopia.</span>
           </div>
-          <span className="text-sm font-semibold text-slate-500">Dashboard</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-semibold text-slate-500 hidden sm:block">Dashboard</span>
+            <button onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors">
+              <LogOut size={16} /> Logout
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -156,14 +108,14 @@ export default function DashboardPage() {
                 onClick={() => setShowEditProfile(prev => !prev)}
                 className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all"
               >
-                {showEditProfile ? '✕ Tutup' : '✏️ Edit Profil'}
+                {showEditProfile ? '✕ Batal Edit' : '✏️ Edit Profil'}
               </button>
             </div>
 
             {/* Stats */}
             <div className="flex gap-0 rounded-2xl border border-slate-100 bg-slate-50 overflow-hidden shadow-sm">
               {[
-                { label: 'Barang',    value: listings.length },
+                { label: 'Barang',    value: items.length },
                 { label: 'Disewa',    value: rentals.length  },
                 { label: 'Pengikut',  value: user?.followers ?? 0 },
                 { label: 'Mengikuti', value: user?.following ?? 0 },
@@ -200,9 +152,9 @@ export default function DashboardPage() {
 
         {/* TABS */}
         <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
-          <button onClick={() => setTab('listings')}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'listings' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'}`}>
-            Barang Saya ({listings.length})
+          <button onClick={() => setTab('items')}
+            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'items' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'}`}>
+            Barang Saya ({items.length})
           </button>
           <button onClick={() => setTab('rentals')}
             className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'rentals' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'}`}>
@@ -210,15 +162,15 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* LISTINGS TAB */}
-        {tab === 'listings' && (
+        {/* ITEMS TAB */}
+        {tab === 'items' && (
           <section>
 
             {/* Header */}
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-base font-extrabold text-slate-900">Daftar Barang</h2>
-              <button onClick={openCreate}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition-all">
+              <button onClick={() => navigate('/upload')}
+                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-sm">
                 + Tambah Barang
               </button>
             </div>
@@ -232,102 +184,47 @@ export default function DashboardPage() {
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Cari nama atau brand..."
+                  placeholder="Cari nama barang..."
                   className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               {categories.length > 0 && (
-  <select
-    value={filterCat}
-    onChange={e => setFilterCat(e.target.value)}
-    className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white text-slate-600 font-semibold"
-  >
-    <option value="">Semua Kategori</option>
-    {categories.map(cat => (
-      <option key={cat} value={cat}>{cat}</option>
-    ))}
-  </select>
-)}
+                <select
+                  value={filterCat}
+                  onChange={e => setFilterCat(e.target.value)}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white text-slate-600 font-semibold cursor-pointer"
+                >
+                  <option value="">Semua Kategori</option>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
-            {/* Form Tambah / Edit */}
-            {showForm && (
-              <form onSubmit={handleFormSubmit} className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-sm font-extrabold text-slate-900">
-                  {editItem ? 'Edit Barang' : 'Tambah Barang Baru'}
-                </h3>
-
-                {formError && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">{formError}</p>}
-
-                {/* Image Upload */}
-                <div onClick={() => document.getElementById('listing-img').click()}
-                  className="mb-4 flex h-40 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 transition-colors overflow-hidden">
-                  {preview ? (
-                    <img src={preview} className="h-full w-full object-cover" alt="preview" />
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-3xl">📷</p>
-                      <p className="text-xs text-slate-400 mt-1">Klik untuk upload foto produk</p>
-                    </div>
-                  )}
-                </div>
-                <input id="listing-img" type="file" accept="image/*" onChange={handleFormImage} className="hidden" />
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
-                    <label className="mb-1 block text-xs font-semibold text-slate-500">Nama Barang</label>
-                    <input name="title" value={form.title} onChange={handleFormChange} placeholder="Tas Gucci GG Marmont..." className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-500">Brand</label>
-                    <input name="brand" value={form.brand} onChange={handleFormChange} placeholder="Gucci, Nike..." className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-500">Kategori</label>
-                    <input name="category" value={form.category || ''} onChange={handleFormChange} placeholder="Tas, Kamera, Elektronik..." className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-500">Harga Sewa</label>
-                    <input name="price" value={form.price} onChange={handleFormChange} placeholder="Rp 75.000/hari" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-500">Status</label>
-                    <select name="status" value={form.status} onChange={handleFormChange} className={inputClass}>
-                      <option value="available">Tersedia</option>
-                      <option value="rented">Sedang Disewa</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-3">
-                  <button type="submit" disabled={saving}
-                    className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-40 transition-all">
-                    {saving ? 'Menyimpan...' : editItem ? 'Simpan Perubahan' : 'Simpan Barang'}
-                  </button>
-                  <button type="button" onClick={() => setShowForm(false)}
-                    className="px-4 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700">
-                    Batal
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Listing Cards */}
-            {lLoad ? (
+            {/* Item Cards */}
+            {iLoad ? (
               <p className="py-16 text-center text-sm text-slate-400">Memuat...</p>
-            ) : filteredListings.length === 0 && listings.length > 0 ? (
+            ) : filteredItems.length === 0 && items.length > 0 ? (
               <p className="py-16 text-center text-sm text-slate-400">Tidak ada barang yang cocok.</p>
-            ) : listings.length === 0 ? (
-              <p className="py-16 text-center text-sm text-slate-400">Belum ada barang. Klik "+ Tambah Barang" untuk mulai!</p>
+            ) : items.length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="text-sm text-slate-400 mb-4">Belum ada barang yang diupload.</p>
+                <button onClick={() => navigate('/upload')} className="rounded-xl bg-blue-50 border border-blue-200 text-blue-600 px-4 py-2 text-sm font-bold hover:bg-blue-100 transition-colors">Mulai Upload Produk</button>
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {filteredListings.map(l => (
-                  <ListingCard
-                    key={l.id}
-                    listing={l}
-                    onEdit={() => openEdit(l)}
-                    onDelete={() => removeListing(l.id)}
+                {filteredItems.map(item => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onEdit={() => navigate(`/upload?edit=${item.id}`)}
+                    onDelete={() => {
+                      if (confirm('Yakin ingin menghapus barang ini?')) {
+                        removeItem(item.id)
+                      }
+                    }}
                   />
                 ))}
               </div>

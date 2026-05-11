@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma')
+const { prisma } = require('../lib/prisma')
 
 const findAll = async (userId) => {
   return prisma.rental.findMany({

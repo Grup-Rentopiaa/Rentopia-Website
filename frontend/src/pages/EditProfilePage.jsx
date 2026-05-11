@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUser } from '../hooks/useUser'
 
-export default function EditProfilePage({ onNavigate }) {
+export default function EditProfilePage() {
+  const navigate = useNavigate()
   const { user, loading, updateUser } = useUser()
   const [saving,   setSaving]   = useState(false)
   const [success,  setSuccess]  = useState(false)
@@ -39,7 +41,7 @@ export default function EditProfilePage({ onNavigate }) {
     try {
       await updateUser(form)
       setSuccess(true)
-      setTimeout(() => onNavigate('profile'), 1000)
+      setTimeout(() => navigate('/profile'), 1000)
     } catch (err) {
       setError(err.message)
     } finally { setSaving(false) }
@@ -64,7 +66,7 @@ export default function EditProfilePage({ onNavigate }) {
       <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
           <button
-            onClick={() => onNavigate('profile')}
+            onClick={() => navigate('/profile')}
             className="text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors"
           >
             ← Batal

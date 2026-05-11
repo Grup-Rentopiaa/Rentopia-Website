@@ -39,8 +39,19 @@ model Users {
   sentMessages     Message[]      @relation("SentMessages")
   receivedMessages Message[]      @relation("ReceivedMessages")
   penawaran        Penawaran[]
+  followedBy       Follows[]      @relation("following")
+  followingRelation Follows[]     @relation("follower")
 
   @@map("users")
+}
+
+model Follows {
+  follower    Users @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  Int
+  following   Users @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId Int
+
+  @@id([followerId, followingId])
 }
 
 model Listing {
@@ -108,6 +119,7 @@ model Item {
   location      String?
   latitude      Float?
   longitude     Float?
+  image         String?
   created_at    DateTime       @default(now())
   category      Category?      @relation(fields: [category_id], references: [id])
   category_id   Int?

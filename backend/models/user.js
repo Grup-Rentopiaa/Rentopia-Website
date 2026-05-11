@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma')
+const { prisma } = require('../lib/prisma')
 
 const findByEmail = async (email) => {
     return await prisma.users.findUnique({
@@ -55,4 +55,70 @@ const updatePassword = async (userId, hashedPassword) => {
 const updateProfile = async (id, data) => {
   return prisma.users.update({ where: { id }, data })
 }
-module.exports = { findByEmail, findById, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword, updateProfile }
+
+const followUser = async (followerId, followingId) => {
+  if (followerId === followingId) throw new Error("Cannot follow yourself")
+  
+  // Use a transaction to ensure atomic updates
+  return await prisma.$transaction(async (tx) => {
+    const existing = await tx.follows.findUnique({
+      where: { followerId_followingId: { followerId, followingId } }
+    })
+    
+    if (existing) return existing
+
+    const follow = await tx.follows.create({
+      data: { followerId, followingId }
+    })
+
+    // Increment counts
+    await tx.users.update({
+      where: { id: followingId },
+      data: { followers: { increment: 1 } }
+    })
+    
+    await tx.users.update({
+      where: { id: followerId },
+      data: { following: { increment: 1 } }
+    })
+
+    return follow
+  })
+}
+
+const unfollowUser = async (followerId, followingId) => {
+  return await prisma.$transaction(async (tx) => {
+    const existing = await tx.follows.findUnique({
+      where: { followerId_followingId: { followerId, followingId } }
+    })
+    
+    if (!existing) return null
+
+    await tx.follows.delete({
+      where: { followerId_followingId: { followerId, followingId } }
+    })
+
+    // Decrement counts
+    await tx.users.update({
+      where: { id: followingId },
+      data: { followers: { decrement: 1 } }
+    })
+    
+    await tx.users.update({
+      where: { id: followerId },
+      data: { following: { decrement: 1 } }
+    })
+
+    return true
+  })
+}
+
+const checkFollowStatus = async (followerId, followingId) => {
+  if (!followerId || !followingId) return false
+  const existing = await prisma.follows.findUnique({
+    where: { followerId_followingId: { followerId: parseInt(followerId), followingId: parseInt(followingId) } }
+  })
+  return !!existing
+}
+
+module.exports = { findByEmail, findById, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword, updateProfile, followUser, unfollowUser, checkFollowStatus }

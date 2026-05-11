@@ -1,5 +1,5 @@
 const { z } = require('zod')
-const { findById, updateProfile } = require('../models/user')
+const { findById, updateProfile, followUser, unfollowUser, checkFollowStatus } = require('../models/user')
 
 const UpdateUserSchema = z.object({
   username:    z.string().min(3).max(64).regex(/^\w+$/, 'Hanya huruf, angka, underscore').optional(),
@@ -33,4 +33,39 @@ const updateUser = async (req, res) => {
   }
 }
 
-module.exports = { getUser, updateUser }
+const follow = async (req, res) => {
+  try {
+    const followingId = parseInt(req.params.id)
+    const followerId = parseInt(req.body.followerId)
+    if (!followerId) return res.status(400).json({ message: 'followerId required' })
+    await followUser(followerId, followingId)
+    res.json({ message: 'Followed successfully' })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+}
+
+const unfollow = async (req, res) => {
+  try {
+    const followingId = parseInt(req.params.id)
+    const followerId = parseInt(req.body.followerId)
+    if (!followerId) return res.status(400).json({ message: 'followerId required' })
+    await unfollowUser(followerId, followingId)
+    res.json({ message: 'Unfollowed successfully' })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+}
+
+const getFollowStatus = async (req, res) => {
+  try {
+    const followingId = parseInt(req.params.id)
+    const followerId = parseInt(req.query.followerId)
+    const isFollowing = await checkFollowStatus(followerId, followingId)
+    res.json({ isFollowing })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+}
+
+module.exports = { getUser, updateUser, follow, unfollow, getFollowStatus }

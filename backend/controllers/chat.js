@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+const { prisma } = require('../lib/prisma')
 const { getAuthPayload, sseClients, setLatestMessage, sendWsToUser, sendSseToUser, getLatestMessage } = require('../utils/chatUtils');
 
 const getUsers = async (req, res) => {
