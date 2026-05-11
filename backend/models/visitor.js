@@ -1,4 +1,4 @@
-const prisma = require('../db')
+const prisma = require('../lib/prisma')
 
 const saveVisitor = async (visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent) => {
     return await prisma.visitor.create({

@@ -10,7 +10,7 @@ import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
 import OfferPage from "./pages/OfferPage";
 import ProfilPage from "./pages/ProfilPage";
-import DashboardPage from "./features/dashboard/components/DashboardPage";
+import DashboardPage from "./pages/DashboardPage";
 import "./index.css";
 
 export default function App() {

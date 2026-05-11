@@ -1,4 +1,4 @@
-const prisma = require('../db')
+const prisma = require('../lib/prisma')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {findByEmail, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword, findById} = require('../models/user')

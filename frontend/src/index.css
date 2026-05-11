@@ -96,4 +96,3 @@ body {
   .offer-cancel { @apply flex-1 py-3 rounded-full bg-white/20 text-white font-bold cursor-pointer transition duration-300 hover:bg-white/30; }
   .offer-error { @apply text-red-300 text-sm mb-4; }
 }
->>>>>>> fc49b0f10695e4cbd57baaabc3bfe48cf315eb0f

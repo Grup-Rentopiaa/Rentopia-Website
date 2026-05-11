@@ -1,4 +1,4 @@
-const prisma = require('../db');
+const prisma = require('../lib/prisma');
 const { getAuthPayload, generatePenawaranId, sendWsToUser, sendSseToUser } = require('../utils/chatUtils');
 
 const createPenawaran = async (req, res) => {

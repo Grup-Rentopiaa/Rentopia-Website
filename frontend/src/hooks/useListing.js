@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../../../lib/axios'
+import apiFetch from '../api'
 
 export function useListings(userId) {
   const [listings, setListings] = useState([])
@@ -10,7 +10,7 @@ export function useListings(userId) {
     if (!userId) return
     setLoading(true)
     try {
-      const { data } = await api.get('/api/listings', { params: { userId } })
+      const data = await apiFetch(`/api/listings?userId=${userId}`)
       setListings(data)
     } catch (err) {
       setError(err.message)
@@ -20,17 +20,25 @@ export function useListings(userId) {
   useEffect(() => { fetchListings() }, [fetchListings])
 
   async function create(payload) {
-    const { data } = await api.post(`/api/users/${userId}/listings`, payload)
+    const data = await apiFetch(`/api/users/${userId}/listings`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
     return data
   }
 
   async function update(id, payload) {
-    const { data } = await api.put(`/api/users/${userId}/listings/${id}`, payload)
+    const data = await apiFetch(`/api/users/${userId}/listings/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    })
     return data
   }
 
   async function remove(id) {
-    await api.delete(`/api/users/${userId}/listings/${id}`)
+    await apiFetch(`/api/users/${userId}/listings/${id}`, {
+      method: 'DELETE'
+    })
     setListings(prev => prev.filter(l => l.id !== id))
   }
 

@@ -1,4 +1,4 @@
-const prisma = require('../db')
+const prisma = require('../lib/prisma')
 
 const findAllNotifications = async () => {
   return await prisma.notification.findMany({

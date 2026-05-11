@@ -1,6 +1,8 @@
 require('dotenv').config()
 const express = require('express')
+const helmet = require('helmet')
 const cors = require('cors')
+const rateLimit = require('express-rate-limit')
 const http = require('http')
 const WebSocket = require('ws')
 const { wsClients } = require('./utils/chatUtils')
@@ -9,36 +11,16 @@ const app = express()
 const server = http.createServer(app)
 const wss = new WebSocket.Server({ server })
 
-wss.on('connection', (ws, req) => {
-    try {
-        const url = new URL(req.url, `http://${req.headers.host}`)
-        const token = url.searchParams.get('token')
-        if (token) {
-            const jwt = require('jsonwebtoken')
-            const decoded = jwt.verify(token, process.env.JWT_SECRET)
-            wsClients.set(decoded.userId, ws)
-            console.log(`WS: User ${decoded.userId} connected`)
-        }
-    } catch (err) {
-        console.error("WS CONNECTION ERROR:", err)
-    }
-
-    ws.on('close', () => {
-        for (let [userId, client] of wsClients.entries()) {
-            if (client === ws) {
-                wsClients.delete(userId);
-                break;
-            }
-        }
-    })
-})
-
+app.use(helmet())
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }))
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
+app.use(express.json({ limit: '2mb' }))
 
-app.use(express.json())
+const userRoutes = require('./routes/user')
+app.use('/api/users', userRoutes)
 
 const authRoutes = require('./routes/auth')
 app.use('/api/auth', authRoutes)
@@ -61,7 +43,39 @@ app.use('/api/chat', chatRoutes)
 const penawaranRoutes = require('./routes/penawaran')
 app.use('/api/penawaran', penawaranRoutes)
 
+const listingRoutes = require('./routes/listing')
+app.use('/api/listings', listingRoutes)
+app.use('/api/users/:userId/listings', listingRoutes)
+
+const rentalRoutes = require('./routes/rental')
+app.use('/api/rentals', rentalRoutes)
+app.use('/api/users/:userId/rentals', rentalRoutes)
+
+wss.on('connection', (ws, req) => {
+  try {
+    const url = new URL(req.url, `http://${req.headers.host}`)
+    const token = url.searchParams.get('token')
+    if (token) {
+      const jwt = require('jsonwebtoken')
+      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      wsClients.set(decoded.userId, ws)
+      console.log(`WS: User ${decoded.userId} connected`)
+    }
+  } catch (err) {
+    console.error("WS CONNECTION ERROR:", err)
+  }
+
+  ws.on('close', () => {
+    for (let [userId, client] of wsClients.entries()) {
+      if (client === ws) {
+        wsClients.delete(userId)
+        break
+      }
+    }
+  })
+})
+
 const PORT = process.env.PORT || 3000
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`)
-})
+})

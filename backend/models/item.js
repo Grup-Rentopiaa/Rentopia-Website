@@ -1,4 +1,4 @@
-const prisma = require('../db')
+const prisma = require('../lib/prisma')
 
 const findAllItems = async ({ search, category, sort, min_price, max_price, lat, lng }) => {
   const where = {}

@@ -1,6 +1,5 @@
 FROM node:22-alpine
 
-# Install OpenSSL untuk Prisma
 RUN apk add --no-cache openssl
 
 WORKDIR /app

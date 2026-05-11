@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { api } from '../../../lib/axios'
+import apiFetch from '../api'
 
 export function useRentals(userId) {
   const [rentals, setRentals] = useState([])  
@@ -9,7 +9,7 @@ export function useRentals(userId) {
     if (!userId) return
     setLoading(true)
     try {
-      const { data } = await api.get('/api/rentals', { params: { userId } })  
+      const data = await apiFetch(`/api/rentals?userId=${userId}`)  
       setRentals(data)
     } catch (err) {
       setError(err.message)
@@ -22,12 +22,17 @@ export function useRentals(userId) {
     fetchRentals()
   }, [fetchRentals])  
   async function create(payload) {
-    const { data } = await api.post(`/api/users/${userId}/rentals`, payload)
+    const data = await apiFetch(`/api/users/${userId}/rentals`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
     return data
   }
 
   async function remove(id) {
-    await api.delete(`/api/users/${userId}/rentals/${id}`)
+    await apiFetch(`/api/users/${userId}/rentals/${id}`, {
+      method: 'DELETE'
+    })
   }
 
   return { rentals, loading, error, create, remove, refresh: fetchRentals }

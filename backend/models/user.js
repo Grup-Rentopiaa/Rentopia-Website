@@ -1,4 +1,4 @@
-const prisma = require('../db')
+const prisma = require('../lib/prisma')
 
 const findByEmail = async (email) => {
     return await prisma.users.findUnique({
@@ -51,4 +51,8 @@ const updatePassword = async (userId, hashedPassword) => {
         data: { password: hashedPassword }
     })
 }
-module.exports = {findByEmail, findById, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword}
+
+const updateProfile = async (id, data) => {
+  return prisma.users.update({ where: { id }, data })
+}
+module.exports = { findByEmail, findById, createUser, createAuth, findAuthByUserId, saveOtp, findAuthByOtp, updatePassword, updateProfile }

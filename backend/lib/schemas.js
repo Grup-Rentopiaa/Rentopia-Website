@@ -19,12 +19,12 @@ const UpdateUserSchema = z.object({
 })
 
 const ListingSchema = z.object({
-  title:  z.string().min(1, 'Title wajib diisi').max(255),
-  price:  z.string().min(1, 'Price wajib diisi').max(64),
-  brand:  z.string().min(1, 'Brand wajib diisi').max(64),
+  title:    z.string().min(1, 'Title wajib diisi').max(255),
+  price:    z.string().min(1, 'Price wajib diisi').max(64),
+  brand:    z.string().min(1, 'Brand wajib diisi').max(64),
   category: z.string().max(64).default('Lainnya'),
-  image:  z.string().nullable().optional(),
-  status: z.enum(['available', 'rented']).default('available'),
+  image:    z.string().nullable().optional(),
+  status:   z.enum(['available', 'rented']).default('available'),
 })
 
 const RentalSchema = z.object({
