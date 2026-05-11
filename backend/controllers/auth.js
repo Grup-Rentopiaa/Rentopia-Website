@@ -33,7 +33,6 @@ const login = async (req, res) => {
     const token = jwt.sign({ userId: existingUser.id}, process.env.JWT_SECRET, {expiresIn: '1d'})
     res.cookie('token', token, {httpOnly: true, secure: true})
     
-    // Tambah token di body juga untuk mobile
     res.status(200).json({
         message: 'login berhasil',
         token,
