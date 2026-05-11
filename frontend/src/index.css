@@ -1,3 +1,99 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #ffffff;
+}
+
+@keyframes popup {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Sidebar Drawer */
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 300px;
+  background: white;
+  z-index: 100;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-drawer.open {
+  transform: translateX(0);
+}
+
+.sidebar-drawer.closed {
+  transform: translateX(-100%);
+}
+
+/* Sidebar Backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+/* Custom Scrollbar Hiding */
+.messages::-webkit-scrollbar {
+  display: none;
+}
+
+@layer components {
+  .chat-page { @apply bg-white; }
+  .chat-root { @apply flex w-full h-screen overflow-hidden; }
+  .chat-sidebar { @apply w-[300px] h-full bg-white border-r border-gray-200 flex flex-col z-[10]; }
+  .chat-wrapper { @apply flex-1 flex flex-col bg-white; }
+  .chat-container { @apply flex flex-col w-full h-full; }
+  .chat-list-header { @apply p-4 font-bold text-lg bg-[#1e3c72] text-white; }
+  .chat-items { @apply flex-1 overflow-y-auto; }
+  .chat-item { @apply flex flex-col justify-center px-4 py-4 cursor-pointer transition duration-200 border-b border-gray-100; }
+  .chat-item:hover { @apply bg-gray-50; }
+  .chat-item-active { @apply bg-blue-50 border-r-4 border-blue-600; }
+  .chat-text { @apply flex flex-col; }
+  .chat-name { @apply font-semibold text-sm text-gray-900; }
+  .chat-last { @apply text-xs text-gray-500 mt-1 truncate; }
+  .chat-header { @apply p-4 bg-[#1e3c72] text-white flex items-center justify-between; }
+  .user-info { @apply flex items-center gap-3; }
+  .username { @apply text-base font-bold; }
+  .product-section { @apply flex gap-4 p-5 border-b border-gray-100 items-start; }
+  .product-image { @apply w-20 h-20 rounded-xl object-cover shadow-sm; }
+  .product-info { @apply flex flex-col gap-1; }
+  .product-name { @apply font-bold text-gray-900; }
+  .product-price { @apply font-bold text-blue-800; }
+  .primary-pill-button { @apply px-6 py-2 rounded-full bg-[#2196f3] text-white font-bold text-sm cursor-pointer transition duration-300 shadow-md hover:bg-blue-600 active:scale-95; }
+  .chat-body { @apply flex flex-col flex-1 overflow-hidden relative; }
+  .messages { @apply flex-1 overflow-y-auto p-4 flex flex-col gap-3 [scrollbar-width:none]; }
+  .message { @apply max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm; }
+  .message-sent { @apply self-end bg-[#2196f3] text-white rounded-tr-none; }
+  .message-received { @apply self-start bg-gray-100 text-gray-800 rounded-tl-none; }
+  .bottom-area { @apply p-4 bg-white border-t border-gray-100; }
+  .info-text { @apply mb-3 text-xs text-center text-gray-400; }
+  .quick-replies { @apply flex flex-wrap gap-2 mb-4 justify-center; }
+  .quick-reply { @apply px-4 py-1.5 text-xs rounded-full border border-blue-400 bg-white text-blue-600 cursor-pointer transition duration-300 hover:bg-blue-50; }
+  .input-area { @apply flex gap-3; }
+  .chat-input { @apply flex-1 px-4 py-2.5 border border-gray-200 rounded-full outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all; }
+  .offer-overlay { @apply fixed inset-0 flex justify-center items-center bg-black/30 backdrop-blur-sm z-[1000]; }
+  .offer-box { @apply w-[350px] p-8 rounded-3xl text-center text-white shadow-2xl bg-[#1e3c72] animate-[popup_0.3s_ease]; }
+  .offer-box h3 { @apply mb-6 text-xl font-bold; }
+  .offer-box p { @apply mb-2 text-blue-100 font-medium; }
+  .offer-box input { @apply w-full px-4 py-3 mt-4 mb-6 rounded-xl border-none outline-none bg-white/10 text-white text-sm placeholder:text-blue-200/50 focus:bg-white/20 transition-all; }
+  .offer-actions { @apply flex gap-4; }
+  .offer-submit { @apply flex-1 py-3 rounded-full bg-[#2196f3] text-white font-bold cursor-pointer transition duration-300 hover:bg-blue-600; }
+  .offer-cancel { @apply flex-1 py-3 rounded-full bg-white/20 text-white font-bold cursor-pointer transition duration-300 hover:bg-white/30; }
+  .offer-error { @apply text-red-300 text-sm mb-4; }
+}
+>>>>>>> fc49b0f10695e4cbd57baaabc3bfe48cf315eb0f

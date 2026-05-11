@@ -1,26 +1,44 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-model User {
-  id          Int    @id @default(autoincrement())
-  username    String    @unique
-  name        String?
-  city        String?
-  description String?
-  phone       String?  @db.VarChar(20)   
-  avatarB64   String?  @map("avatar_b64") 
-  followers   Int    @default(0)
-  following   Int    @default(0)
-  rating      Float    @default(0)      
-  totalSewa   Int      @default(0)        @map("total_sewa") 
-  createdAt   DateTime    @default(now()) @map("created_at")
 
-  listings  Listing[]
-  rentals   Rental[]
+model Auth {
+  id             Int       @id @default(autoincrement())
+  user_id        Int       @unique
+  user           Users     @relation(fields: [user_id], references: [id])
+  password       String
+  otp            String?
+  otp_expired_at DateTime?
+}
+
+model Users {
+  id               Int            @id @default(autoincrement())
+  auth             Auth?
+  username         String         @unique
+  email            String         @unique
+  name             String?
+  city             String?
+  description      String?
+  phone            String?        @db.VarChar(20)
+  avatarB64        String?        @map("avatar_b64")
+  followers        Int            @default(0)
+  following        Int            @default(0)
+  rating           Float          @default(0)
+  totalSewa        Int            @default(0)  @map("total_sewa")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  items            Item[]
+  listings         Listing[]
+  rentals          Rental[]
+  savedKeywords    SavedKeyword[]
+  notifications    Notification[]
+  sentMessages     Message[]      @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  penawaran        Penawaran[]
 
   @@map("users")
 }
@@ -36,7 +54,7 @@ model Listing {
   status    ListingStatus @default(available)
   createdAt DateTime      @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("listings")
@@ -50,21 +68,101 @@ model Rental {
   store     String       @db.VarChar(128)
   status    RentalStatus @default(ongoing)
   note      String?      @db.VarChar(128)
-  image     String?                        
+  image     String?
   createdAt DateTime     @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("rentals")
 }
 
-enum ListingStatus { 
-  available  
-  rented 
+model Visitor {
+  id                  Int      @id @default(autoincrement())
+  visitor_id          String
+  page                String
+  path                String?
+  browser             String?
+  language            String?
+  screen_width        Int?
+  screen_height       Int?
+  visited_at          String?
+  consent_necessary   Boolean  @default(true)
+  consent_preferences Boolean  @default(false)
+  consent_statistics  Boolean  @default(false)
+  consent_marketing   Boolean  @default(false)
+  created_at          DateTime @default(now())
 }
-enum RentalStatus  { 
-  ongoing  
-  done  
-  urgent 
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  items Item[]
+}
+
+model Item {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  price_per_day Decimal        @db.Decimal(10, 2)
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  created_at    DateTime       @default(now())
+  category      Category?      @relation(fields: [category_id], references: [id])
+  category_id   Int?
+  owner         Users?         @relation(fields: [owner_id], references: [id])
+  owner_id      Int?
+  notifications Notification[]
+  penawaran     Penawaran[]
+}
+
+model SavedKeyword {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  keyword    String
+  created_at DateTime @default(now())
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  keyword    String
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+  item_id    Int
+  item       Item     @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  pesan_id    Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  sender      Users    @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  isi_pesan   String
+  waktu       DateTime @default(now())
+}
+
+model Penawaran {
+  penawaran_id String   @id
+  produk_id    Int?
+  user_id      Int
+  user         Users    @relation(fields: [user_id], references: [id])
+  item         Item?    @relation(fields: [produk_id], references: [id])
+  harga        Int
+  waktu        DateTime @default(now())
+}
+
+enum ListingStatus {
+  available
+  rented
+}
+
+enum RentalStatus {
+  ongoing
+  done
+  urgent
 }
