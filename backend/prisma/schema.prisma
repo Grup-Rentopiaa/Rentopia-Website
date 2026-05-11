@@ -69,25 +69,6 @@ model Item {
   penawaran     Penawaran[]
 }
 
-model Message {
-  pesan_id    Int      @id @default(autoincrement())
-  sender_id   Int
-  receiver_id Int
-  sender      Users    @relation("SentMessages", fields: [sender_id], references: [id])
-  receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
-  isi_pesan   String
-  waktu       DateTime @default(now())
-}
-
-model Penawaran {
-  penawaran_id String   @id
-  produk_id    Int?
-  user_id      Int
-  user         Users    @relation(fields: [user_id], references: [id])
-  item         Item?    @relation(fields: [produk_id], references: [id])
-  harga        Int
-  waktu        DateTime @default(now())
-}
 
 model SavedKeyword {
   id         Int      @id @default(autoincrement())
@@ -106,4 +87,23 @@ model Notification {
   item_id    Int
   item       Item     @relation(fields: [item_id], references: [id], onDelete: Cascade)
   user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+model Message {
+  pesan_id    Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  sender      Users    @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  isi_pesan   String
+  waktu       DateTime @default(now())
+}
+
+model Penawaran {
+  penawaran_id String   @id
+  produk_id    Int?
+  user_id      Int
+  user         Users    @relation(fields: [user_id], references: [id])
+  item         Item?    @relation(fields: [produk_id], references: [id])
+  harga        Int
+  waktu        DateTime @default(now())
 }
