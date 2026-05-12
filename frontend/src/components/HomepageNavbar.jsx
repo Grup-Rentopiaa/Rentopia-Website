@@ -115,6 +115,8 @@ export default function Navbar({ search, onSearchChange, notifications, category
                     key={id}
                     onClick={() => { 
                       if (id === 'chat') window.location.href = '/chat';
+                      else if (id === 'upload') window.location.href = '/upload';
+                      else if (id === 'profil') window.location.href = '/dashboard';
                       else { setActivePage(id); setShowSidebar(false); }
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors
@@ -290,8 +292,8 @@ export default function Navbar({ search, onSearchChange, notifications, category
               <MessageCircle size={22} />
             </button>
             <button 
-              onClick={() => setActivePage('profil')}
-              className={`p-2 rounded-xl transition-colors ${activePage === 'profil' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`} 
+              onClick={() => window.location.href = '/dashboard'}
+              className="p-2 rounded-xl transition-colors hover:bg-gray-100 text-gray-600" 
               title="Profil"
             >
               <User size={22} />

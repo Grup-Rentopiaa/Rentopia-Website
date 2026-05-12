@@ -33,6 +33,7 @@ export default function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/offer" element={<OfferPage />} />
         <Route path="/profile" element={<ProfilPage />} />
+        <Route path="/profile/:id" element={<ProfilPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />

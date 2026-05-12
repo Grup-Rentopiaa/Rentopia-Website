@@ -13,8 +13,12 @@ export default function ProductCard({ item }) {
   return (
     <div className="product-card group relative">
       {/* Photo Box */}
-      <div className="product-image-box">
-        <Image size={40} strokeWidth={1.5} />
+      <div className="product-image-box aspect-square w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+        {item.image ? (
+          <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <Image size={40} strokeWidth={1.5} className="text-gray-300" />
+        )}
       </div>
 
       {/* Category badge - absolute overlay on image */}

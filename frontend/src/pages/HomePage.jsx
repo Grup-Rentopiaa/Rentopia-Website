@@ -111,16 +111,7 @@ export default function HomePage() {
             </main>
           </>
         )}
-        {activePage === 'upload' && (
-          <div className="pb-12 bg-gray-50 min-h-screen">
-            <UploadPage />
-          </div>
-        )}
-        {activePage === 'profil' && (
-          <div className="bg-gray-50 min-h-screen">
-            <ProfilPage />
-          </div>
-        )}
+
         {activePage === 'chat' && (
           <div className="bg-gray-50 min-h-screen">
             <ChatPage setActivePage={setActivePage} />

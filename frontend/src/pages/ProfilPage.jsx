@@ -1,18 +1,35 @@
 import { useUser }     from '../hooks/useUser'
 import { useItems }    from '../hooks/useItems'
 import { useRentals }  from '../hooks/useRentals'
+import { useProfile }  from '../hooks/useProfile'
 import ItemCard        from './ItemCard'
 import RentalCard      from './RentalCard'
-import { useState }    from 'react'
-import { useNavigate } from 'react-router-dom'
-import { LogOut }      from 'lucide-react'
+import { useState, useEffect }    from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { LogOut, UserPlus, UserMinus } from 'lucide-react'
+
+// TEMP logged in user ID until full auth context is used
+const LOGGED_IN_USER_ID = 1
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, loading, userId } = useUser()
-  const { items }    = useItems(userId)
-  const { rentals }  = useRentals(userId)
+  const { id } = useParams()
+  
+  // If no ID or ID matches logged in user, redirect to Dashboard
+  useEffect(() => {
+    if (!id || parseInt(id) === LOGGED_IN_USER_ID) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [id, navigate])
+
+  const profileId = id ? parseInt(id) : null
+  const { profile: user, loading, error, isFollowing, followLoading, toggleFollow } = useProfile(profileId, LOGGED_IN_USER_ID)
+  
+  const { items }    = useItems(profileId)
+  const { rentals }  = useRentals(profileId)
   const [tab, setTab] = useState('items')
+
+  if (!profileId || profileId === LOGGED_IN_USER_ID) return null
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -20,12 +37,13 @@ export default function ProfilePage() {
     </div>
   )
 
-  const initials = (user?.name || user?.username || '?')[0].toUpperCase()
+  if (error || !user) return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <p className="text-sm text-red-500">Gagal memuat profil atau pengguna tidak ditemukan.</p>
+    </div>
+  )
 
-  function handleLogout() {
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
+  const initials = (user?.name || user?.username || '?')[0].toUpperCase()
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -45,13 +63,15 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/edit-profile')}
-              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all hidden sm:block"
+              onClick={toggleFollow}
+              disabled={followLoading}
+              className={`flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all
+                ${isFollowing 
+                  ? 'bg-white border-2 border-slate-200 text-slate-600 hover:border-red-200 hover:text-red-500 hover:bg-red-50' 
+                  : 'bg-blue-600 text-white shadow hover:bg-blue-700'
+                } disabled:opacity-50`}
             >
-              Edit Profil
-            </button>
-            <button onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors">
-              <LogOut size={16} /> Logout
+              {isFollowing ? <><UserMinus size={16} /> Unfollow</> : <><UserPlus size={16} /> Follow</>}
             </button>
           </div>
         </div>
