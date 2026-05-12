@@ -59,11 +59,27 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
 }
 
 const findItemById = async (id) => {
+  // Increment views
+  await prisma.item.update({
+    where: { id: parseInt(id) },
+    data: { views: { increment: 1 } }
+  })
+
   const item = await prisma.item.findUnique({
     where: { id: parseInt(id) },
     include: {
       category: { select: { name: true } },
-      owner: { select: { username: true } },
+      owner: { select: { id: true, username: true, avatarB64: true } },
+      likes: {
+        include: {
+          user: { select: { id: true, username: true, avatarB64: true } }
+        }
+      },
+      penawaran: {
+        include: {
+          user: { select: { id: true, username: true, avatarB64: true } }
+        }
+      }
     },
   })
   if (!item) return null
@@ -130,4 +146,51 @@ const deleteItem = async (id, ownerId) => {
   return await prisma.item.delete({ where: { id: parseInt(id) } })
 }
 
-module.exports = { findAllItems, findItemById, findAllCategories, createItem, updateItem, deleteItem }
+const toggleLike = async (itemId, userId) => {
+  const existing = await prisma.itemLike.findUnique({
+    where: {
+      item_id_user_id: {
+        item_id: parseInt(itemId),
+        user_id: parseInt(userId)
+      }
+    }
+  })
+
+  if (existing) {
+    await prisma.itemLike.delete({
+      where: {
+        item_id_user_id: {
+          item_id: parseInt(itemId),
+          user_id: parseInt(userId)
+        }
+      }
+    })
+    return { liked: false }
+  } else {
+    await prisma.itemLike.create({
+      data: {
+        item_id: parseInt(itemId),
+        user_id: parseInt(userId)
+      }
+    })
+    return { liked: true }
+  }
+}
+
+const updateItemStatus = async (id, status) => {
+  return await prisma.item.update({
+    where: { id: parseInt(id) },
+    data: { status }
+  })
+}
+
+module.exports = { 
+  findAllItems, 
+  findItemById, 
+  findAllCategories, 
+  createItem, 
+  updateItem, 
+  deleteItem, 
+  toggleLike, 
+  updateItemStatus 
+}

@@ -219,12 +219,6 @@ export default function DashboardPage() {
                   <ItemCard
                     key={item.id}
                     item={item}
-                    onEdit={() => navigate(`/upload?edit=${item.id}`)}
-                    onDelete={() => {
-                      if (confirm('Yakin ingin menghapus barang ini?')) {
-                        removeItem(item.id)
-                      }
-                    }}
                   />
                 ))}
               </div>

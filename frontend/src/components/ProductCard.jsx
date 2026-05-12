@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heart, MapPin, Image } from 'lucide-react';
 
 function formatPrice(price) {
@@ -9,9 +10,13 @@ function formatPrice(price) {
 
 export default function ProductCard({ item }) {
   const [liked, setLiked] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div className="product-card group relative">
+    <div 
+      className="product-card group relative cursor-pointer"
+      onClick={() => navigate(`/product/${item.id}`)}
+    >
       {/* Photo Box */}
       <div className="product-image-box aspect-square w-full overflow-hidden bg-gray-100 flex items-center justify-center">
         {item.image ? (

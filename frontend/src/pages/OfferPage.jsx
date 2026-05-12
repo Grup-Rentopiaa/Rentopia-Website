@@ -6,6 +6,9 @@ export default function OfferPage({ setActivePage }) {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const navigate = useNavigate();
 
+  const productStr = localStorage.getItem('targetChatProduct');
+  const product = productStr ? JSON.parse(productStr) : { title: "Produk", price: 0 };
+
   const [harga, setHarga] = useState("");
   const [error, setError] = useState("");
 
@@ -26,7 +29,7 @@ export default function OfferPage({ setActivePage }) {
     }
 
     try {
-      await createOfferService(null, Number(harga), targetId);
+      await createOfferService(product.id, Number(harga), targetId);
       if (setActivePage) setActivePage('chat');
       else navigate("/chat");
     } catch (err) {
@@ -41,8 +44,13 @@ export default function OfferPage({ setActivePage }) {
       <form className="offer-box" onSubmit={handleSubmit}>
         <h3>Buat Penawaran</h3>
 
-        <p>Produk : Tas</p>
-        <p>Harga : Rp 20000</p>
+        <div className="flex items-center gap-4 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+          {product.image && <img src={product.image} alt={product.title} className="w-12 h-12 object-cover rounded-lg" />}
+          <div>
+            <p className="text-sm font-bold text-slate-800">{product.title}</p>
+            <p className="text-xs text-blue-600 font-semibold">Harga: Rp {product.price.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
 
         <input
           type="number"

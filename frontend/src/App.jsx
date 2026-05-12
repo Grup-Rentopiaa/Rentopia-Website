@@ -13,6 +13,7 @@ import ProfilPage from "./pages/ProfilPage";
 import DashboardPage from "./pages/DashboardPage";
 import UploadPage from "./pages/UploadPage";
 import EditProfilePage from "./pages/EditProfilePage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import "./index.css";
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

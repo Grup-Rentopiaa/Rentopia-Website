@@ -4,6 +4,7 @@ import { useChat } from "../hooks/useChat";
 import ChatList from "../components/ChatList";
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
+import { updateItemStatusService } from "../services/itemService";
 
 export default function ChatPage({ setActivePage }) {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -53,26 +54,59 @@ export default function ChatPage({ setActivePage }) {
               </div>
             </div>
 
-            <div className="product-section">
-              <img
-                src="/download.jpg"
-                alt="Tas"
-                className="product-image"
-              />
-              <div className="product-info">
-                <div className="product-name">Tas</div>
-                <div className="product-price">Rp 20000</div>
-                <button 
-                  onClick={() => {
-                    if (setActivePage) setActivePage('offer');
-                    else navigate('/offer');
-                  }}
-                  className="primary-pill-button text-center mt-2"
-                >
-                  Buat Penawaran
-                </button>
-              </div>
-            </div>
+            {(() => {
+              const productStr = localStorage.getItem('targetChatProduct');
+              if (!productStr) return null;
+              const product = JSON.parse(productStr);
+              
+              const confirmRental = async () => {
+                if (window.confirm(`Konfirmasi penyewaan "${product.title}"?`)) {
+                  try {
+                    await updateItemStatusService(product.id, 'rented');
+                    alert('Status produk berhasil diubah menjadi Sedang Disewa');
+                    // Update local storage to reflect status
+                    product.status = 'rented';
+                    localStorage.setItem('targetChatProduct', JSON.stringify(product));
+                    navigate(`/product/${product.id}`);
+                  } catch (err) {
+                    alert(err.message);
+                  }
+                }
+              };
+
+              return (
+                <div className="product-section">
+                  {product.image ? (
+                    <img src={product.image} alt={product.title} className="product-image" />
+                  ) : (
+                    <div className="product-image bg-slate-100 flex items-center justify-center">📦</div>
+                  )}
+                  <div className="product-info">
+                    <div className="product-name font-bold">{product.title}</div>
+                    <div className="product-price text-blue-600">Rp {product.price.toLocaleString('id-ID')}</div>
+                    
+                    <div className="flex gap-2 mt-2">
+                      <button 
+                        onClick={() => {
+                          if (setActivePage) setActivePage('offer');
+                          else navigate('/offer');
+                        }}
+                        className="primary-pill-button text-[10px] py-1 px-3"
+                      >
+                        Tawar
+                      </button>
+                      
+                      <button 
+                        onClick={confirmRental}
+                        className="bg-emerald-500 text-white rounded-full text-[10px] py-1 px-3 font-bold hover:bg-emerald-600 transition-colors"
+                      >
+                        Konfirmasi Sewa
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="chat-body">
               <div id="messages" className="messages">

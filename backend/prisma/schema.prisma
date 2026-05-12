@@ -39,6 +39,7 @@ model Users {
   sentMessages     Message[]      @relation("SentMessages")
   receivedMessages Message[]      @relation("ReceivedMessages")
   penawaran        Penawaran[]
+  itemLikes        ItemLike[]
   followedBy       Follows[]      @relation("following")
   followingRelation Follows[]     @relation("follower")
 
@@ -120,6 +121,8 @@ model Item {
   latitude      Float?
   longitude     Float?
   image         String?
+  status        ListingStatus  @default(available)
+  views         Int            @default(0)
   created_at    DateTime       @default(now())
   category      Category?      @relation(fields: [category_id], references: [id])
   category_id   Int?
@@ -127,6 +130,18 @@ model Item {
   owner_id      Int?
   notifications Notification[]
   penawaran     Penawaran[]
+  likes         ItemLike[]
+}
+
+model ItemLike {
+  id         Int      @id @default(autoincrement())
+  item_id    Int
+  user_id    Int
+  created_at DateTime @default(now())
+  item       Item     @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([item_id, user_id])
 }
 
 model SavedKeyword {

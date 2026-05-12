@@ -1,4 +1,4 @@
-const { findAllItems, findItemById, findAllCategories, createItem, updateItem, deleteItem } = require('../models/item')
+const { findAllItems, findItemById, findAllCategories, createItem, updateItem, deleteItem, toggleLike, updateItemStatus } = require('../models/item')
 
 const getItems = async (req, res) => {
   try {
@@ -62,4 +62,35 @@ const removeExistingItem = async (req, res) => {
   }
 }
 
-module.exports = { getItems, getItemById, getCategories, createNewItem, updateExistingItem, removeExistingItem }
+const likeItem = async (req, res) => {
+  try {
+    const itemId = parseInt(req.params.id)
+    const userId = parseInt(req.body.userId)
+    const result = await toggleLike(itemId, userId)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+const updateStatus = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id)
+    const { status } = req.body
+    const result = await updateItemStatus(id, status)
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+module.exports = { 
+  getItems, 
+  getItemById, 
+  getCategories, 
+  createNewItem, 
+  updateExistingItem, 
+  removeExistingItem,
+  likeItem,
+  updateStatus
+}
