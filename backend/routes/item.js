@@ -1,6 +1,7 @@
 const express = require('express')
 const { 
   getItems, 
+  getLikedItems,
   getItemById, 
   getCategories, 
   createNewItem, 
@@ -13,6 +14,8 @@ const {
 const router = express.Router({ mergeParams: true })
 
 router.get('/', getItems)
+router.get('/liked', getLikedItems)
+router.get('/users/:userId/liked', getLikedItems)
 router.post('/', createNewItem)
 router.put('/:id', updateExistingItem)
 router.delete('/:id', removeExistingItem)

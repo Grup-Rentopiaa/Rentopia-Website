@@ -46,3 +46,7 @@ export async function updateItemStatusService(id, status) {
 export async function getCategoriesService() {
   return await apiFetch("/api/items/categories");
 }
+
+export async function getLikedItemsService(userId) {
+  return await apiFetch(`/api/items/liked?userId=${userId}`);
+}

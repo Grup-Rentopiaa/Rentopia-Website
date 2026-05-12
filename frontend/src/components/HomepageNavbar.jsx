@@ -109,6 +109,7 @@ export default function Navbar({ search, onSearchChange, notifications, category
                   { id: 'upload', label: 'Sediakan Barang', Icon: Upload },
                   { id: 'chat', label: 'Pesan / Chat', Icon: MessageCircle },
                   { id: 'offer', label: 'Penawaran Saya', Icon: Gavel },
+                  { id: 'wishlist', label: 'Wishlist Saya', Icon: Heart },
                   { id: 'profil', label: 'Profil Saya', Icon: User },
                 ].map(({ id, label, Icon }) => (
                   <button
@@ -273,8 +274,12 @@ export default function Navbar({ search, onSearchChange, notifications, category
 
           {/* Right icons */}
           <div className="flex items-center gap-1 flex-shrink-0">
-            <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600" title="Wishlist">
-              <Heart size={22} />
+            <button 
+              onClick={() => setActivePage('wishlist')}
+              className={`p-2 rounded-xl transition-colors ${activePage === 'wishlist' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'}`} 
+              title="Wishlist"
+            >
+              <Heart size={22} fill={activePage === 'wishlist' ? "currentColor" : "none"} />
             </button>
             <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-600" title="Notifikasi">
               <Bell size={22} />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, MapPin, Users, TrendingUp, Grid } from 'lucide-react';
 import apiFetch from '../api';
 import useProducts from '../hooks/useProducts';
 import { pushHistoryState, listenToEvent } from '../utils/Features';
@@ -14,19 +14,42 @@ import UploadPage from './UploadPage';
 import ProfilPage from './ProfilPage';
 import ChatPage from './ChatPage';
 import OfferPage from './OfferPage';
+import WishlistPage from './WishlistPage';
 
 export default function HomePage() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
   const [activePage, setActivePage] = useState('home');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [recommendTab, setRecommendTab] = useState('semua');
   const [filter, setFilter] = useState({
-    sort: 'best_match', minPrice: '', maxPrice: '', location: '',
+    sort: 'random', minPrice: '', maxPrice: '', location: '',
   });
   const [notifications, setNotifications] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
+  const isSearching = !!(search || category);
 
-  const { items, loading } = useProducts(search, category, filter);
+  // Sync recommendation tab with filter
+  useEffect(() => {
+    if (recommendTab === 'semua') setFilter(prev => ({ ...prev, sort: 'random', filter: null }));
+    if (recommendTab === 'terdekat') setFilter(prev => ({ ...prev, sort: 'nearest', filter: null }));
+    if (recommendTab === 'diikuti') setFilter(prev => ({ ...prev, sort: 'random', filter: 'following' }));
+    if (recommendTab === 'trending') setFilter(prev => ({ ...prev, sort: 'trending', filter: null }));
+  }, [recommendTab]);
 
+  // Refresh items when a like status changes elsewhere
+  useEffect(() => {
+    const handler = () => {
+      // Force filter object to new reference to trigger useProducts reload
+      setFilter(prev => ({ ...prev }));
+    };
+    window.addEventListener('likeChanged', handler);
+    return () => window.removeEventListener('likeChanged', handler);
+  }, []);
+
+  const { items, loading } = useProducts(search, category, filter, user?.id);
+
+  
   useEffect(() => {
     if (activePage !== 'home') return;
     const qs = new URLSearchParams({
@@ -42,7 +65,7 @@ export default function HomePage() {
       if (e.state) {
         setSearch(e.state.search || '');
         setCategory(e.state.category || '');
-        setFilter(e.state.filter || { sort: 'best_match', minPrice: '', maxPrice: '', location: '' });
+        setFilter(e.state.filter || { sort: 'random', minPrice: '', maxPrice: '', location: '' });
         setActivePage('home');
       }
     };
@@ -59,7 +82,14 @@ export default function HomePage() {
     loadNotifications();
   }, []);
 
-  const isSearching = !!(search || category);
+
+
+  const RECOMMEND_TABS = [
+    { id: 'semua', label: 'Semua', Icon: Grid },
+    { id: 'terdekat', label: 'Terdekat', Icon: MapPin },
+    { id: 'diikuti', label: 'Diikuti', Icon: Users },
+    { id: 'trending', label: 'Paling Atas', Icon: TrendingUp },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -77,12 +107,32 @@ export default function HomePage() {
         {activePage === 'home' && (
           <>
             <Categories selected={category} onSelect={setCategory} />
-            {!isSearching && (
-              <div className="px-4 py-4 max-w-7xl mx-auto w-full">
-                <Banner />
-              </div>
-            )}
-            <main className="max-w-7xl mx-auto px-4 pb-24 w-full">
+            
+            <main className="max-w-7xl mx-auto px-4 pb-24 w-full pt-6">
+              {!isSearching && (
+                <>
+                  <Banner />
+                  
+                  {/* Recommendation Tabs */}
+                  <div className="mt-8 mb-6 flex flex-wrap items-center gap-2">
+                    {RECOMMEND_TABS.map(({ id, label, Icon }) => (
+                      <button
+                        key={id}
+                        onClick={() => setRecommendTab(id)}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95
+                          ${recommendTab === id 
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}
+                        `}
+                      >
+                        <Icon size={16} />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
               <div className="flex flex-col gap-6">
                 {isSearching && (
                   <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
@@ -112,6 +162,10 @@ export default function HomePage() {
           </>
         )}
 
+        {activePage === 'wishlist' && (
+          <WishlistPage setActivePage={setActivePage} />
+        )}
+
         {activePage === 'chat' && (
           <div className="bg-gray-50 min-h-screen">
             <ChatPage setActivePage={setActivePage} />
@@ -127,4 +181,4 @@ export default function HomePage() {
       <HomepageFooter />
     </div>
   );
-}
+}

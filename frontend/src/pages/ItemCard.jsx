@@ -1,44 +1,83 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { Heart, MapPin, Package } from "lucide-react"
+import { likeItemService } from "../services/itemService"
 
 export default function ItemCard({ item }) {
   const navigate = useNavigate()
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  
+  const [liked, setLiked] = useState(item.likes?.some(l => l.user_id === user?.id) || false)
   const isAvailable = item.status !== 'rented'
   
+  async function handleLike(e) {
+    e.stopPropagation()
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    try {
+      const res = await likeItemService(item.id, user.id)
+      setLiked(res.liked)
+      // Dispatch a custom event so other components can react to like changes
+      window.dispatchEvent(new CustomEvent('likeChanged'));
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   return (
     <div 
       onClick={() => navigate(`/product/${item.id}`)}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-blue-500 cursor-pointer"
+      className="group flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-2 hover:shadow-2xl hover:ring-blue-500 cursor-pointer relative"
     >
       {/* Image */}
-      <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+      <div className="aspect-square w-full overflow-hidden bg-slate-100 relative">
         {item.image ? (
           <img src={item.image} alt={item.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <Package size={48} />
           </div>
         )}
+        
+        {/* Like Button */}
+        <button 
+          onClick={handleLike}
+          className={`absolute top-4 right-4 p-2.5 rounded-2xl backdrop-blur-md shadow-lg transition-all active:scale-90 ${liked ? 'bg-red-500 text-white' : 'bg-white/80 text-slate-400 hover:text-red-500'}`}
+        >
+          <Heart size={18} fill={liked ? "currentColor" : "none"} />
+        </button>
+
+        {/* Status Badge */}
+        <div className="absolute bottom-4 left-4">
+          <span className={`text-[10px] font-black tracking-wider uppercase px-3 py-1 rounded-full shadow-sm ${isAvailable ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>
+            {isAvailable ? 'Tersedia' : 'Disewa'}
+          </span>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-4 gap-2">
-        <div>
-          <p className="font-bold text-slate-900 leading-tight text-sm">{item.title}</p>
-          <p className="text-xs text-slate-400 mt-0.5">{item.location || 'Lokasi tidak tersedia'}</p>
-          {item.category_name && (
-            <span className="mt-1 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-              {item.category_name}
-            </span>
-          )}
+      <div className="flex flex-1 flex-col p-5 gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{item.category_name || 'Produk'}</p>
+          <p className="font-bold text-slate-900 leading-tight line-clamp-2">{item.title}</p>
         </div>
-        <p className="text-sm font-bold text-blue-600">Rp {Number(item.price_per_day).toLocaleString('id-ID')}<span className="text-xs text-slate-400 font-normal">/hari</span></p>
-        <div className="flex items-center justify-between mt-auto pt-2">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isAvailable ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-            {isAvailable ? 'Tersedia' : 'Disewa'}
-          </span>
+
+        <div className="flex items-center gap-1.5 text-slate-400">
+          <MapPin size={14} />
+          <p className="text-xs font-medium truncate">{item.location || 'Lokasi tidak tersedia'}</p>
+        </div>
+
+        <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-50">
+          <div>
+            <p className="text-xs text-slate-400 font-medium">Harga sewa</p>
+            <p className="text-lg font-black text-blue-600">
+              Rp {Number(item.price_per_day).toLocaleString('id-ID')}
+              <span className="text-[10px] text-slate-400 font-normal ml-1">/hari</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

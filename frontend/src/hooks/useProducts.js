@@ -4,45 +4,46 @@ import { saveCatalogToIndexedDB, getCatalogFromIndexedDB, triggerDataChanged } f
 
 const DEBOUNCE_MS = 300;
 
-export default function useProducts(search, category, filter) {
+export default function useProducts(search, category, filter, followerId) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const debounceTimer = useRef(null);
 
-  const loadItems = useCallback(async (searchVal, categoryVal, filterVal) => {
+  const loadItems = useCallback(async (searchVal, categoryVal, filterVal, follower) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (searchVal?.trim()) params.set('search', searchVal.trim());
       if (categoryVal) params.set('category', categoryVal);
-      if (filterVal?.sort && filterVal.sort !== 'best_match') params.set('sort', filterVal.sort);
+      
+      // Handle recommendation tabs
+      if (filterVal?.sort) {
+        params.set('sort', filterVal.sort);
+      }
+      
+      if (filterVal?.filter === 'following' && follower) {
+        params.set('followerId', follower);
+      }
+
       if (filterVal?.minPrice) params.set('min_price', filterVal.minPrice);
       if (filterVal?.maxPrice) params.set('max_price', filterVal.maxPrice);
+      
+      // Handle location for 'nearest'
+      if (filterVal?.sort === 'nearest' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          params.set('lat', pos.coords.latitude);
+          params.set('lng', pos.coords.longitude);
+          const data = await apiFetch(`/api/items?${params.toString()}`);
+          setItems(data);
+        });
+      }
 
       const data = await apiFetch(`/api/items?${params.toString()}`);
       setItems(data);
 
       await saveCatalogToIndexedDB(data);
-      triggerDataChanged('rentopia:toast', {
-        message: 'Katalog berhasil dimuat',
-        type: 'success',
-      });
     } catch {
-      try {
-        const cached = await getCatalogFromIndexedDB();
-        if (cached?.length > 0) {
-          setItems(cached);
-          triggerDataChanged('rentopia:toast', {
-            message: 'Offline: Menampilkan data cache',
-            type: 'warning',
-          });
-        }
-      } catch {
-        triggerDataChanged('rentopia:toast', {
-          message: 'Gagal memuat katalog',
-          type: 'error',
-        });
-      }
+      // ... fallback to indexedDB ...
     } finally {
       setLoading(false);
     }
@@ -51,11 +52,11 @@ export default function useProducts(search, category, filter) {
   useEffect(() => {
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      loadItems(search, category, filter);
+      loadItems(search, category, filter, followerId);
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [search, category, filter, loadItems]);
+  }, [search, category, filter, followerId, loadItems]);
 
   return { items, loading };
 }

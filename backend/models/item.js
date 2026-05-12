@@ -1,6 +1,6 @@
 const { prisma } = require('../lib/prisma')
 
-const findAllItems = async ({ search, category, sort, min_price, max_price, lat, lng, ownerId }) => {
+const findAllItems = async ({ search, category, sort, min_price, max_price, lat, lng, ownerId, followerId, limit }) => {
   const where = {}
 
   if (search?.trim()) {
@@ -18,6 +18,16 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
     where.owner_id = parseInt(ownerId)
   }
 
+  if (followerId) {
+    // Get list of followed user IDs
+    const following = await prisma.follows.findMany({
+      where: { followerId: parseInt(followerId) },
+      select: { followingId: true }
+    })
+    const followedIds = following.map(f => f.followingId)
+    where.owner_id = { in: followedIds }
+  }
+
   if (min_price || max_price) {
     where.price_per_day = {}
     if (min_price) where.price_per_day.gte = parseFloat(min_price)
@@ -27,21 +37,29 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   let orderBy = { created_at: 'desc' }
   if (sort === 'price_asc') orderBy = { price_per_day: 'asc' }
   if (sort === 'price_desc') orderBy = { price_per_day: 'desc' }
+  if (sort === 'trending') orderBy = { views: 'desc' }
 
   const items = await prisma.item.findMany({
     where,
     orderBy,
+    take: limit ? parseInt(limit) : undefined,
     include: {
       category: { select: { name: true } },
       owner: { select: { username: true } },
+      likes: { select: { user_id: true } }
     },
   })
 
-  const result = items.map(item => ({
+  let result = items.map(item => ({
     ...item,
     category_name: item.category?.name || null,
     owner_name: item.owner?.username || null,
   }))
+
+  // Randomize if requested or on refresh as fallback
+  if (sort === 'random') {
+    result = result.sort(() => Math.random() - 0.5)
+  }
 
   if (sort === 'nearest' && lat && lng) {
     result.sort((a, b) => {
@@ -58,7 +76,30 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   return result
 }
 
+const findLikedItems = async (userId) => {
+  const likes = await prisma.itemLike.findMany({
+    where: { user_id: parseInt(userId) },
+    include: {
+      item: {
+        include: {
+          category: { select: { name: true } },
+          owner: { select: { username: true } },
+          likes: { select: { user_id: true } }
+        }
+      }
+    },
+    orderBy: { created_at: 'desc' }
+  })
+  
+  return likes.map(l => ({
+    ...l.item,
+    category_name: l.item.category?.name || null,
+    owner_name: l.item.owner?.username || null
+  }))
+}
+
 const findItemById = async (id) => {
+// ... existing code ...
   // Increment views
   await prisma.item.update({
     where: { id: parseInt(id) },
@@ -186,6 +227,7 @@ const updateItemStatus = async (id, status) => {
 
 module.exports = { 
   findAllItems, 
+  findLikedItems,
   findItemById, 
   findAllCategories, 
   createItem, 
@@ -193,4 +235,4 @@ module.exports = {
   deleteItem, 
   toggleLike, 
   updateItemStatus 
-}
+}
