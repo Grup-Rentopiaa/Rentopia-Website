@@ -5,6 +5,7 @@ import ChatList from "../components/ChatList";
 import MessageBubble from "../components/MessageBubble";
 import MessageInput from "../components/MessageInput";
 import { updateItemStatusService } from "../services/itemService";
+import apiFetch from "../api";
 
 export default function ChatPage({ setActivePage }) {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -63,6 +64,16 @@ export default function ChatPage({ setActivePage }) {
                 if (window.confirm(`Konfirmasi penyewaan "${product.title}"?`)) {
                   try {
                     await updateItemStatusService(product.id, 'rented');
+                    await apiFetch(`/api/users/${targetUser.id}/rentals`, {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        title: product.title,
+                        price: product.price.toString(),
+                        store: user.name || user.username,
+                        itemId: product.id,
+                        image: product.image
+                      })
+                    });
                     alert('Status produk berhasil diubah menjadi Sedang Disewa');
                     // Update local storage to reflect status
                     product.status = 'rented';
@@ -83,7 +94,7 @@ export default function ChatPage({ setActivePage }) {
                   )}
                   <div className="product-info">
                     <div className="product-name font-bold">{product.title}</div>
-                    <div className="product-price text-blue-600">Rp {product.price.toLocaleString('id-ID')}</div>
+                    <div className="product-price text-purple-600">Rp {product.price.toLocaleString('id-ID')}</div>
                     
                     <div className="flex gap-2 mt-2">
                       <button 
