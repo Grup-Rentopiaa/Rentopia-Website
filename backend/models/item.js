@@ -11,7 +11,12 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   }
 
   if (category) {
-    where.category_id = parseInt(category)
+    const cat = await prisma.category.findFirst({ where: { name: category } });
+    if (cat) {
+      where.category_id = cat.id;
+    } else {
+      where.category_id = -1; // No items should match if category doesn't exist
+    }
   }
 
   if (ownerId) {
@@ -98,6 +103,12 @@ const findLikedItems = async (userId) => {
   }))
 }
 
+const clearWishlist = async (userId) => {
+  return await prisma.itemLike.deleteMany({
+    where: { user_id: parseInt(userId) }
+  })
+}
+
 const findItemById = async (id) => {
 // ... existing code ...
   // Increment views
@@ -150,6 +161,7 @@ const createItem = async (ownerId, data) => {
       price_per_day: parseFloat(data.price),
       location: data.location,
       image: data.image,
+      status: data.status || 'available',
       category_id,
       owner_id: parseInt(ownerId)
     }
@@ -173,6 +185,7 @@ const updateItem = async (id, ownerId, data) => {
   if (data.price !== undefined) updateData.price_per_day = parseFloat(data.price)
   if (data.location !== undefined) updateData.location = data.location
   if (data.image !== undefined) updateData.image = data.image
+  if (data.status !== undefined) updateData.status = data.status
   updateData.category_id = category_id
 
   return await prisma.item.update({
@@ -234,5 +247,6 @@ module.exports = {
   updateItem, 
   deleteItem, 
   toggleLike, 
-  updateItemStatus 
+  updateItemStatus,
+  clearWishlist
 }

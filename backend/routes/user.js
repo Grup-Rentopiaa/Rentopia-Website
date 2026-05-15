@@ -1,7 +1,8 @@
 const express = require('express')
 const router  = express.Router()
-const { getUser, updateUser, follow, unfollow, getFollowStatus } = require('../controllers/user')
+const { getUser, updateUser, follow, unfollow, getFollowStatus, searchUsers } = require('../controllers/user')
 
+router.get('/', searchUsers)
 router.get('/:id', getUser)
 router.put('/:id', updateUser)
 router.post('/:id/follow', follow)

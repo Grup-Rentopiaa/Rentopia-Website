@@ -1,5 +1,6 @@
 const { z } = require('zod')
 const { findById, updateProfile, followUser, unfollowUser, checkFollowStatus } = require('../models/user')
+const { prisma } = require('../lib/prisma')
 
 const UpdateUserSchema = z.object({
   username:    z.string().min(3).max(64).regex(/^\w+$/, 'Hanya huruf, angka, underscore').optional(),
@@ -15,6 +16,33 @@ const getUser = async (req, res) => {
     const user = await findById(parseInt(req.params.id))
     if (!user) return res.status(404).json({ message: 'User tidak ditemukan.' })
     res.json(user)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+const searchUsers = async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    if (!search) return res.json([]);
+    const users = await prisma.users.findMany({
+      where: {
+        OR: [
+          { username: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } }
+        ]
+      },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        avatarB64: true,
+        followers: true,
+        following: true
+      },
+      take: 20
+    });
+    res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -68,4 +96,4 @@ const getFollowStatus = async (req, res) => {
   }
 }
 
-module.exports = { getUser, updateUser, follow, unfollow, getFollowStatus }
+module.exports = { getUser, updateUser, follow, unfollow, getFollowStatus, searchUsers }

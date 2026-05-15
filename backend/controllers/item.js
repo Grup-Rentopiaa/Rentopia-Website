@@ -7,7 +7,8 @@ const {
   updateItem, 
   deleteItem, 
   toggleLike, 
-  updateItemStatus 
+  updateItemStatus,
+  clearWishlist
 } = require('../models/item')
 
 const getItems = async (req, res) => {
@@ -94,12 +95,80 @@ const likeItem = async (req, res) => {
   }
 }
 
+const clearAllLikedItems = async (req, res) => {
+  try {
+    const userId = req.query.userId || req.body.userId;
+    if (!userId) return res.status(400).json({ message: 'User ID diperlukan' });
+    const result = await clearWishlist(userId);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 const updateStatus = async (req, res) => {
   try {
     const id = parseInt(req.params.id)
     const { status } = req.body
     const result = await updateItemStatus(id, status)
     res.json(result)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+const getReviews = async (req, res) => {
+  try {
+    const itemId = parseInt(req.params.id)
+    const reviews = await prisma.review.findMany({
+      where: { itemId },
+      include: {
+        user: { select: { username: true, name: true, avatarB64: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+const createReview = async (req, res) => {
+  try {
+    const itemId = parseInt(req.params.id)
+    const userId = parseInt(req.body.userId)
+    const { rating, comment } = req.body;
+    
+    if (!userId || !rating || !comment) return res.status(400).json({ message: 'Missing fields' });
+
+    const review = await prisma.review.create({
+      data: {
+        itemId,
+        userId,
+        rating: parseInt(rating),
+        comment
+      }
+    });
+
+    // Also update item rating average
+    const allReviews = await prisma.review.findMany({ where: { itemId } });
+    if (allReviews.length > 0) {
+      // For now we don't store average rating on Item but we could.
+      // But we can store it on the owner!
+      const item = await prisma.item.findUnique({ where: { id: itemId } });
+      if (item && item.owner_id) {
+        const ownerReviews = await prisma.review.findMany({ 
+          where: { item: { owner_id: item.owner_id } } 
+        });
+        const avgRating = ownerReviews.reduce((sum, r) => sum + r.rating, 0) / ownerReviews.length;
+        await prisma.users.update({
+          where: { id: item.owner_id },
+          data: { rating: avgRating }
+        });
+      }
+    }
+
+    res.status(201).json(review);
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -114,5 +183,8 @@ module.exports = {
   updateExistingItem, 
   removeExistingItem,
   likeItem,
-  updateStatus
+  updateStatus,
+  clearAllLikedItems,
+  getReviews,
+  createReview
 }

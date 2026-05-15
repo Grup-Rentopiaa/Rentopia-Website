@@ -40,6 +40,7 @@ model Users {
   receivedMessages Message[]      @relation("ReceivedMessages")
   penawaran        Penawaran[]
   itemLikes        ItemLike[]
+  reviews          Review[]
   followedBy       Follows[]      @relation("following")
   followingRelation Follows[]     @relation("follower")
 
@@ -81,9 +82,11 @@ model Rental {
   status    RentalStatus @default(ongoing)
   note      String?      @db.VarChar(128)
   image     String?
+  itemId    Int?         @map("item_id")
   createdAt DateTime     @default(now()) @map("created_at")
 
   user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation("ItemRentals", fields: [itemId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@map("rentals")
@@ -131,6 +134,8 @@ model Item {
   notifications Notification[]
   penawaran     Penawaran[]
   likes         ItemLike[]
+  reviews       Review[]       @relation("ItemReviews")
+  rentals       Rental[]       @relation("ItemRentals")
 }
 
 model ItemLike {
@@ -142,6 +147,20 @@ model ItemLike {
   user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([item_id, user_id])
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  itemId     Int      @map("item_id")
+  rating     Int      @default(5)
+  comment    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item       Item     @relation("ItemReviews", fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
 }
 
 model SavedKeyword {

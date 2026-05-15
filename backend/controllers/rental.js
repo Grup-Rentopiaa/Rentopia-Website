@@ -7,6 +7,8 @@ const RentalSchema = z.object({
   store:  z.string().min(1, 'Store wajib diisi').max(128),
   status: z.enum(['ongoing', 'done', 'urgent']).default('ongoing'),
   note:   z.string().max(128).optional(),
+  itemId: z.number().optional(),
+  image:  z.string().optional()
 })
 
 const getAll = async (req, res) => {
