@@ -41,7 +41,7 @@ export default function EditProfileForm({ user, onSave, onCancel }) {
     } finally { setSaving(false) }
   }
 
-  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100'
+  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100'
   const initials   = (user?.name || user?.username || '?')[0]?.toUpperCase()
 
   return (
@@ -55,9 +55,9 @@ export default function EditProfileForm({ user, onSave, onCancel }) {
         <div onClick={() => fileRef.current.click()}
           className="relative cursor-pointer group shrink-0">
           {preview ? (
-            <img src={preview} className="h-16 w-16 rounded-xl object-cover ring-2 ring-blue-100" alt="avatar" />
+            <img src={preview} className="h-16 w-16 rounded-xl object-cover ring-2 ring-purple-100" alt="avatar" />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-600 text-xl font-black text-white">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-purple-600 text-xl font-black text-white">
               {initials}
             </div>
           )}
@@ -108,7 +108,7 @@ export default function EditProfileForm({ user, onSave, onCancel }) {
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={saving}
-          className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-40 transition-all">
+          className="flex-1 rounded-xl bg-purple-600 py-2.5 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-40 transition-all">
           {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </button>
         <button type="button" onClick={onCancel}

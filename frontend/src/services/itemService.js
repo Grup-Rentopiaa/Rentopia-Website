@@ -50,3 +50,9 @@ export async function getCategoriesService() {
 export async function getLikedItemsService(userId) {
   return await apiFetch(`/api/items/liked?userId=${userId}`);
 }
+
+export async function clearLikedItemsService(userId) {
+  return await apiFetch(`/api/items/liked/clear?userId=${userId}`, {
+    method: "DELETE"
+  });
+}

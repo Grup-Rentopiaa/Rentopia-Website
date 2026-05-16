@@ -61,7 +61,7 @@ export default function Filter({ onApply, isOpen, onClose }) {
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <SlidersHorizontal size={18} className="text-blue-600" />
+              <SlidersHorizontal size={18} className="text-purple-600" />
               <span className="font-bold text-gray-900 text-lg">Filter</span>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400">
@@ -80,9 +80,9 @@ export default function Filter({ onApply, isOpen, onClose }) {
                       name="sort"
                       checked={sort === opt.value}
                       onChange={() => setSort(opt.value)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                     />
-                    <span className={`text-sm ${sort === opt.value ? 'text-blue-700 font-semibold' : 'text-gray-600'}`}>
+                    <span className={`text-sm ${sort === opt.value ? 'text-purple-700 font-semibold' : 'text-gray-600'}`}>
                       {opt.label}
                     </span>
                   </label>
@@ -97,14 +97,14 @@ export default function Filter({ onApply, isOpen, onClose }) {
                   placeholder="Min"
                   value={minPrice}
                   onChange={e => setMinPrice(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-purple-500"
                 />
                 <input
                   type="number"
                   placeholder="Max"
                   value={maxPrice}
                   onChange={e => setMaxPrice(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-purple-500"
                 />
               </div>
             </Section>
@@ -113,7 +113,7 @@ export default function Filter({ onApply, isOpen, onClose }) {
               <select
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-blue-500 bg-white"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-purple-500 bg-white"
               >
                 <option value="">Semua Lokasi</option>
                 {LOCATIONS.map(l => (
@@ -127,7 +127,7 @@ export default function Filter({ onApply, isOpen, onClose }) {
           <div className="p-5 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
             <button
               onClick={handleApply}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all"
+              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-xl transition-all"
             >
               Terapkan
             </button>

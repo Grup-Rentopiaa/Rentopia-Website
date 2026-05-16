@@ -10,8 +10,8 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="md:col-span-1">
             <div className="mb-3">
-              <span className="text-xl font-extrabold text-blue-600 tracking-tight">Rento</span>
-              <span className="text-xl font-extrabold text-blue-800 tracking-tight">pia</span>
+              <span className="text-xl font-extrabold text-purple-600 tracking-tight">Rento</span>
+              <span className="text-xl font-extrabold text-purple-800 tracking-tight">pia</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               Platform penyewaan produk terpercaya di Indonesia. Sewa apa saja, kapan saja, dengan mudah dan aman.
@@ -24,7 +24,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {['Tentang Kami', 'Karir', 'Blog', 'Berita & Media', 'Rentopia Affiliate'].map(item => (
                 <li key={item}>
-                  <a href="#" className="text-sm text-gray-500 hover:text-blue-600 transition-colors">{item}</a>
+                  <a href="#" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">{item}</a>
                 </li>
               ))}
             </ul>
@@ -36,7 +36,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {['Pusat Bantuan', 'Cara Menyewa', 'Cara Menyewakan', 'Syarat dan Ketentuan', 'Kebijakan Privasi'].map(item => (
                 <li key={item}>
-                  <a href="#" className="text-sm text-gray-500 hover:text-blue-600 transition-colors">{item}</a>
+                  <a href="#" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">{item}</a>
                 </li>
               ))}
             </ul>
@@ -48,7 +48,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {['Rentopia Care', 'Jaminan Keamanan', 'Mitra Logistik', 'Asuransi Sewa', 'Program Loyalitas'].map(item => (
                 <li key={item}>
-                  <a href="#" className="text-sm text-gray-500 hover:text-blue-600 transition-colors">{item}</a>
+                  <a href="#" className="text-sm text-gray-500 hover:text-purple-600 transition-colors">{item}</a>
                 </li>
               ))}
             </ul>
@@ -62,9 +62,9 @@ export default function Footer() {
             &copy; 2024 - 2026, PT. Rentopia Indonesia. All Rights Reserved.
           </p>
           <div className="flex items-center gap-5">
-            <a href="#" className="text-sm text-gray-400 hover:text-blue-600 transition-colors">Privasi</a>
-            <a href="#" className="text-sm text-gray-400 hover:text-blue-600 transition-colors">Ketentuan</a>
-            <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-blue-600 transition-colors">
+            <a href="#" className="text-sm text-gray-400 hover:text-purple-600 transition-colors">Privasi</a>
+            <a href="#" className="text-sm text-gray-400 hover:text-purple-600 transition-colors">Ketentuan</a>
+            <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-purple-600 transition-colors">
               <Globe size={14} /> Indonesia
             </button>
           </div>

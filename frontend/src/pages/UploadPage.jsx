@@ -19,6 +19,7 @@ export default function UploadPage() {
     location: '',
     description: '',
     category: '',
+    status: 'available',
     image: null
   });
   const [preview, setPreview] = useState(null);
@@ -42,6 +43,7 @@ export default function UploadPage() {
         location: item.location || '',
         description: item.description || '',
         category: item.category_name || '',
+        status: item.status || 'available',
         image: item.image
       });
       setPreview(item.image);
@@ -95,7 +97,7 @@ export default function UploadPage() {
       {/* NAVBAR */}
       <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-screen-xl items-center px-6 py-4">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-purple-600 transition-colors">
             <ArrowLeft size={18} />
             Kembali
           </button>
@@ -106,7 +108,7 @@ export default function UploadPage() {
 
       {fetching ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+          <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="max-w-lg mx-auto px-4 py-8">
@@ -123,7 +125,7 @@ export default function UploadPage() {
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
             {/* Upload foto */}
             <div className="p-5 border-b border-gray-100 relative">
-              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-blue-300 rounded-xl cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors overflow-hidden relative">
+              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-purple-300 rounded-xl cursor-pointer bg-purple-50 hover:bg-purple-100 transition-colors overflow-hidden relative">
                 {preview ? (
                   <>
                     <img src={preview} alt="Preview" className="w-full h-full object-cover" />
@@ -133,8 +135,8 @@ export default function UploadPage() {
                   </>
                 ) : (
                   <>
-                    <ImagePlus size={32} className="text-blue-400 mb-2" />
-                    <span className="text-sm font-medium text-blue-600">Tambah Foto Produk</span>
+                    <ImagePlus size={32} className="text-purple-400 mb-2" />
+                    <span className="text-sm font-medium text-purple-600">Tambah Foto Produk</span>
                     <span className="text-xs text-gray-400 mt-1">Format JPG/PNG</span>
                   </>
                 )}
@@ -210,10 +212,19 @@ export default function UploadPage() {
                 </select>
                 <ChevronRight size={16} className="text-gray-300" />
               </div>
+
+              <div className="flex items-center gap-3 px-5 py-4">
+                <Tag size={18} className="text-gray-400 flex-shrink-0" />
+                <select name="status" value={form.status} onChange={handleChange} className="flex-1 text-sm text-gray-700 outline-none bg-transparent">
+                  <option value="available">Tersedia</option>
+                  <option value="rented">Sedang Disewa</option>
+                </select>
+                <ChevronRight size={16} className="text-gray-300" />
+              </div>
             </div>
           </div>
 
-          <button type="submit" disabled={saving} className="w-full mt-6 py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md">
+          <button type="submit" disabled={saving} className="w-full mt-6 py-3.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-md">
             {saving ? (editId ? 'Menyimpan...' : 'Mengupload...') : (
               <>
                 <Upload size={18} />

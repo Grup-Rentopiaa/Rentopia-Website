@@ -77,7 +77,7 @@ export default function Cookies({ onAccept, onClose }) {
                     key={item.id} 
                     onClick={() => togglePref(item.id)}
                     className={`p-4 rounded-lg border transition-all cursor-pointer flex items-start gap-3 ${
-                      preferences[item.id] ? 'border-[#00A3FF] bg-blue-50/30' : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
+                      preferences[item.id] ? 'border-[#00A3FF] bg-purple-50/30' : 'border-slate-100 bg-slate-50/30 hover:border-slate-200'
                     }`}
                   >
                     <div className={`mt-1 h-4 w-4 rounded border flex items-center justify-center transition-colors ${
@@ -88,7 +88,7 @@ export default function Cookies({ onAccept, onClose }) {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-slate-800">{item.label}</span>
-                        {item.required && <span className="text-[10px] font-bold text-[#00A3FF] bg-blue-100 px-1.5 py-0.5 rounded uppercase">Required</span>}
+                        {item.required && <span className="text-[10px] font-bold text-[#00A3FF] bg-purple-100 px-1.5 py-0.5 rounded uppercase">Required</span>}
                       </div>
                       <p className="text-[11px] text-slate-500 leading-tight mt-1">{item.desc}</p>
                     </div>

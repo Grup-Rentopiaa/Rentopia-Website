@@ -15,7 +15,7 @@ export default function LandingPage() {
   const { showCookie, acceptCookie, closeCookie } = useCookieConsent();
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-200">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-purple-200">
       <Navbar />
       <Hero />
       <Trust stats={TRUST_STATS} />

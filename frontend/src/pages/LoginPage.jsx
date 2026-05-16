@@ -38,9 +38,9 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       {/* Header Strip */}
-      <div className="bg-blue-600 px-8 py-6">
+      <div className="bg-purple-600 px-8 py-6">
         <h1 className="text-white text-xl font-bold">Selamat Datang Kembali!</h1>
-        <p className="text-blue-200 text-sm mt-1">Masuk ke akun Rentopia kamu</p>
+        <p className="text-purple-200 text-sm mt-1">Masuk ke akun Rentopia kamu</p>
       </div>
 
       {/* Body */}
@@ -60,7 +60,7 @@ export default function LoginPage() {
               <label htmlFor="password" className="text-sm font-semibold text-slate-700">
                 Password <span className="text-red-400">*</span>
               </label>
-              <Link to="/forgot-password" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+              <Link to="/forgot-password" className="text-xs font-semibold text-purple-600 hover:text-purple-700">
                 Lupa password?
               </Link>
             </div>
@@ -72,7 +72,7 @@ export default function LoginPage() {
                 placeholder="Masukkan password"
                 value={values.password} onChange={handleChange}
                 autoComplete="current-password"
-                className={`w-full rounded-xl border px-4 py-3 pl-9 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${errors.password ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-blue-500 focus:ring-blue-50"}`}
+                className={`w-full rounded-xl border px-4 py-3 pl-9 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${errors.password ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-purple-500 focus:ring-purple-50"}`}
               />
               <button type="button" onClick={() => setShowPass((v) => !v)}
                 className="absolute right-3.5 text-slate-400 hover:text-slate-600 transition-colors">
@@ -83,7 +83,7 @@ export default function LoginPage() {
           </div>
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-purple-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {loading ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Masuk...</> : "Masuk"}
           </button>
         </form>
@@ -109,7 +109,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-slate-500">
           Belum punya akun?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700">Daftar gratis</Link>
+          <Link to="/register" className="text-purple-600 font-semibold hover:text-purple-700">Daftar gratis</Link>
         </p>
       </div>
     </AuthLayout>

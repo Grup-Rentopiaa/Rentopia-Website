@@ -3,7 +3,7 @@ import { Star, ChevronRight } from "lucide-react";
 
 export default function Card({ product }) {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-blue-500">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-purple-500">
       {/* Gambar produk */}
       <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
         <img
@@ -27,12 +27,12 @@ export default function Card({ product }) {
         <div className="mt-auto pt-4 flex items-center justify-between">
           <div>
             <p className="text-xs text-slate-500 font-medium">Mulai dari</p>
-            <p className="text-lg font-black text-blue-600">
+            <p className="text-lg font-black text-purple-600">
               {product.price}
               <span className="text-sm font-normal text-slate-500">/hari</span>
             </p>
           </div>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-50 text-purple-600 transition-colors hover:bg-purple-600 hover:text-white">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>

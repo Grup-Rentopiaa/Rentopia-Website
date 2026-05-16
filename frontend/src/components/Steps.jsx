@@ -25,7 +25,7 @@ export default function Steps({ steps }) {
 
           {steps.map((step) => (
             <div key={step.id} className="group flex flex-col items-center bg-white">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 shadow-sm transition-transform group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white">
                 {ICON_MAP[step.icon]}
               </div>
               <h3 className="mt-6 text-xl font-bold text-slate-900">{step.title}</h3>

@@ -29,7 +29,7 @@ export default function ProductCard({ item }) {
       {/* Category badge - absolute overlay on image */}
       {item.category_name && (
         <div className="absolute top-3 left-3">
-          <span className="bg-blue-800/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+          <span className="bg-purple-800/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
             {item.category_name}
           </span>
         </div>
@@ -53,7 +53,7 @@ export default function ProductCard({ item }) {
         </div>
 
         {/* Price */}
-        <p className="text-blue-600 font-bold text-base">
+        <p className="text-purple-600 font-bold text-base">
           {formatPrice(item.price_per_day)}
           <span className="text-gray-400 font-normal text-xs"> /hari</span>
         </p>

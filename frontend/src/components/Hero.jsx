@@ -13,14 +13,14 @@ export default function Hero() {
 
           {/* Teks utama + search bar */}
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 mb-6">
-              <Zap className="h-4 w-4 fill-blue-600 text-blue-600" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 mb-6">
+              <Zap className="h-4 w-4 fill-purple-600 text-purple-600" />
               Platform Sewa #1 di Indonesia
             </div>
 
             <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
               Sewa barang mulai dari{" "}
-              <span className="text-blue-600 inline-block">Rp25.000/hari</span>{" "}
+              <span className="text-purple-600 inline-block">Rp25.000/hari</span>{" "}
               tanpa ribet.
             </h1>
 
@@ -33,13 +33,13 @@ export default function Hero() {
             <div
               className={`mt-10 flex w-full max-w-xl items-center rounded-2xl border bg-white p-2 shadow-sm transition-all duration-300 ${
                 isSearchFocused
-                  ? "border-blue-500 shadow-blue-100 ring-4 ring-blue-50"
-                  : "border-slate-300 hover:border-blue-400"
+                  ? "border-purple-500 shadow-purple-100 ring-4 ring-purple-50"
+                  : "border-slate-300 hover:border-purple-400"
               }`}
             >
               <Search
                 className={`ml-3 h-6 w-6 transition-colors ${
-                  isSearchFocused ? "text-blue-600" : "text-slate-400"
+                  isSearchFocused ? "text-purple-600" : "text-slate-400"
                 }`}
               />
               <input
@@ -71,7 +71,7 @@ export default function Hero() {
 
           {/* Visual / Mockup */}
           <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-blue-100 to-blue-50 blur-2xl"></div>
+            <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-purple-100 to-purple-50 blur-2xl"></div>
             <div className="relative rounded-3xl bg-white p-2 shadow-2xl ring-1 ring-slate-100">
               <img
                 src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
@@ -85,7 +85,7 @@ export default function Hero() {
                 style={{ animationDuration: "3s" }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600">
                     <TrendingUp className="h-6 w-6" />
                   </div>
                   <div>

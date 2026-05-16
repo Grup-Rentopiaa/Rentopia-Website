@@ -24,7 +24,6 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@prisma/config": "^7.8.0",
     "prisma": "^5.22.0"
   }
 }

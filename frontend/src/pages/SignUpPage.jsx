@@ -39,9 +39,9 @@ export default function SignupPage() {
 
   return (
     <AuthLayout>
-      <div className="bg-blue-600 px-8 py-6">
+      <div className="bg-purple-600 px-8 py-6">
         <h1 className="text-white text-xl font-bold">Buat Akun Baru</h1>
-        <p className="text-blue-200 text-sm mt-1">Daftar sekarang dan mulai sewa dengan mudah</p>
+        <p className="text-purple-200 text-sm mt-1">Daftar sekarang dan mulai sewa dengan mudah</p>
       </div>
 
       <div className="px-8 py-6 space-y-4">
@@ -71,7 +71,7 @@ export default function SignupPage() {
                 placeholder="Min. 6 karakter"
                 value={values.password} onChange={handleChange}
                 autoComplete="new-password"
-                className={`w-full rounded-xl border px-4 py-3 pl-9 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${errors.password ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-blue-500 focus:ring-blue-50"}`}
+                className={`w-full rounded-xl border px-4 py-3 pl-9 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${errors.password ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-purple-500 focus:ring-purple-50"}`}
               />
               <button type="button" onClick={() => setShowPass((v) => !v)}
                 className="absolute right-3.5 text-slate-400 hover:text-slate-600 transition-colors">
@@ -89,7 +89,7 @@ export default function SignupPage() {
           />
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-purple-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {loading ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Mendaftarkan...</> : "Daftar Sekarang"}
           </button>
         </form>
@@ -115,7 +115,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-slate-500">
           Sudah punya akun?{" "}
-          <Link to="/login" className="text-blue-600 font-semibold hover:text-blue-700">Masuk sekarang</Link>
+          <Link to="/login" className="text-purple-600 font-semibold hover:text-purple-700">Masuk sekarang</Link>
         </p>
       </div>
     </AuthLayout>

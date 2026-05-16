@@ -5,7 +5,7 @@ export default function ListingCard({ listing, onEdit, onDelete }) {
   }
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-blue-500">
+    <div className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-1 hover:shadow-xl hover:ring-purple-500">
       {/* Image */}
       <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {listing.image ? (
@@ -26,19 +26,19 @@ export default function ListingCard({ listing, onEdit, onDelete }) {
           <p className="font-bold text-slate-900 leading-tight text-sm">{listing.title}</p>
           <p className="text-xs text-slate-400 mt-0.5">{listing.brand}</p>
             {listing.category && (
-    <span className="mt-1 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+    <span className="mt-1 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 border border-purple-100">
       {listing.category}
     </span>
   )}
         </div>
-        <p className="text-sm font-bold text-blue-600">{listing.price}</p>
+        <p className="text-sm font-bold text-purple-600">{listing.price}</p>
         <div className="flex items-center justify-between mt-auto pt-2">
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColor[listing.status]}`}>
             {listing.status === 'available' ? 'Tersedia' : 'Disewa'}
           </span>
           <div className="flex gap-2">
             <button onClick={onEdit}
-              className="text-[11px] font-semibold text-blue-500 hover:text-blue-700 transition-colors">
+              className="text-[11px] font-semibold text-purple-500 hover:text-purple-700 transition-colors">
               Edit
             </button>
             <button onClick={onDelete}

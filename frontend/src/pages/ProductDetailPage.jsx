@@ -12,9 +12,11 @@ import {
   Calendar,
   Tag,
   ShieldCheck,
-  Package
+  Package,
+  Star
 } from "lucide-react";
 import { getItemByIdService, likeItemService, deleteItemService } from "../services/itemService";
+import apiFetch from "../api";
 import Navbar from "../components/Navbar";
 
 export default function ProductDetailPage() {
@@ -27,6 +29,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState("");
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     fetchItem();
@@ -39,6 +42,13 @@ export default function ProductDetailPage() {
       setItem(data);
       setLikesCount(data.likes?.length || 0);
       setLiked(data.likes?.some(l => l.user_id === user?.id));
+
+      try {
+        const revs = await apiFetch(`/api/items/${id}/reviews`);
+        setReviews(revs || []);
+      } catch (e) {
+        console.error("Gagal load reviews", e);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,7 +98,7 @@ export default function ProductDetailPage() {
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="animate-pulse flex flex-col items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mb-4"></div>
+        <div className="w-12 h-12 rounded-full border-4 border-purple-500 border-t-transparent animate-spin mb-4"></div>
         <p className="text-slate-500 font-medium">Memuat detail produk...</p>
       </div>
     </div>
@@ -166,7 +176,7 @@ export default function ProductDetailPage() {
           <div className="lg:col-span-5 flex flex-col gap-8">
             <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100">
               <div className="flex items-center gap-2 mb-4">
-                <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
+                <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
                   {item.category_name || "Lainnya"}
                 </span>
                 <span className="text-slate-300">•</span>
@@ -179,7 +189,7 @@ export default function ProductDetailPage() {
               <h1 className="text-4xl font-extrabold text-slate-900 mb-4 leading-tight">{item.title}</h1>
               
               <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-4xl font-black text-blue-600">
+                <span className="text-4xl font-black text-purple-600">
                   Rp {parseFloat(item.price_per_day).toLocaleString('id-ID')}
                 </span>
                 <span className="text-slate-400 font-medium">/ hari</span>
@@ -214,7 +224,7 @@ export default function ProductDetailPage() {
                       {item.owner?.avatarB64 ? (
                         <img src={item.owner.avatarB64} alt={item.owner_name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xl uppercase">
+                        <div className="w-full h-full flex items-center justify-center bg-purple-100 text-purple-600 font-bold text-xl uppercase">
                           {item.owner_name?.charAt(0)}
                         </div>
                       )}
@@ -226,7 +236,7 @@ export default function ProductDetailPage() {
                   </div>
                   
                   {!isOwner && (
-                    <button className="text-blue-600 font-bold text-sm hover:underline">Lihat Profil</button>
+                    <button className="text-purple-600 font-bold text-sm hover:underline">Lihat Profil</button>
                   )}
                 </div>
 
@@ -251,7 +261,7 @@ export default function ProductDetailPage() {
                     <button 
                       onClick={handleChat}
                       disabled={item.status === 'rented'}
-                      className={`flex-1 h-14 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-blue-200 ${item.status === 'rented' ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                      className={`flex-1 h-14 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-200 ${item.status === 'rented' ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
                     >
                       <MessageCircle size={22} /> {item.status === 'rented' ? 'Produk Sedang Disewa' : 'Chat Penjual'}
                     </button>
@@ -263,7 +273,7 @@ export default function ProductDetailPage() {
             {/* Statistics & Interactions Lists */}
             <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100 overflow-hidden">
               <div className="flex items-center gap-3 mb-8">
-                <ShieldCheck className="text-blue-600" size={24} />
+                <ShieldCheck className="text-purple-600" size={24} />
                 <h3 className="text-xl font-bold text-slate-900">Interaksi & Peminat</h3>
               </div>
 
@@ -278,7 +288,7 @@ export default function ProductDetailPage() {
                     <div className="flex flex-wrap gap-2">
                       {item.likes.map((like) => (
                         <div key={like.user_id} className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-default" title={like.user.username}>
-                          <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600 overflow-hidden">
+                          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600 overflow-hidden">
                             {like.user.avatarB64 ? <img src={like.user.avatarB64} className="w-full h-full object-cover" /> : like.user.username.charAt(0).toUpperCase()}
                           </div>
                           <span className="text-xs font-semibold text-slate-700 max-w-[80px] truncate">{like.user.username}</span>
@@ -314,7 +324,7 @@ export default function ProductDetailPage() {
                               localStorage.setItem("targetChatId", offer.user.id);
                               navigate("/chat");
                             }}
-                            className="bg-white p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:shadow-md transition-all active:scale-95"
+                            className="bg-white p-2 rounded-xl text-slate-400 hover:text-purple-600 hover:shadow-md transition-all active:scale-95"
                           >
                             <MessageCircle size={18} />
                           </button>
@@ -329,6 +339,43 @@ export default function ProductDetailPage() {
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Customer Reviews */}
+            <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100 overflow-hidden">
+              <div className="flex items-center gap-3 mb-8">
+                <Star className="text-yellow-400" size={24} fill="currentColor" />
+                <h3 className="text-xl font-bold text-slate-900">Review Pelanggan</h3>
+              </div>
+
+              {reviews.length > 0 ? (
+                <div className="space-y-6">
+                  {reviews.map(rev => (
+                    <div key={rev.id} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold overflow-hidden">
+                          {rev.user.avatarB64 ? <img src={rev.user.avatarB64} className="w-full h-full object-cover" /> : rev.user.name?.charAt(0) || rev.user.username.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{rev.user.name || rev.user.username}</p>
+                          <div className="flex text-yellow-400 text-xs">
+                            {[...Array(5)].map((_, i) => <span key={i}>{i < rev.rating ? '★' : '☆'}</span>)}
+                          </div>
+                        </div>
+                        <span className="ml-auto text-xs text-slate-400">
+                          {new Date(rev.createdAt || rev.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
+                        </span>
+                      </div>
+                      <p className="text-slate-600 text-sm">{rev.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
+                  <p className="text-sm text-slate-400 italic mb-1">Belum ada review pelanggan.</p>
+                  <p className="text-xs text-slate-300">Sewa produk ini dan jadilah yang pertama memberikan review!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

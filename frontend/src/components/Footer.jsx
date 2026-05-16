@@ -15,9 +15,9 @@ export default function Footer() {
         </p>
 
         <div className="flex gap-6 text-sm font-medium text-slate-500">
-          <a href="#" className="hover:text-blue-600">Privasi</a>
-          <a href="#" className="hover:text-blue-600">Syarat &amp; Ketentuan</a>
-          <a href="#" className="hover:text-blue-600">Bantuan</a>
+          <a href="#" className="hover:text-purple-600">Privasi</a>
+          <a href="#" className="hover:text-purple-600">Syarat &amp; Ketentuan</a>
+          <a href="#" className="hover:text-purple-600">Bantuan</a>
         </div>
       </div>
     </footer>

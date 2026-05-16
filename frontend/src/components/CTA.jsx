@@ -4,7 +4,7 @@ export default function CTA() {
     <section className="bg-white px-6 pb-20 md:px-12">
       <div className="mx-auto w-full max-w-5xl overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl relative">
         {/* Dekoratif blur */}
-        <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-blue-600/30 blur-3xl"></div>
+        <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-purple-600/30 blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-600/30 blur-3xl"></div>
 
         <div className="relative p-10 text-center md:p-20">
@@ -16,7 +16,7 @@ export default function CTA() {
             mulai hari ini.
           </p>
           <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-            <button className="rounded-full bg-blue-600 px-10 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
+            <button className="rounded-full bg-purple-600 px-10 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-purple-500 hover:scale-105 active:scale-95">
               Masuk ke Aplikasi
             </button>
             <button className="rounded-full bg-white/10 border border-white/20 px-10 py-4 text-lg font-bold text-white transition-all hover:bg-white/20">

@@ -40,9 +40,9 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout>
-      <div className="bg-blue-600 px-8 py-6">
+      <div className="bg-purple-600 px-8 py-6">
         <h1 className="text-white text-xl font-bold">Buat Password Baru</h1>
-        <p className="text-blue-200 text-sm mt-1">Pastikan password baru kamu kuat dan mudah diingat</p>
+        <p className="text-purple-200 text-sm mt-1">Pastikan password baru kamu kuat dan mudah diingat</p>
       </div>
 
       <div className="px-8 py-6 space-y-4">
@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
           />
 
           <button type="submit" disabled={loading}
-            className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-purple-700 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             {loading ? <><span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Menyimpan...</> : "Simpan Password Baru"}
           </button>
         </form>

@@ -47,7 +47,7 @@ export default function EditProfilePage() {
     } finally { setSaving(false) }
   }
 
-  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100'
+  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100'
   const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500'
 
   if (loading) return (
@@ -67,7 +67,7 @@ export default function EditProfilePage() {
         <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
           <button
             onClick={() => navigate('/profile')}
-            className="text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors"
+            className="text-sm font-semibold text-slate-500 hover:text-purple-600 transition-colors"
           >
             ← Batal
           </button>
@@ -75,7 +75,7 @@ export default function EditProfilePage() {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-40 transition-all"
+            className="rounded-xl bg-purple-600 px-5 py-2 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-40 transition-all"
           >
             {saving ? 'Menyimpan...' : 'Simpan'}
           </button>
@@ -104,11 +104,11 @@ export default function EditProfilePage() {
             {avatarSrc ? (
               <img
                 src={avatarSrc}
-                className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-blue-50"
+                className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-purple-50"
                 alt="avatar"
               />
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-600 text-3xl font-black text-white shadow-md ring-4 ring-blue-50">
+              <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-purple-600 text-3xl font-black text-white shadow-md ring-4 ring-purple-50">
                 {initials}
               </div>
             )}

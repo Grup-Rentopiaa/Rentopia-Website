@@ -14,7 +14,7 @@ export default function InputField({ label, name, type = "text", placeholder, va
           value={value}
           onChange={onChange}
           autoComplete={autoComplete}
-          className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${Icon ? "pl-9" : ""} ${error ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-blue-500 focus:ring-blue-50"}`}
+          className={`w-full rounded-xl border px-4 py-3 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-4 ${Icon ? "pl-9" : ""} ${error ? "border-red-400 focus:ring-red-50" : "border-slate-300 focus:border-purple-500 focus:ring-purple-50"}`}
         />
       </div>
       {error && <p className="text-xs text-red-500 font-medium flex items-center gap-1"><span>⚠</span> {error}</p>}

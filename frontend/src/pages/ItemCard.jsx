@@ -29,7 +29,7 @@ export default function ItemCard({ item }) {
   return (
     <div 
       onClick={() => navigate(`/product/${item.id}`)}
-      className="group flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-2 hover:shadow-2xl hover:ring-blue-500 cursor-pointer relative"
+      className="group flex flex-col overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-2 hover:shadow-2xl hover:ring-purple-500 cursor-pointer relative"
     >
       {/* Image */}
       <div className="aspect-square w-full overflow-hidden bg-slate-100 relative">
@@ -61,7 +61,7 @@ export default function ItemCard({ item }) {
       {/* Content */}
       <div className="flex flex-1 flex-col p-5 gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{item.category_name || 'Produk'}</p>
+          <p className="text-[10px] font-black text-purple-600 uppercase tracking-widest">{item.category_name || 'Produk'}</p>
           <p className="font-bold text-slate-900 leading-tight line-clamp-2">{item.title}</p>
         </div>
 
@@ -73,7 +73,7 @@ export default function ItemCard({ item }) {
         <div className="mt-auto pt-2 flex items-center justify-between border-t border-slate-50">
           <div>
             <p className="text-xs text-slate-400 font-medium">Harga sewa</p>
-            <p className="text-lg font-black text-blue-600">
+            <p className="text-lg font-black text-purple-600">
               Rp {Number(item.price_per_day).toLocaleString('id-ID')}
               <span className="text-[10px] text-slate-400 font-normal ml-1">/hari</span>
             </p>

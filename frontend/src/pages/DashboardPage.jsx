@@ -7,6 +7,7 @@ import ItemCard        from './ItemCard'
 import RentalCard      from './RentalCard'
 import EditProfileForm from './EditProfileForm'
 import { LogOut }      from 'lucide-react'
+import apiFetch        from '../api'
 
 // Using TEMP_USER_ID until full auth context is integrated
 const TEMP_USER_ID = 1
@@ -19,6 +20,10 @@ export default function DashboardPage() {
   const [showEditProfile, setShowEditProfile] = useState(false)
   const [search,          setSearch]          = useState('')
   const [filterCat,       setFilterCat]       = useState('')
+  const [reviewModal,     setReviewModal]     = useState(null); // stores the rental object to review
+  const [reviewRating,    setReviewRating]    = useState(5);
+  const [reviewText,      setReviewText]      = useState('');
+  const [submittingReview,setSubmittingReview]= useState(false);
   const fileRef = useRef()
 
   // ── Hooks ──────────────────────────────────────────────────────
@@ -57,6 +62,25 @@ export default function DashboardPage() {
   // ── Helpers ────────────────────────────────────────────────────
   const initials   = (user?.name || user?.username || '?')[0]?.toUpperCase()
 
+  const submitReview = async () => {
+    if (!reviewText.trim()) return alert("Komentar review tidak boleh kosong!");
+    setSubmittingReview(true);
+    try {
+      await apiFetch(`/api/items/${reviewModal.itemId}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify({ userId: user.id, rating: reviewRating, comment: reviewText })
+      });
+      alert("Review berhasil dikirim!");
+      setReviewModal(null);
+      setReviewText('');
+      setReviewRating(5);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   // ── Render ─────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -65,8 +89,8 @@ export default function DashboardPage() {
       <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 font-black text-white">R</div>
-            <span className="text-xl font-black tracking-tight text-blue-600 cursor-pointer" onClick={() => navigate('/home')}>Rentopia.</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 font-black text-white">R</div>
+            <span className="text-xl font-black tracking-tight text-purple-600 cursor-pointer" onClick={() => navigate('/home')}>Rentopia.</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm font-semibold text-slate-500 hidden sm:block">Dashboard</span>
@@ -85,9 +109,9 @@ export default function DashboardPage() {
             {/* Avatar */}
             <div className="relative shrink-0 cursor-pointer group" onClick={handleAvatarClick}>
               {user?.avatarB64 ? (
-                <img src={user.avatarB64} className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-blue-50" alt="avatar" />
+                <img src={user.avatarB64} className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-purple-50" alt="avatar" />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-600 text-3xl font-black text-white shadow-md ring-4 ring-blue-50">
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-purple-600 text-3xl font-black text-white shadow-md ring-4 ring-purple-50">
                   {initials}
                 </div>
               )}
@@ -106,7 +130,7 @@ export default function DashboardPage() {
               {user?.description && <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-600">{user.description}</p>}
               <button
                 onClick={() => setShowEditProfile(prev => !prev)}
-                className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-600 transition-all"
+                className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-purple-400 hover:text-purple-600 transition-all"
               >
                 {showEditProfile ? '✕ Batal Edit' : '✏️ Edit Profil'}
               </button>
@@ -122,7 +146,7 @@ export default function DashboardPage() {
               ].map((s, i, arr) => (
                 <div key={s.label} className="flex items-stretch">
                   <div className="flex flex-col items-center justify-center px-5 py-4 text-center">
-                    <p className="text-2xl font-black text-blue-600">{s.value}</p>
+                    <p className="text-2xl font-black text-purple-600">{s.value}</p>
                     <p className="text-xs font-semibold text-slate-500">{s.label}</p>
                   </div>
                   {i < arr.length - 1 && <div className="w-px bg-slate-200 my-3" />}
@@ -153,11 +177,11 @@ export default function DashboardPage() {
         {/* TABS */}
         <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
           <button onClick={() => setTab('items')}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'items' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'}`}>
+            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'items' ? 'bg-purple-600 text-white shadow' : 'text-slate-500 hover:text-purple-600'}`}>
             Barang Saya ({items.length})
           </button>
           <button onClick={() => setTab('rentals')}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'rentals' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-blue-600'}`}>
+            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'rentals' ? 'bg-purple-600 text-white shadow' : 'text-slate-500 hover:text-purple-600'}`}>
             Sedang Saya Sewa ({rentals.length})
           </button>
         </div>
@@ -170,7 +194,7 @@ export default function DashboardPage() {
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-base font-extrabold text-slate-900">Daftar Barang</h2>
               <button onClick={() => navigate('/upload')}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-sm">
+                className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 transition-all shadow-sm">
                 + Tambah Barang
               </button>
             </div>
@@ -185,7 +209,7 @@ export default function DashboardPage() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Cari nama barang..."
-                  className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
                 />
               </div>
 
@@ -193,7 +217,7 @@ export default function DashboardPage() {
                 <select
                   value={filterCat}
                   onChange={e => setFilterCat(e.target.value)}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white text-slate-600 font-semibold cursor-pointer"
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 bg-white text-slate-600 font-semibold cursor-pointer"
                 >
                   <option value="">Semua Kategori</option>
                   {categories.map(cat => (
@@ -211,7 +235,7 @@ export default function DashboardPage() {
             ) : items.length === 0 ? (
               <div className="py-16 text-center">
                 <p className="text-sm text-slate-400 mb-4">Belum ada barang yang diupload.</p>
-                <button onClick={() => navigate('/upload')} className="rounded-xl bg-blue-50 border border-blue-200 text-blue-600 px-4 py-2 text-sm font-bold hover:bg-blue-100 transition-colors">Mulai Upload Produk</button>
+                <button onClick={() => navigate('/upload')} className="rounded-xl bg-purple-50 border border-purple-200 text-purple-600 px-4 py-2 text-sm font-bold hover:bg-purple-100 transition-colors">Mulai Upload Produk</button>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -236,13 +260,47 @@ export default function DashboardPage() {
               <p className="py-16 text-center text-sm text-slate-400">Belum ada rental aktif.</p>
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {rentals.map(r => <RentalCard key={r.id} rental={r} />)}
+                {rentals.map(r => <RentalCard key={r.id} rental={r} onReview={(r) => setReviewModal(r)} />)}
               </div>
             )}
           </section>
         )}
 
       </div>
+
+      {/* REVIEW MODAL */}
+      {reviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative animate-[popup_0.3s_ease]">
+            <button onClick={() => setReviewModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Beri Ulasan</h2>
+            <p className="text-sm text-gray-500 mb-6">Bagaimana pengalaman Anda menyewa <span className="font-bold text-purple-600">{reviewModal.title}</span>?</p>
+            
+            <div className="flex justify-center gap-2 mb-6">
+              {[1,2,3,4,5].map(star => (
+                <button key={star} onClick={() => setReviewRating(star)} className={`text-4xl transition-transform active:scale-90 ${star <= reviewRating ? 'text-yellow-400' : 'text-gray-200'}`}>
+                  ★
+                </button>
+              ))}
+            </div>
+
+            <textarea 
+              value={reviewText}
+              onChange={(e) => setReviewText(e.target.value)}
+              placeholder="Ceritakan pengalaman Anda..."
+              className="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-purple-500 focus:bg-white transition-colors text-sm resize-none mb-6"
+            />
+
+            <button 
+              onClick={submitReview}
+              disabled={submittingReview}
+              className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors disabled:opacity-50"
+            >
+              {submittingReview ? 'Mengirim...' : 'Kirim Ulasan'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

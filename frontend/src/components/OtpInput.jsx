@@ -29,7 +29,7 @@ export default function OtpInput({ value, onChange }) {
           value={d.trim()}
           onChange={() => {}}
           onKeyDown={(e) => handleKey(i, e)}
-          className="w-11 h-12 text-center text-lg font-bold rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition bg-slate-50"
+          className="w-11 h-12 text-center text-lg font-bold rounded-xl border-2 border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none transition bg-slate-50"
         />
       ))}
     </div>

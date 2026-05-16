@@ -10,9 +10,9 @@ export default function Features({ advantages }) {
           {advantages.map((item) => (
             <div
               key={item.id}
-              className="rounded-3xl border border-slate-100 bg-slate-50 p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:ring-1 hover:ring-blue-100"
+              className="rounded-3xl border border-slate-100 bg-slate-50 p-8 shadow-sm transition-all hover:bg-white hover:shadow-xl hover:ring-1 hover:ring-purple-100"
             >
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 mb-6">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100 text-purple-600 mb-6">
                 <span className="text-3xl">{item.emoji}</span>
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>

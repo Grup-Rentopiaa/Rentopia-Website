@@ -48,7 +48,7 @@ export default function OfferPage({ setActivePage }) {
           {product.image && <img src={product.image} alt={product.title} className="w-12 h-12 object-cover rounded-lg" />}
           <div>
             <p className="text-sm font-bold text-slate-800">{product.title}</p>
-            <p className="text-xs text-blue-600 font-semibold">Harga: Rp {product.price.toLocaleString('id-ID')}</p>
+            <p className="text-xs text-purple-600 font-semibold">Harga: Rp {product.price.toLocaleString('id-ID')}</p>
           </div>
         </div>
 

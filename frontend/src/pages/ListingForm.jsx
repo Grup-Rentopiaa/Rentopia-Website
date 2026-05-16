@@ -37,7 +37,7 @@ export default function ListingForm({ onSubmit, onCancel }) {
     } finally { setLoading(false) }
   }
 
-  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100'
+  const inputClass = 'w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100'
 
   return (
     <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -48,7 +48,7 @@ export default function ListingForm({ onSubmit, onCancel }) {
       {/* Image Upload */}
       <div
         onClick={() => fileRef.current.click()}
-        className="mb-4 flex h-36 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 transition-colors overflow-hidden"
+        className="mb-4 flex h-36 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-200 hover:border-purple-400 transition-colors overflow-hidden"
       >
         {preview ? (
           <img src={preview} className="h-full w-full object-cover" alt="preview" />
@@ -89,7 +89,7 @@ export default function ListingForm({ onSubmit, onCancel }) {
 
       <div className="mt-4 flex gap-3">
         <button type="submit" disabled={loading}
-          className="flex-1 rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-40 transition-all">
+          className="flex-1 rounded-xl bg-purple-600 py-2.5 text-sm font-bold text-white hover:bg-purple-700 disabled:opacity-40 transition-all">
           {loading ? 'Menyimpan...' : 'Simpan Barang'}
         </button>
         <button type="button" onClick={onCancel}

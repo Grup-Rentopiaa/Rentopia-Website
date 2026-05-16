@@ -18,7 +18,7 @@ export default function Products() {
           </div>
           <a
             href="#"
-            className="group inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap"
+            className="group inline-flex items-center gap-1 font-semibold text-purple-600 hover:text-purple-700 whitespace-nowrap"
           >
             Lihat semua{" "}
             <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

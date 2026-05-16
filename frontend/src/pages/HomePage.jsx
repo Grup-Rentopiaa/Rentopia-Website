@@ -20,6 +20,8 @@ export default function HomePage() {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const [activePage, setActivePage] = useState('home');
   const [search, setSearch] = useState('');
+  const [searchType, setSearchType] = useState('produk'); // 'produk' or 'pengguna'
+  const [searchedUsers, setSearchedUsers] = useState([]);
   const [category, setCategory] = useState('');
   const [recommendTab, setRecommendTab] = useState('semua');
   const [filter, setFilter] = useState({
@@ -28,6 +30,16 @@ export default function HomePage() {
   const [notifications, setNotifications] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
   const isSearching = !!(search || category);
+
+  useEffect(() => {
+    if (searchType === 'pengguna' && search) {
+      apiFetch(`/api/users?search=${encodeURIComponent(search)}`)
+        .then(data => setSearchedUsers(data))
+        .catch(() => setSearchedUsers([]));
+    } else {
+      setSearchedUsers([]);
+    }
+  }, [search, searchType]);
 
   // Sync recommendation tab with filter
   useEffect(() => {
@@ -121,7 +133,7 @@ export default function HomePage() {
                         onClick={() => setRecommendTab(id)}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95
                           ${recommendTab === id 
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' 
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}
                         `}
                       >
@@ -135,26 +147,75 @@ export default function HomePage() {
 
               <div className="flex flex-col gap-6">
                 {isSearching && (
-                  <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 gap-4">
                     <div>
                       <h2 className="text-lg font-bold text-gray-900">
-                        {search ? `Hasil untuk "${search}"` : `Kategori: ${category}`}
+                        {search ? `Hasil pencarian untuk "${search}"` : `Kategori: ${category}`}
                       </h2>
-                      <p className="text-sm text-gray-500">{items.length} produk ditemukan</p>
+                      <p className="text-sm text-gray-500">
+                        {searchType === 'produk' ? `${items.length} produk ditemukan` : `${searchedUsers.length} pengguna ditemukan`}
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setShowFilter(true)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl border border-gray-200 transition-all active:scale-95"
-                    >
-                      <SlidersHorizontal size={18} className="text-blue-600" />
-                      Filter
-                    </button>
+                    
+                    {/* Toggle Search Type */}
+                    {search && (
+                      <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button 
+                          onClick={() => setSearchType('produk')}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${searchType === 'produk' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-500'}`}
+                        >
+                          Produk
+                        </button>
+                        <button 
+                          onClick={() => setSearchType('pengguna')}
+                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${searchType === 'pengguna' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-500'}`}
+                        >
+                          Pengguna
+                        </button>
+                      </div>
+                    )}
+
+                    {searchType === 'produk' && (
+                      <button
+                        onClick={() => setShowFilter(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl border border-gray-200 transition-all active:scale-95"
+                      >
+                        <SlidersHorizontal size={18} className="text-purple-600" />
+                        Filter
+                      </button>
+                    )}
                   </div>
                 )}
                 <div className="flex gap-6 items-start">
-                  <Filter isOpen={showFilter} onClose={() => setShowFilter(false)} onApply={setFilter} />
+                  {searchType === 'produk' && <Filter isOpen={showFilter} onClose={() => setShowFilter(false)} onApply={setFilter} />}
                   <div className="flex-1 w-full">
-                    <ItemList items={items} loading={loading} />
+                    {searchType === 'produk' ? (
+                      <ItemList items={items} loading={loading} />
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {searchedUsers.length > 0 ? searchedUsers.map(u => (
+                          <div key={u.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                            {u.avatarB64 ? (
+                              <img src={u.avatarB64} alt={u.name} className="w-12 h-12 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                {u.username[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="font-bold text-gray-900">{u.name || u.username}</p>
+                              <p className="text-xs text-gray-500">@{u.username}</p>
+                              <p className="text-[10px] text-purple-600 font-semibold mt-1">{u.followers} Pengikut</p>
+                            </div>
+                            <button className="bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors">
+                              Lihat
+                            </button>
+                          </div>
+                        )) : (
+                          <p className="text-gray-400 text-sm py-8 col-span-full text-center">Pengguna tidak ditemukan.</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
