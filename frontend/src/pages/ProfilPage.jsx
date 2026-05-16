@@ -8,28 +8,27 @@ import { useState, useEffect }    from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { LogOut, UserPlus, UserMinus } from 'lucide-react'
 
-// TEMP logged in user ID until full auth context is used
-const LOGGED_IN_USER_ID = 1
-
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { id } = useParams()
   
+  const loggedInUserId = JSON.parse(localStorage.getItem('user'))?.id;
+
   // If no ID or ID matches logged in user, redirect to Dashboard
   useEffect(() => {
-    if (!id || parseInt(id) === LOGGED_IN_USER_ID) {
+    if (!id || parseInt(id) === loggedInUserId) {
       navigate('/dashboard', { replace: true })
     }
-  }, [id, navigate])
+  }, [id, navigate, loggedInUserId])
 
   const profileId = id ? parseInt(id) : null
-  const { profile: user, loading, error, isFollowing, followLoading, toggleFollow } = useProfile(profileId, LOGGED_IN_USER_ID)
+  const { profile: user, loading, error, isFollowing, followLoading, toggleFollow } = useProfile(profileId, loggedInUserId)
   
   const { items }    = useItems(profileId)
   const { rentals }  = useRentals(profileId)
   const [tab, setTab] = useState('items')
 
-  if (!profileId || profileId === LOGGED_IN_USER_ID) return null
+  if (!profileId || profileId === loggedInUserId) return null
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50">

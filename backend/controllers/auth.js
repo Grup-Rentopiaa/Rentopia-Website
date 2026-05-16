@@ -122,4 +122,9 @@ const getMe = async (req, res) => {
     }
 }
 
-module.exports = {signup, login, verifyOtp, forgotPassword, verifyOtpForgot, resetPassword, getMe}
+const logout = (req, res) => {
+    res.clearCookie('token', { httpOnly: true, secure: true })
+    res.status(200).json({ message: 'logout berhasil' })
+}
+
+module.exports = {signup, login, verifyOtp, forgotPassword, verifyOtpForgot, resetPassword, getMe, logout}

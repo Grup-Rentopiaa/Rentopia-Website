@@ -9,8 +9,6 @@ import EditProfileForm from './EditProfileForm'
 import { LogOut }      from 'lucide-react'
 import apiFetch        from '../api'
 
-// Using TEMP_USER_ID until full auth context is integrated
-const TEMP_USER_ID = 1
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -27,9 +25,9 @@ export default function DashboardPage() {
   const fileRef = useRef()
 
   // ── Hooks ──────────────────────────────────────────────────────
-  const { user, updateUser } = useUser()
-  const { items, loading: iLoad, remove: removeItem } = useItems(TEMP_USER_ID)
-  const { rentals, loading: rLoad } = useRentals(TEMP_USER_ID)
+  const { user, updateUser, userId } = useUser()
+  const { items, loading: iLoad, remove: removeItem } = useItems(userId)
+  const { rentals, loading: rLoad } = useRentals(userId)
 
   // ── Avatar ─────────────────────────────────────────────────────
   function handleAvatarClick() { fileRef.current.click() }
@@ -46,6 +44,7 @@ export default function DashboardPage() {
   // ── Logout ─────────────────────────────────────────────────────
   function handleLogout() {
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
     navigate('/login')
   }
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const WISHLIST_KEY = 'rentopia_wishlist'
 const CART_KEY = 'rentopia_cart'
+// Returns a per-user wishlist key so accounts never share wishlist data
+const getWishlistKey = (userId) => `rentopia_wishlist_${userId || 'guest'}`
 
 export default function WishlistPage() {
   const navigate = useNavigate()
@@ -11,17 +12,21 @@ export default function WishlistPage() {
   const [sortType, setSortType] = useState('default')
   const [confirmModal, setConfirmModal] = useState(false)
   const [toasts, setToasts] = useState([])
+  const [wishlistKey, setWishlistKey] = useState(getWishlistKey(null))
 
   useEffect(() => {
-    const user = localStorage.getItem('currentUser')
-    if (!user) { navigate('/login'); return }
-    loadWishlist()
+    const stored = localStorage.getItem('user')
+    if (!stored) { navigate('/'); return }
+    const user = JSON.parse(stored)
+    const key = getWishlistKey(user.id)
+    setWishlistKey(key)
+    loadWishlist(key)
     const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]')
     setCartCount(cart.length)
   }, [])
 
-  const loadWishlist = () => {
-    const data = JSON.parse(localStorage.getItem(WISHLIST_KEY) || '[]')
+  const loadWishlist = (key) => {
+    const data = JSON.parse(localStorage.getItem(key) || '[]')
     setWishlist(data)
   }
 
@@ -34,21 +39,21 @@ export default function WishlistPage() {
   const removeFromWishlist = (id) => {
     const updated = wishlist.filter(item => String(item.id) !== String(id))
     setWishlist(updated)
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated))
+    localStorage.setItem(wishlistKey, JSON.stringify(updated))
     window.dispatchEvent(new Event('wishlist-update'))
-    showToast('Barang dihapus dari wishlist 💔')
+    showToast('Barang dihapus dari wishlist 🗑️')
   }
 
   const clearWishlist = () => {
     setWishlist([])
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify([]))
+    localStorage.setItem(wishlistKey, JSON.stringify([]))
     window.dispatchEvent(new Event('wishlist-update'))
     setConfirmModal(false)
     showToast('Wishlist berhasil dibersihkan! 🧹')
   }
 
   const exportCSV = () => {
-    if (wishlist.length === 0) { showToast('Wishlist kosong! ❌'); return }
+    if (wishlist.length === 0) { showToast('Wishlist kosong! 😅'); return }
     const headers = ['Nama Produk', 'Harga', 'Kategori', 'Rating']
     const rows = wishlist.map(i => [`"${i.title}"`, `"${i.price}"`, `"${i.category || 'Umum'}"`, `"${i.rate || '4.9'}"`])
     const csv = 'data:text/csv;charset=utf-8,' + headers.join(',') + '\n' + rows.map(r => r.join(',')).join('\n')
@@ -58,7 +63,7 @@ export default function WishlistPage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    showToast('Wishlist diekspor ke CSV! ✅')
+    showToast('Wishlist diekspor ke CSV! 📥')
   }
 
   const sortedWishlist = [...wishlist].sort((a, b) => {
@@ -74,7 +79,7 @@ export default function WishlistPage() {
       <nav className="fixed top-0 left-0 w-full h-[70px] flex items-center justify-between px-5
                       bg-[#02214b]/90 backdrop-blur-md border-b border-white/10 z-[1000]">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')}
+          <button onClick={() => navigate('/')}
             className="bg-white/10 p-2 rounded-xl cursor-pointer text-[#00d4ff] hover:bg-white/20 transition-all">
             <ion-icon name="arrow-back-outline" style={{ fontSize: '22px' }}></ion-icon>
           </button>
@@ -118,10 +123,10 @@ export default function WishlistPage() {
         {/* Wishlist Grid */}
         {sortedWishlist.length === 0 ? (
           <div className="text-center py-24">
-            <div className="text-7xl mb-4 opacity-30">💔</div>
+            <div className="text-7xl mb-4 opacity-30">💝</div>
             <h3 className="text-xl font-bold text-white mb-2">Wishlist Kosong...</h3>
             <p className="text-gray-400 mb-6">Yuk, cari barang keren lagi di Beranda!</p>
-            <button onClick={() => navigate('/dashboard')}
+            <button onClick={() => navigate('/')}
               className="bg-[#00d4ff] text-[#0d0232] font-black px-6 py-3 rounded-xl hover:bg-cyan-300 transition-all">
               Ke Dashboard
             </button>
@@ -187,7 +192,7 @@ export default function WishlistPage() {
       {confirmModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999]">
           <div className="bg-[#02214b] rounded-3xl p-8 max-w-xs w-full mx-4 text-center border border-white/10">
-            <div className="text-5xl mb-4">⚠️</div>
+            <div className="text-5xl mb-4">🗑️</div>
             <h3 className="text-white font-black text-lg mb-2">HAPUS SEMUA</h3>
             <p className="text-gray-400 text-sm mb-6">Data wishlist akan dikosongkan permanen. Yakin?</p>
             <div className="flex gap-3">

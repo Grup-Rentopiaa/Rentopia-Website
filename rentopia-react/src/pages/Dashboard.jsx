@@ -10,7 +10,7 @@ const FILTER_TABS = ['Semua', 'Peringkat Atas', 'Terdekat', 'Ikuti']
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const [user, setUser] = useState({ username: 'Titha' })
+  const [user, setUser] = useState(null)
   const [allProducts, setAllProducts] = useState([])
   const [filtered, setFiltered] = useState([])
   const [recoList, setRecoList] = useState([])
@@ -25,11 +25,20 @@ export default function Dashboard() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [sortOption, setSortOption] = useState('default')
 
+  // Per-user wishlist key so switching accounts never leaks data
+  const getWishlistKey = (u) => `rentopia_wishlist_${u?.id || 'guest'}`
+
   useEffect(() => {
+    // Load authenticated user — redirect to root if no session exists
+    const stored = localStorage.getItem('user')
+    if (!stored) { navigate('/'); return }
+    const parsedUser = JSON.parse(stored)
+    setUser(parsedUser)
     fetchProducts()
-    syncWishlistBadge()
-    window.addEventListener('wishlist-update', syncWishlistBadge)
-    return () => window.removeEventListener('wishlist-update', syncWishlistBadge)
+    syncWishlistBadge(parsedUser)
+    const handler = () => syncWishlistBadge(parsedUser)
+    window.addEventListener('wishlist-update', handler)
+    return () => window.removeEventListener('wishlist-update', handler)
   }, [])
 
   useEffect(() => {
@@ -41,8 +50,8 @@ export default function Dashboard() {
     setFiltered(result)
   }, [searchQuery, categoryFilter, sortOption, allProducts])
 
-  const syncWishlistBadge = () => {
-    const wl = JSON.parse(localStorage.getItem('rentopia_wishlist') || '[]')
+  const syncWishlistBadge = (u = user) => {
+    const wl = JSON.parse(localStorage.getItem(getWishlistKey(u)) || '[]')
     setWishlistCount(wl.length)
   }
 
@@ -64,7 +73,7 @@ export default function Dashboard() {
       setFiltered(mapped)
       applyRecoFilter('Peringkat Atas', mapped)
     } catch (err) {
-      showToast('Database Offline � Pastikan node server.js jalan!')
+      showToast('Database Offline - Pastikan node server.js jalan!')
     } finally {
       setLoading(false)
     }
@@ -91,13 +100,24 @@ export default function Dashboard() {
   }
 
   const handleLogout = () => {
+    // Clear all session data so the next account starts with a clean slate
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
+    localStorage.removeItem(getWishlistKey(user))
+    // Clear server-side httpOnly cookie
+    fetch('http://localhost:3000/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => { })
     navigate('/')
   }
 
   return (
     <div className="min-h-screen bg-[#0d0232] text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>
 
-      <Navbar wishlistCount={wishlistCount} cartCount={cartCount} onCartClick={() => showToast('Fitur keranjang segera hadir!')} />
+      <Navbar
+        wishlistCount={wishlistCount}
+        cartCount={cartCount}
+        onCartClick={() => showToast('Fitur keranjang segera hadir!')}
+        onLogout={handleLogout}
+      />
 
       <main className="max-w-[1200px] mx-auto px-4 pt-[90px] pb-16">
 
@@ -108,11 +128,13 @@ export default function Dashboard() {
               {user ? `HALO, ${user.username.toUpperCase()}!` : 'SIAP MENYEWA?'}
             </h1>
           </div>
-          <img
-            src={`https://ui-avatars.com/api/?name=${user.username}&background=00d4ff&color=fff`}
-            alt="avatar"
-            className="w-20 h-20 rounded-full border-4 border-[#00d4ff]"
-          />
+          {user && (
+            <img
+              src={`https://ui-avatars.com/api/?name=${user.username}&background=00d4ff&color=fff`}
+              alt="avatar"
+              className="w-20 h-20 rounded-full border-4 border-[#00d4ff]"
+            />
+          )}
         </section>
 
         <section className="mb-10">
@@ -147,7 +169,7 @@ export default function Dashboard() {
                 <div key={i} className="flex-shrink-0 w-[220px] h-[360px] bg-[#02214b]/60 rounded-2xl animate-pulse" />
               ))
             ) : recoList.map(p => (
-              <ProductCard key={p.id} product={p} compact={true} onCartAdd={addToCart} />
+              <ProductCard key={p.id} product={p} compact={true} onCartAdd={addToCart} user={user} />
             ))}
           </div>
         </section>
@@ -195,13 +217,13 @@ export default function Dashboard() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
-              <div className="text-5xl mb-4">??</div>
+              <div className="text-5xl mb-4">🔍</div>
               <p>Barang tidak ditemukan</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filtered.map(p => (
-                <ProductCard key={p.id} product={p} compact={false} onCartAdd={addToCart} />
+                <ProductCard key={p.id} product={p} compact={false} onCartAdd={addToCart} user={user} />
               ))}
             </div>
           )}

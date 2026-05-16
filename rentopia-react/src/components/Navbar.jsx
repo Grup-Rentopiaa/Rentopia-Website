@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 
-export default function Navbar({ wishlistCount = 0, cartCount = 0, onCartClick }) {
+export default function Navbar({ wishlistCount = 0, cartCount = 0, onCartClick, onLogout }) {
   const navigate = useNavigate()
 
   return (
@@ -38,6 +38,17 @@ export default function Navbar({ wishlistCount = 0, cartCount = 0, onCartClick }
           <ion-icon name="notifications-outline" style={{ fontSize: '24px' }}></ion-icon>
           <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
         </div>
+
+        {onLogout && (
+          <button
+            id="logout-btn"
+            onClick={onLogout}
+            title="Logout"
+            className="cursor-pointer text-[#00d4ff] hover:text-red-400 transition-colors"
+          >
+            <ion-icon name="log-out-outline" style={{ fontSize: '24px' }}></ion-icon>
+          </button>
+        )}
       </div>
     </nav>
   )

@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { wishlistService } from '../services/api'
+import api from '../services/api'
 
+// Wishlist key scoped to the logged-in user to prevent data leaking between accounts
+const getWishlistKey = (user) => `rentopia_wishlist_${user?.id || 'guest'}`
 
-
-export default function ProductCard({ product, onCartAdd, compact = false }) {
+export default function ProductCard({ product, onCartAdd, compact = false, user = null }) {
   const [loved, setLoved] = useState(() => {
-    const wl = JSON.parse(localStorage.getItem('rentopia_wishlist') || '[]')
+    const wl = JSON.parse(localStorage.getItem(getWishlistKey(user)) || '[]')
     return wl.some(i => String(i.id) === String(product.id))
   })
   const [likes, setLikes] = useState(product.likes || 0)
@@ -13,7 +14,7 @@ export default function ProductCard({ product, onCartAdd, compact = false }) {
 
   const toggleLove = async (e) => {
     e.stopPropagation()
-    const user = JSON.parse(localStorage.getItem('currentUser'))
+    const user = user || JSON.parse(localStorage.getItem('user'))
     if (!user) return alert('Login dulu untuk menyimpan favorit! ✨')
 
     const isAdding = !loved
@@ -21,20 +22,21 @@ export default function ProductCard({ product, onCartAdd, compact = false }) {
     setTimeout(() => setPulse(false), 300)
 
     try {
-      const res = await axios.post(`${API_URL}/wishlist`, {
+      const res = await api.post('/wishlist', {
         user_id: user.id,
         product_id: product.id,
         action: isAdding ? 'add' : 'remove'
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
 
       if (res.data.success) {
-        let wl = JSON.parse(localStorage.getItem('rentopia_wishlist') || '[]')
+        const key = getWishlistKey(user)
+        let wl = JSON.parse(localStorage.getItem(key) || '[]')
         if (isAdding) { wl.push(product); setLikes(l => l + 1) }
         else { wl = wl.filter(i => i.id !== product.id); setLikes(l => Math.max(0, l - 1)) }
         setLoved(isAdding)
-        localStorage.setItem('rentopia_wishlist', JSON.stringify(wl))
+        localStorage.setItem(key, JSON.stringify(wl))
         window.dispatchEvent(new Event('wishlist-update'))
       }
     } catch (err) {
