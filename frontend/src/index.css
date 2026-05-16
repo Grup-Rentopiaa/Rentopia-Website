@@ -96,3 +96,7 @@ body {
   .offer-cancel { @apply flex-1 py-3 rounded-full bg-white/20 text-white font-bold cursor-pointer transition duration-300 hover:bg-white/30; }
   .offer-error { @apply text-red-300 text-sm mb-4; }
 }
+/* Chat utility */
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+

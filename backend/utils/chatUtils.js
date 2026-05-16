@@ -6,9 +6,12 @@ const sseClients = new Map();
 let latestMessage = "No new messages yet";
 
 function getAuthPayload(req) {
+    // Accept token from both Authorization header and ?token= query param
+    // (EventSource cannot set custom headers, so query param is needed for SSE)
+    const queryToken = req.query?.token;
     const authHeader = req.headers.authorization || "";
-    if (!authHeader.startsWith("Bearer ")) throw new Error("Unauthorized");
-    const token = authHeader.slice(7);
+    const token = queryToken || (authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null);
+    if (!token) throw new Error("Unauthorized");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return { id: decoded.userId };
 }
