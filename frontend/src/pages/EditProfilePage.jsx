@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Camera } from 'lucide-react'
 import { useUser } from '../hooks/useUser'
 
 export default function EditProfilePage() {

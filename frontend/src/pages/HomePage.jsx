@@ -1,245 +1,245 @@
 import { useState, useEffect } from 'react';
-import { SlidersHorizontal, MapPin, Users, TrendingUp, Grid } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Grid, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import apiFetch from '../api';
 import useProducts from '../hooks/useProducts';
-import { pushHistoryState, listenToEvent } from '../utils/Features';
+import AppNavbar from '../components/AppNavbar';
+import ProductCard from '../components/ProductCard';
 
-import HomepageNavbar from '../components/HomepageNavbar';
-import Categories from '../components/Categories';
-import Filter from '../components/Filter';
-import ItemList from '../components/ItemList';
-import Banner from '../components/Banner';
-import HomepageFooter from '../components/HomepageFooter';
-import UploadPage from './UploadPage';
-import ProfilPage from './ProfilPage';
-import ChatPage from './ChatPage';
-import OfferPage from './OfferPage';
-import WishlistPage from './WishlistPage';
+const RECOMMEND_TABS = [
+  { id: 'semua',    label: 'Semua',    icon: <Grid size={14} /> },
+  { id: 'trending', label: 'Trending',  icon: <TrendingUp size={14} /> },
+  { id: 'terdekat', label: 'Terdekat', icon: <MapPin size={14} /> },
+  { id: 'diikuti',  label: 'Diikuti',  icon: <Users size={14} /> },
+];
+
+const CATEGORIES = ["Elektronik","Kamera","Fashion","Perlengkapan","Olahraga","Otomotif","Furnitur","Alat Musik","Buku","Lainnya"];
+
+const BANNERS = [
+  { gradient: "linear-gradient(135deg, #E8DCFF, #FFD6EC)", emoji: "🏕️", title: "Musim Camping Tiba!", sub: "Sewa alat camping premium mulai Rp50rb/hari" },
+  { gradient: "linear-gradient(135deg, #D6F0FF, #C9EFDC)",  emoji: "📷", title: "Weekend Photo Session?", sub: "Kamera DSLR & mirrorless tersedia di kotamu" },
+  { gradient: "linear-gradient(135deg, #FFD6EC, #E8DCFF)", emoji: "🎮", title: "Gaming Event Seru?", sub: "Sewa console & aksesori gaming terlengkap" },
+];
 
 export default function HomePage() {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const [activePage, setActivePage] = useState('home');
-  const [search, setSearch] = useState('');
-  const [searchType, setSearchType] = useState('produk'); // 'produk' or 'pengguna'
-  const [searchedUsers, setSearchedUsers] = useState([]);
-  const [category, setCategory] = useState('');
+  const [search, setSearch]             = useState('');
+  const [category, setCategory]         = useState('');
   const [recommendTab, setRecommendTab] = useState('semua');
-  const [filter, setFilter] = useState({
-    sort: 'random', minPrice: '', maxPrice: '', location: '',
-  });
-  const [notifications, setNotifications] = useState([]);
-  const [showFilter, setShowFilter] = useState(false);
-  const isSearching = !!(search || category);
-
-  useEffect(() => {
-    if (searchType === 'pengguna' && search) {
-      apiFetch(`/api/users?search=${encodeURIComponent(search)}`)
-        .then(data => setSearchedUsers(data))
-        .catch(() => setSearchedUsers([]));
-    } else {
-      setSearchedUsers([]);
-    }
-  }, [search, searchType]);
-
-  // Sync recommendation tab with filter
-  useEffect(() => {
-    if (recommendTab === 'semua') setFilter(prev => ({ ...prev, sort: 'random', filter: null }));
-    if (recommendTab === 'terdekat') setFilter(prev => ({ ...prev, sort: 'nearest', filter: null }));
-    if (recommendTab === 'diikuti') setFilter(prev => ({ ...prev, sort: 'random', filter: 'following' }));
-    if (recommendTab === 'trending') setFilter(prev => ({ ...prev, sort: 'trending', filter: null }));
-  }, [recommendTab]);
-
-  // Refresh items when a like status changes elsewhere
-  useEffect(() => {
-    const handler = () => {
-      // Force filter object to new reference to trigger useProducts reload
-      setFilter(prev => ({ ...prev }));
-    };
-    window.addEventListener('likeChanged', handler);
-    return () => window.removeEventListener('likeChanged', handler);
-  }, []);
+  const [showFilter, setShowFilter]     = useState(false);
+  const [filter, setFilter]             = useState({ sort: 'random', minPrice: '', maxPrice: '' });
+  const [bannerIdx, setBannerIdx]       = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const { items, loading } = useProducts(search, category, filter, user?.id);
 
-  
+  // Carousel auto-rotate
   useEffect(() => {
-    if (activePage !== 'home') return;
-    const qs = new URLSearchParams({
-      search,
-      category: category || '',
-      sort: filter.sort,
-    }).toString();
-    pushHistoryState({ search, category, filter }, 'Rentopia', `?${qs}`);
-  }, [search, category, filter, activePage]);
-
-  useEffect(() => {
-    const handlePopState = (e) => {
-      if (e.state) {
-        setSearch(e.state.search || '');
-        setCategory(e.state.category || '');
-        setFilter(e.state.filter || { sort: 'random', minPrice: '', maxPrice: '', location: '' });
-        setActivePage('home');
-      }
-    };
-    return listenToEvent('popstate', handlePopState);
+    const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
+    return () => clearInterval(t);
   }, []);
 
+  // Sync recommendTab with filter
   useEffect(() => {
-    async function loadNotifications() {
-      try {
-        const data = await apiFetch('/api/notifications');
-        setNotifications(data);
-      } catch { }
+    if (recommendTab === 'semua')    setFilter(prev => ({ ...prev, sort: 'random',   filter: null }));
+    if (recommendTab === 'trending') setFilter(prev => ({ ...prev, sort: 'trending', filter: null }));
+    if (recommendTab === 'terdekat') setFilter(prev => ({ ...prev, sort: 'nearest',  filter: null }));
+    if (recommendTab === 'diikuti')  setFilter(prev => ({ ...prev, sort: 'random',   filter: 'following' }));
+  }, [recommendTab]);
+
+  // Wishlist count
+  useEffect(() => {
+    function countWishlist() {
+      if (!user) return;
+      const list = JSON.parse(localStorage.getItem(`rentopia_wishlist_${user.id}`) || '[]');
+      setWishlistCount(list.length);
     }
-    loadNotifications();
+    countWishlist();
+    window.addEventListener('likeChanged', countWishlist);
+    return () => window.removeEventListener('likeChanged', countWishlist);
   }, []);
 
-
-
-  const RECOMMEND_TABS = [
-    { id: 'semua', label: 'Semua', Icon: Grid },
-    { id: 'terdekat', label: 'Terdekat', Icon: MapPin },
-    { id: 'diikuti', label: 'Diikuti', Icon: Users },
-    { id: 'trending', label: 'Paling Atas', Icon: TrendingUp },
-  ];
+  const banner = BANNERS[bannerIdx];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <HomepageNavbar
-        search={search}
-        onSearchChange={setSearch}
-        notifications={notifications}
-        category={category}
-        onSelectCategory={setCategory}
-        activePage={activePage}
-        setActivePage={setActivePage}
+    <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
+      <AppNavbar
+        wishlistCount={wishlistCount}
+        onSearch={setSearch}
+        searchValue={search}
       />
 
-      <div className="flex-1">
-        {activePage === 'home' && (
-          <>
-            <Categories selected={category} onSelect={setCategory} />
-            
-            <main className="max-w-7xl mx-auto px-4 pb-24 w-full pt-6">
-              {!isSearching && (
-                <>
-                  <Banner />
-                  
-                  {/* Recommendation Tabs */}
-                  <div className="mt-8 mb-6 flex flex-wrap items-center gap-2">
-                    {RECOMMEND_TABS.map(({ id, label, Icon }) => (
-                      <button
-                        key={id}
-                        onClick={() => setRecommendTab(id)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all active:scale-95
-                          ${recommendTab === id 
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' 
-                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}
-                        `}
-                      >
-                        <Icon size={16} />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+      <main className="max-w-7xl mx-auto px-4 pb-12">
+        {/* ── Greeting ── */}
+        <div className="pt-6 pb-4">
+          <h1 className="text-2xl font-black" style={{ color: "#3D2F6B" }}>
+            Halo, {user?.username || "Pengguna"}! 👋
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "#A89CC4" }}>Mau sewa apa hari ini?</p>
+        </div>
 
-              <div className="flex flex-col gap-6">
-                {isSearching && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100 gap-4">
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900">
-                        {search ? `Hasil pencarian untuk "${search}"` : `Kategori: ${category}`}
-                      </h2>
-                      <p className="text-sm text-gray-500">
-                        {searchType === 'produk' ? `${items.length} produk ditemukan` : `${searchedUsers.length} pengguna ditemukan`}
-                      </p>
-                    </div>
-                    
-                    {/* Toggle Search Type */}
-                    {search && (
-                      <div className="flex bg-gray-100 p-1 rounded-xl">
-                        <button 
-                          onClick={() => setSearchType('produk')}
-                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${searchType === 'produk' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-500'}`}
-                        >
-                          Produk
-                        </button>
-                        <button 
-                          onClick={() => setSearchType('pengguna')}
-                          className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${searchType === 'pengguna' ? 'bg-white shadow-sm text-purple-600' : 'text-gray-500'}`}
-                        >
-                          Pengguna
-                        </button>
-                      </div>
-                    )}
+        {/* ── Hero Banner Carousel ── */}
+        <div className="rounded-3xl overflow-hidden mb-6 relative" style={{ background: banner.gradient, minHeight: "160px" }}>
+          <div className="p-8 flex items-center gap-6">
+            <div className="flex-1">
+              <p className="text-xs font-bold mb-1 uppercase tracking-wider" style={{ color: "#9B87D9" }}>Promosi Spesial</p>
+              <h2 className="text-xl font-black mb-1" style={{ color: "#3D2F6B" }}>{banner.title}</h2>
+              <p className="text-sm" style={{ color: "#7B6AAA" }}>{banner.sub}</p>
+              <button
+                onClick={() => setCategory("")}
+                className="rp-btn-primary text-sm mt-4 px-5 py-2"
+              >
+                Lihat Semua
+              </button>
+            </div>
+            <div className="text-6xl flex-shrink-0 hidden sm:block">{banner.emoji}</div>
+          </div>
+          {/* Dots */}
+          <div className="absolute bottom-3 right-3 flex gap-1.5">
+            {BANNERS.map((_, i) => (
+              <button key={i} onClick={() => setBannerIdx(i)}
+                className="w-2 h-2 rounded-full transition-all"
+                style={{ background: i === bannerIdx ? "#9B87D9" : "#C9B8FF" }}
+              />
+            ))}
+          </div>
+        </div>
 
-                    {searchType === 'produk' && (
-                      <button
-                        onClick={() => setShowFilter(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold rounded-xl border border-gray-200 transition-all active:scale-95"
-                      >
-                        <SlidersHorizontal size={18} className="text-purple-600" />
-                        Filter
-                      </button>
-                    )}
-                  </div>
-                )}
-                <div className="flex gap-6 items-start">
-                  {searchType === 'produk' && <Filter isOpen={showFilter} onClose={() => setShowFilter(false)} onApply={setFilter} />}
-                  <div className="flex-1 w-full">
-                    {searchType === 'produk' ? (
-                      <ItemList items={items} loading={loading} />
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {searchedUsers.length > 0 ? searchedUsers.map(u => (
-                          <div key={u.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                            {u.avatarB64 ? (
-                              <img src={u.avatarB64} alt={u.name} className="w-12 h-12 rounded-full object-cover" />
-                            ) : (
-                              <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                {u.username[0].toUpperCase()}
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <p className="font-bold text-gray-900">{u.name || u.username}</p>
-                              <p className="text-xs text-gray-500">@{u.username}</p>
-                              <p className="text-[10px] text-purple-600 font-semibold mt-1">{u.followers} Pengikut</p>
-                            </div>
-                            <button className="bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors">
-                              Lihat
-                            </button>
-                          </div>
-                        )) : (
-                          <p className="text-gray-400 text-sm py-8 col-span-full text-center">Pengguna tidak ditemukan.</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
+        {/* ── Categories ── */}
+        <div className="mb-6 flex gap-2 overflow-x-auto scrollbar-none pb-1">
+          <button
+            onClick={() => setCategory("")}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${!category ? "text-rp-text shadow-sm" : "border"}`}
+            style={{
+              background: !category ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
+              color: !category ? "#3D2F6B" : "#A89CC4",
+              borderColor: !category ? "transparent" : "#E8DCFF"
+            }}
+          >
+            Semua
+          </button>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(category === cat ? "" : cat)}
+              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border"
+              style={{
+                background: category === cat ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
+                color: category === cat ? "#3D2F6B" : "#A89CC4",
+                borderColor: category === cat ? "transparent" : "#E8DCFF"
+              }}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Filter Tabs + Filter button ── */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex gap-2 overflow-x-auto scrollbar-none">
+            {RECOMMEND_TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setRecommendTab(tab.id)}
+                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all"
+                style={{
+                  background: recommendTab === tab.id ? "#E8DCFF" : "transparent",
+                  color: recommendTab === tab.id ? "#9B87D9" : "#A89CC4"
+                }}
+              >
+                {tab.icon}{tab.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowFilter(v => !v)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all"
+            style={{ background: showFilter ? "#E8DCFF" : "#FFFFFF", color: "#9B87D9", border: "1px solid #E8DCFF" }}
+          >
+            <SlidersHorizontal size={14} /> Filter
+          </button>
+        </div>
+
+        {/* ── Filter Panel ── */}
+        {showFilter && (
+          <div className="rp-card p-5 mb-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-sm" style={{ color: "#3D2F6B" }}>Filter & Urutkan</h3>
+              <button onClick={() => setShowFilter(false)}><X size={16} style={{ color: "#A89CC4" }} /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Harga Min (Rp)</label>
+                <input type="number" value={filter.minPrice} onChange={e => setFilter(p => ({ ...p, minPrice: e.target.value }))}
+                  placeholder="0" className="rp-input text-sm py-2" />
+              </div>
+              <div>
+                <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Harga Max (Rp)</label>
+                <input type="number" value={filter.maxPrice} onChange={e => setFilter(p => ({ ...p, maxPrice: e.target.value }))}
+                  placeholder="∞" className="rp-input text-sm py-2" />
+              </div>
+              <div>
+                <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Urutkan</label>
+                <select value={filter.sort} onChange={e => setFilter(p => ({ ...p, sort: e.target.value }))} className="rp-input text-sm py-2">
+                  <option value="random">Default</option>
+                  <option value="price_asc">Harga Terendah</option>
+                  <option value="price_desc">Harga Tertinggi</option>
+                  <option value="trending">Paling Populer</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setFilter({ sort: 'random', minPrice: '', maxPrice: '' })} className="rp-btn-outline text-sm py-2 flex-1">Reset</button>
+              <button onClick={() => setShowFilter(false)} className="rp-btn-primary text-sm py-2 flex-1">Terapkan</button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Product Grid ── */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-black text-lg" style={{ color: "#3D2F6B" }}>
+            {search ? `Hasil "${search}"` : category ? category : "Semua Produk"}
+          </h2>
+          {!loading && <span className="text-sm font-semibold" style={{ color: "#A89CC4" }}>{items.length} barang</span>}
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {Array(10).fill(0).map((_, i) => (
+              <div key={i} className="rp-card overflow-hidden">
+                <div className="rp-skeleton aspect-square w-full" />
+                <div className="p-3 space-y-2">
+                  <div className="rp-skeleton h-4 w-3/4" />
+                  <div className="rp-skeleton h-3 w-1/2" />
                 </div>
               </div>
-            </main>
-          </>
-        )}
-
-        {activePage === 'wishlist' && (
-          <WishlistPage setActivePage={setActivePage} />
-        )}
-
-        {activePage === 'chat' && (
-          <div className="bg-gray-50 min-h-screen">
-            <ChatPage setActivePage={setActivePage} />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="rp-card py-20 text-center">
+            <div className="text-5xl mb-4">🔍</div>
+            <h3 className="font-black text-lg mb-2" style={{ color: "#3D2F6B" }}>
+              {search ? "Tidak ditemukan" : "Belum ada produk"}
+            </h3>
+            <p className="text-sm mb-6" style={{ color: "#A89CC4" }}>
+              {search ? `Tidak ada hasil untuk "${search}"` : "Jadilah yang pertama upload produk!"}
+            </p>
+            <button onClick={() => { setSearch(""); setCategory(""); }} className="rp-btn-primary">
+              Reset Pencarian
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {items.map(item => (
+              <ProductCard key={item.id} item={item} />
+            ))}
           </div>
         )}
-        {activePage === 'offer' && (
-          <div className="bg-gray-50 min-h-screen">
-            <OfferPage setActivePage={setActivePage} />
-          </div>
-        )}
-      </div>
+      </main>
 
-      <HomepageFooter />
+      {/* Footer */}
+      <footer className="border-t py-6 text-center text-sm" style={{ borderColor: "#E8DCFF", color: "#A89CC4" }}>
+        © 2025 Rentopia — Dibuat dengan 💜
+      </footer>
     </div>
   );
-}
+}

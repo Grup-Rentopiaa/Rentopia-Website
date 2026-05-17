@@ -1,39 +1,50 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { 
-  Heart, 
-  Eye, 
-  MapPin, 
-  User, 
-  MessageCircle, 
-  Edit3, 
-  Trash2, 
-  ChevronLeft,
-  Calendar,
-  Tag,
-  ShieldCheck,
-  Package,
-  Star
-} from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Heart, Eye, MapPin, Star, MessageCircle, ShoppingBag, Package, Tag, Calendar, User } from "lucide-react";
 import { getItemByIdService, likeItemService, deleteItemService } from "../services/itemService";
 import apiFetch from "../api";
-import Navbar from "../components/Navbar";
+import AppNavbar from "../components/AppNavbar";
+
+function formatPrice(price) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(price);
+}
+
+function StarRating({ value, onChange, size = 28 }) {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="flex gap-1">
+      {[1,2,3,4,5].map(s => (
+        <button key={s} type="button"
+          onClick={() => onChange && onChange(s)}
+          onMouseEnter={() => onChange && setHover(s)}
+          onMouseLeave={() => onChange && setHover(0)}
+          style={{ fontSize: size, lineHeight: 1, cursor: onChange ? "pointer" : "default" }}>
+          <span style={{ color: s <= (hover || value) ? "#FFB3D9" : "#E8DCFF" }}>★</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function ProductDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  
-  const [item, setItem] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(0);
-  const [reviews, setReviews] = useState([]);
+  const { id }    = useParams();
+  const navigate  = useNavigate();
+  const user      = JSON.parse(localStorage.getItem("user") || "null");
+  const wishlistKey = user ? `rentopia_wishlist_${user.id}` : null;
+  const wishlist  = wishlistKey ? JSON.parse(localStorage.getItem(wishlistKey) || "[]") : [];
 
-  useEffect(() => {
-    fetchItem();
-  }, [id]);
+  const [item,      setItem]      = useState(null);
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState("");
+  const [liked,     setLiked]     = useState(wishlist.includes(Number(id)));
+  const [likesCount,setLikesCount]= useState(0);
+  const [reviews,   setReviews]   = useState([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating,    setRating]    = useState(5);
+  const [comment,   setComment]   = useState("");
+  const [submitting,setSubmitting]= useState(false);
+
+  useEffect(() => { fetchItem(); }, [id]);
 
   async function fetchItem() {
     try {
@@ -41,345 +52,270 @@ export default function ProductDetailPage() {
       const data = await getItemByIdService(id);
       setItem(data);
       setLikesCount(data.likes?.length || 0);
-      setLiked(data.likes?.some(l => l.user_id === user?.id));
-
-      try {
-        const revs = await apiFetch(`/api/items/${id}/reviews`);
-        setReviews(revs || []);
-      } catch (e) {
-        console.error("Gagal load reviews", e);
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      setLiked(data.likes?.some(l => l.user_id === user?.id) || wishlist.includes(Number(id)));
+      const revs = await apiFetch(`/api/items/${id}/reviews`).catch(() => []);
+      setReviews(Array.isArray(revs) ? revs : []);
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
   async function handleLike() {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    try {
-      const res = await likeItemService(id, user.id);
-      setLiked(res.liked);
-      setLikesCount(prev => res.liked ? prev + 1 : prev - 1);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  async function handleDelete() {
-    if (!window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) return;
-    try {
-      await deleteItemService(id, user.id);
-      navigate("/home");
-    } catch (err) {
-      alert(err.message);
-    }
+    if (!user) { navigate("/login"); return; }
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikesCount(prev => prev + (newLiked ? 1 : -1));
+    const updated = newLiked
+      ? [...wishlist.filter(x => x !== Number(id)), Number(id)]
+      : wishlist.filter(x => x !== Number(id));
+    if (wishlistKey) localStorage.setItem(wishlistKey, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent("likeChanged"));
+    try { await likeItemService(id, user.id); } catch {}
   }
 
   function handleChat() {
-    if (!user) {
-      navigate("/login");
-      return;
+    if (!user) { navigate("/login"); return; }
+    if (item) {
+      localStorage.setItem("targetChatId", String(item.owner_id));
+      localStorage.setItem("targetChatProduct", JSON.stringify({
+        id: item.id, title: item.title, price: item.price_per_day || item.price, image: item.image, status: item.status
+      }));
     }
-    localStorage.setItem("targetChatId", item.owner_id);
-    localStorage.setItem("targetChatProduct", JSON.stringify({
-      id: item.id,
-      title: item.title,
-      price: item.price_per_day,
-      image: item.image
-    }));
     navigate("/chat");
   }
 
+  async function handleSubmitReview(e) {
+    e.preventDefault();
+    if (!comment.trim()) return;
+    setSubmitting(true);
+    try {
+      await apiFetch(`/api/items/${id}/reviews`, {
+        method: "POST",
+        body: JSON.stringify({ userId: user.id, rating, comment }),
+      });
+      setShowReviewForm(false);
+      setComment("");
+      setRating(5);
+      const revs = await apiFetch(`/api/items/${id}/reviews`).catch(() => []);
+      setReviews(Array.isArray(revs) ? revs : []);
+    } catch (err) { alert(err.message); }
+    finally { setSubmitting(false); }
+  }
+
   if (loading) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="animate-pulse flex flex-col items-center">
-        <div className="w-12 h-12 rounded-full border-4 border-purple-500 border-t-transparent animate-spin mb-4"></div>
-        <p className="text-slate-500 font-medium">Memuat detail produk...</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF8FF" }}>
+      <div className="text-center">
+        <div className="w-16 h-16 rounded-full rp-skeleton mx-auto mb-4" />
+        <p style={{ color: "#A89CC4" }}>Memuat detail produk...</p>
       </div>
     </div>
   );
 
   if (error || !item) return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-xl text-center max-w-md">
-        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Trash2 className="text-red-500" size={40} />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Produk Tidak Ditemukan</h2>
-        <p className="text-slate-500 mb-8">{error || "Maaf, produk yang Anda cari mungkin sudah dihapus atau tidak tersedia."}</p>
-        <button onClick={() => navigate("/home")} className="primary-pill-button w-full">Kembali ke Beranda</button>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF8FF" }}>
+      <div className="rp-card p-10 text-center">
+        <div className="text-5xl mb-3">😢</div>
+        <h2 className="font-black text-xl mb-2" style={{ color: "#3D2F6B" }}>Produk Tidak Ditemukan</h2>
+        <button onClick={() => navigate("/home")} className="rp-btn-primary mt-2">Kembali ke Beranda</button>
       </div>
     </div>
   );
 
   const isOwner = user?.id === item.owner_id;
+  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <Navbar />
-      
-      <div className="max-w-7xl mx-auto px-4 pt-8">
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 mb-6 transition-colors group"
-        >
-          <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-slate-100">
-            <ChevronLeft size={20} />
-          </div>
-          <span className="font-medium">Kembali</span>
+    <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
+      <AppNavbar wishlistCount={wishlist.length} />
+
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Back */}
+        <button onClick={() => navigate(-1)} className="rp-back-btn mb-6">
+          <ArrowLeft size={16} /> Kembali
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Left Side: Images */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-[40px] overflow-hidden shadow-2xl border border-slate-100 sticky top-24">
-              <div className="aspect-[4/3] w-full relative">
-                {item.image ? (
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-slate-100 flex items-center justify-center">
-                    <Package size={80} className="text-slate-300" />
-                  </div>
-                )}
-                
-                {/* Stats Overlay */}
-                <div className="absolute top-6 right-6 flex flex-col gap-3">
-                  <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2">
-                    <Eye size={18} className="text-slate-600" />
-                    <span className="font-bold text-slate-900 text-sm">{item.views}</span>
-                  </div>
-                  <button 
-                    onClick={handleLike}
-                    className={`px-4 py-2 rounded-full shadow-lg border border-white/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 ${liked ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}
-                  >
-                    <Heart size={18} fill={liked ? "currentColor" : "none"} className={liked ? "text-white" : "text-red-500"} />
-                    <span className="font-bold text-sm">{likesCount}</span>
-                  </button>
-                </div>
-
-                {/* Status Badge */}
-                <div className="absolute bottom-6 left-6">
-                  <span className={`px-5 py-2 rounded-full shadow-lg font-bold text-sm tracking-wide uppercase ${item.status === 'rented' ? 'bg-orange-500 text-white' : 'bg-emerald-500 text-white'}`}>
-                    {item.status === 'rented' ? 'Sedang Disewa' : 'Tersedia'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side: Details */}
-          <div className="lg:col-span-5 flex flex-col gap-8">
-            <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="bg-purple-50 text-purple-600 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">
-                  {item.category_name || "Lainnya"}
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-400 text-xs flex items-center gap-1">
-                  <Calendar size={14} />
-                  Ditambahkan {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </span>
-              </div>
-
-              <h1 className="text-4xl font-extrabold text-slate-900 mb-4 leading-tight">{item.title}</h1>
-              
-              <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-4xl font-black text-purple-600">
-                  Rp {parseFloat(item.price_per_day).toLocaleString('id-ID')}
-                </span>
-                <span className="text-slate-400 font-medium">/ hari</span>
-              </div>
-
-              <div className="space-y-6 mb-10">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="text-slate-400" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Lokasi Pengambilan</h4>
-                    <p className="text-slate-700 font-semibold">{item.location || "Lokasi tidak ditentukan"}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0">
-                    <Tag className="text-slate-400" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Deskripsi Produk</h4>
-                    <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{item.description || "Tidak ada deskripsi untuk produk ini."}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border-t border-slate-100 pt-8 mt-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-slate-200 border-4 border-white shadow-md overflow-hidden">
-                      {item.owner?.avatarB64 ? (
-                        <img src={item.owner.avatarB64} alt={item.owner_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-purple-100 text-purple-600 font-bold text-xl uppercase">
-                          {item.owner_name?.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Pemilik</h4>
-                      <p className="text-slate-900 font-bold text-lg">{item.owner_name}</p>
-                    </div>
-                  </div>
-                  
-                  {!isOwner && (
-                    <button className="text-purple-600 font-bold text-sm hover:underline">Lihat Profil</button>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  {isOwner ? (
-                    <>
-                      <button 
-                        onClick={() => navigate(`/upload?edit=${id}`)}
-                        className="flex-1 bg-slate-900 text-white h-14 rounded-2xl font-bold flex items-center justify-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Edit3 size={20} /> Edit Produk
-                      </button>
-                      <button 
-                        onClick={handleDelete}
-                        className="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center transition-transform hover:scale-[1.02] active:scale-[0.98] border border-red-100"
-                        title="Hapus Produk"
-                      >
-                        <Trash2 size={24} />
-                      </button>
-                    </>
-                  ) : (
-                    <button 
-                      onClick={handleChat}
-                      disabled={item.status === 'rented'}
-                      className={`flex-1 h-14 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-200 ${item.status === 'rented' ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
-                    >
-                      <MessageCircle size={22} /> {item.status === 'rented' ? 'Produk Sedang Disewa' : 'Chat Penjual'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Statistics & Interactions Lists */}
-            <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100 overflow-hidden">
-              <div className="flex items-center gap-3 mb-8">
-                <ShieldCheck className="text-purple-600" size={24} />
-                <h3 className="text-xl font-bold text-slate-900">Interaksi & Peminat</h3>
-              </div>
-
-              <div className="space-y-8">
-                {/* Likers List */}
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
-                    <span>Disukai oleh</span>
-                    <span className="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full text-xs">{item.likes?.length || 0} orang</span>
-                  </h4>
-                  {item.likes?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {item.likes.map((like) => (
-                        <div key={like.user_id} className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors cursor-default" title={like.user.username}>
-                          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600 overflow-hidden">
-                            {like.user.avatarB64 ? <img src={like.user.avatarB64} className="w-full h-full object-cover" /> : like.user.username.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="text-xs font-semibold text-slate-700 max-w-[80px] truncate">{like.user.username}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">Belum ada yang menyukai produk ini</p>
-                  )}
-                </div>
-
-                {/* Renters List (Offers) */}
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
-                    <span>Peminat Sewa</span>
-                    <span className="bg-orange-100 text-orange-600 px-2.5 py-0.5 rounded-full text-xs">{item.penawaran?.length || 0} orang</span>
-                  </h4>
-                  {item.penawaran?.length > 0 ? (
-                    <div className="space-y-3">
-                      {item.penawaran.map((offer) => (
-                        <div key={offer.penawaran_id} className="flex items-center justify-between bg-slate-50 border border-slate-100 p-3 rounded-2xl group hover:border-orange-200 hover:bg-orange-50/30 transition-all">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sm font-bold text-slate-600 overflow-hidden">
-                              {offer.user.avatarB64 ? <img src={offer.user.avatarB64} className="w-full h-full object-cover" /> : offer.user.username.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-slate-900">{offer.user.username}</p>
-                              <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Menawar Rp {offer.harga.toLocaleString('id-ID')}</p>
-                            </div>
-                          </div>
-                          <button 
-                            onClick={() => {
-                              localStorage.setItem("targetChatId", offer.user.id);
-                              navigate("/chat");
-                            }}
-                            className="bg-white p-2 rounded-xl text-slate-400 hover:text-purple-600 hover:shadow-md transition-all active:scale-95"
-                          >
-                            <MessageCircle size={18} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
-                      <p className="text-xs text-slate-400 italic mb-1">Belum ada yang membuat penawaran</p>
-                      <p className="text-[10px] text-slate-300">Bagikan produk ini untuk mendapatkan peminat!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Customer Reviews */}
-            <div className="bg-white rounded-[40px] p-8 shadow-xl border border-slate-100 overflow-hidden">
-              <div className="flex items-center gap-3 mb-8">
-                <Star className="text-yellow-400" size={24} fill="currentColor" />
-                <h3 className="text-xl font-bold text-slate-900">Review Pelanggan</h3>
-              </div>
-
-              {reviews.length > 0 ? (
-                <div className="space-y-6">
-                  {reviews.map(rev => (
-                    <div key={rev.id} className="border-b border-slate-100 pb-6 last:border-0 last:pb-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold overflow-hidden">
-                          {rev.user.avatarB64 ? <img src={rev.user.avatarB64} className="w-full h-full object-cover" /> : rev.user.name?.charAt(0) || rev.user.username.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">{rev.user.name || rev.user.username}</p>
-                          <div className="flex text-yellow-400 text-xs">
-                            {[...Array(5)].map((_, i) => <span key={i}>{i < rev.rating ? '★' : '☆'}</span>)}
-                          </div>
-                        </div>
-                        <span className="ml-auto text-xs text-slate-400">
-                          {new Date(rev.createdAt || rev.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})}
-                        </span>
-                      </div>
-                      <p className="text-slate-600 text-sm">{rev.comment}</p>
-                    </div>
-                  ))}
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* ── Left: Image ── */}
+          <div>
+            <div className="rp-card overflow-hidden aspect-[4/3] relative">
+              {item.image ? (
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
               ) : (
-                <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
-                  <p className="text-sm text-slate-400 italic mb-1">Belum ada review pelanggan.</p>
-                  <p className="text-xs text-slate-300">Sewa produk ini dan jadilah yang pertama memberikan review!</p>
+                <div className="w-full h-full flex items-center justify-center text-8xl" style={{ background: "#E8DCFF" }}>📦</div>
+              )}
+              {/* Overlay badges */}
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                {item.category_name && <span className="rp-badge rp-badge-primary">{item.category_name}</span>}
+                <span className={`rp-badge ${item.status === "rented" ? "rp-badge-pink" : "rp-badge-mint"}`}>
+                  {item.status === "rented" ? "Sedang Disewa" : "Tersedia"}
+                </span>
+              </div>
+              {/* Likes overlay */}
+              <button
+                onClick={handleLike}
+                className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 rounded-full font-bold text-sm transition-all hover:scale-105"
+                style={{ background: liked ? "#FFD6EC" : "rgba(255,255,255,0.9)", color: liked ? "#9B4070" : "#A89CC4" }}
+              >
+                <Heart size={16} fill={liked ? "#FFB3D9" : "none"} /> {likesCount}
+              </button>
+              {item.views > 0 && (
+                <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                  style={{ background: "rgba(255,255,255,0.9)", color: "#7B6AAA" }}>
+                  <Eye size={13} /> {item.views} dilihat
                 </div>
               )}
             </div>
           </div>
+
+          {/* ── Right: Details ── */}
+          <div className="flex flex-col gap-5">
+            <div className="rp-card p-6">
+              <h1 className="text-2xl font-black mb-2" style={{ color: "#3D2F6B" }}>{item.title}</h1>
+              <div className="flex items-baseline gap-2 mb-4">
+                <span className="text-3xl font-black" style={{ color: "#9B87D9" }}>
+                  {formatPrice(item.price_per_day || item.price)}
+                </span>
+                <span className="text-sm" style={{ color: "#A89CC4" }}>/ hari</span>
+              </div>
+
+              {/* Meta */}
+              <div className="space-y-2 mb-5">
+                {item.location && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: "#7B6AAA" }}>
+                    <MapPin size={15} style={{ color: "#C9B8FF" }} /> {item.location}
+                  </div>
+                )}
+                {avgRating && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: "#7B6AAA" }}>
+                    <Star size={15} fill="#FFB3D9" color="#FFB3D9" /> {avgRating} ({reviews.length} ulasan)
+                  </div>
+                )}
+                {item.created_at && (
+                  <div className="flex items-center gap-2 text-sm" style={{ color: "#7B6AAA" }}>
+                    <Calendar size={15} style={{ color: "#C9B8FF" }} />
+                    {new Date(item.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                  </div>
+                )}
+              </div>
+
+              {item.description && (
+                <p className="text-sm leading-relaxed mb-5" style={{ color: "#7B6AAA" }}>{item.description}</p>
+              )}
+
+              {/* CTA Buttons */}
+              {!isOwner && (
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleChat}
+                    disabled={item.status === "rented"}
+                    className="rp-btn-primary w-full py-3.5 text-base"
+                    style={item.status === "rented" ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+                  >
+                    <MessageCircle size={18} />
+                    {item.status === "rented" ? "Sedang Tidak Tersedia" : "Chat & Sewa Sekarang"}
+                  </button>
+                  <button onClick={handleLike} className="rp-btn-outline w-full py-3">
+                    <Heart size={16} fill={liked ? "#FFB3D9" : "none"} color={liked ? "#FFB3D9" : "#C9B8FF"} />
+                    {liked ? "Hapus dari Wishlist" : "Tambah ke Wishlist"}
+                  </button>
+                </div>
+              )}
+
+              {isOwner && (
+                <div className="flex gap-3">
+                  <button onClick={() => navigate(`/upload?edit=${id}`)} className="rp-btn-outline flex-1 py-3">✏️ Edit</button>
+                </div>
+              )}
+            </div>
+
+            {/* Owner Card */}
+            {item.owner && (
+              <div className="rp-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B" }}>
+                  {(item.owner.username || "U")[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm" style={{ color: "#3D2F6B" }}>{item.owner.username}</p>
+                  <p className="text-xs" style={{ color: "#A89CC4" }}>Pemilik</p>
+                </div>
+                <button onClick={() => navigate(`/profile/${item.owner_id}`)} className="rp-btn-outline text-sm px-3 py-2">
+                  <User size={14} /> Profil
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+
+        {/* ── Reviews ── */}
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-black" style={{ color: "#3D2F6B" }}>Ulasan ({reviews.length})</h2>
+            {user && !isOwner && !showReviewForm && (
+              <button onClick={() => setShowReviewForm(true)} className="rp-btn-primary text-sm px-4 py-2">
+                + Tulis Ulasan
+              </button>
+            )}
+          </div>
+
+          {/* Review Form */}
+          {showReviewForm && (
+            <div className="rp-card p-6 mb-6">
+              <h3 className="font-black mb-4" style={{ color: "#3D2F6B" }}>Tulis Ulasan</h3>
+              <form onSubmit={handleSubmitReview}>
+                <div className="mb-4">
+                  <label className="text-sm font-bold mb-2 block" style={{ color: "#7B6AAA" }}>Rating</label>
+                  <StarRating value={rating} onChange={setRating} size={32} />
+                </div>
+                <div className="mb-4">
+                  <label className="text-sm font-bold mb-2 block" style={{ color: "#7B6AAA" }}>Komentar</label>
+                  <textarea value={comment} onChange={e => setComment(e.target.value)} rows={3}
+                    placeholder="Ceritakan pengalaman menyewa produk ini..."
+                    className="rp-input resize-none" />
+                </div>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setShowReviewForm(false)} className="rp-btn-outline flex-1 py-2.5">Batal</button>
+                  <button type="submit" disabled={submitting} className="rp-btn-primary flex-1 py-2.5">
+                    {submitting ? "Mengirim..." : "Kirim Ulasan"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Reviews List */}
+          {reviews.length === 0 ? (
+            <div className="rp-card py-12 text-center">
+              <div className="text-4xl mb-3">⭐</div>
+              <p className="font-bold" style={{ color: "#3D2F6B" }}>Belum ada ulasan</p>
+              <p className="text-sm mt-1" style={{ color: "#A89CC4" }}>Jadilah yang pertama memberikan ulasan!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((r, i) => (
+                <div key={i} className="rp-card p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "#E8DCFF", color: "#9B87D9" }}>
+                        {(r.username || r.user?.username || "U")[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{r.username || r.user?.username || "Pengguna"}</p>
+                        <StarRating value={r.rating} size={14} />
+                      </div>
+                    </div>
+                    {r.created_at && (
+                      <span className="text-xs" style={{ color: "#A89CC4" }}>
+                        {new Date(r.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: "#7B6AAA" }}>{r.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

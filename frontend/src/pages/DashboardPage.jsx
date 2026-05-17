@@ -1,305 +1,226 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useUser }     from '../hooks/useUser'
-import { useItems }    from '../hooks/useItems'
-import { useRentals }  from '../hooks/useRentals'
-import ItemCard        from './ItemCard'
-import RentalCard      from './RentalCard'
-import EditProfileForm from './EditProfileForm'
-import { LogOut }      from 'lucide-react'
-import apiFetch        from '../api'
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, ArrowLeft, Package, ShoppingBag, Edit2, Camera, Plus } from 'lucide-react';
+import { useUser }    from '../hooks/useUser';
+import { useItems }   from '../hooks/useItems';
+import { useRentals } from '../hooks/useRentals';
+import EditProfileForm from './EditProfileForm';
+import apiFetch from '../api';
 
+function formatPrice(price) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
+}
 
 export default function DashboardPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [tab, setTab]               = useState('items');
+  const [showEdit, setShowEdit]     = useState(false);
+  const [search, setSearch]         = useState('');
+  const fileRef = useRef();
 
-  // ── State ──────────────────────────────────────────────────────
-  const [tab,             setTab]             = useState('items')
-  const [showEditProfile, setShowEditProfile] = useState(false)
-  const [search,          setSearch]          = useState('')
-  const [filterCat,       setFilterCat]       = useState('')
-  const [reviewModal,     setReviewModal]     = useState(null); // stores the rental object to review
-  const [reviewRating,    setReviewRating]    = useState(5);
-  const [reviewText,      setReviewText]      = useState('');
-  const [submittingReview,setSubmittingReview]= useState(false);
-  const fileRef = useRef()
+  const { user, updateUser, userId } = useUser();
+  const { items,   loading: iLoad }  = useItems(userId);
+  const { rentals, loading: rLoad }  = useRentals(userId);
 
-  // ── Hooks ──────────────────────────────────────────────────────
-  const { user, updateUser, userId } = useUser()
-  const { items, loading: iLoad, remove: removeItem } = useItems(userId)
-  const { rentals, loading: rLoad } = useRentals(userId)
-
-  // ── Avatar ─────────────────────────────────────────────────────
-  function handleAvatarClick() { fileRef.current.click() }
-  function handleAvatarChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = async (ev) => {
-      await updateUser({ avatarB64: ev.target.result })
-    }
-    reader.readAsDataURL(file)
-  }
-
-  // ── Logout ─────────────────────────────────────────────────────
   function handleLogout() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/login')
+    if (userId) localStorage.removeItem(`rentopia_wishlist_${userId}`);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    fetch('http://localhost:3000/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+    navigate('/', { replace: true });
   }
 
-  // ── Filter & search ────────────────────────────────────────────
-  const filteredItems = items.filter(l => {
-    const matchSearch = l.title.toLowerCase().includes(search.toLowerCase()) ||
-                        (l.description || '').toLowerCase().includes(search.toLowerCase())
-    const matchCat    = filterCat ? l.category_name === filterCat : true
-    return matchSearch && matchCat
-  })
+  async function handleAvatarChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async ev => { await updateUser({ avatarB64: ev.target.result }); };
+    reader.readAsDataURL(file);
+  }
 
-  const categories = [...new Set(items.map(l => l.category_name).filter(Boolean))]
+  const filteredItems = items.filter(i => i.title?.toLowerCase().includes(search.toLowerCase()));
+  const categories    = [...new Set(items.map(i => i.category_name).filter(Boolean))];
+  const initials      = (user?.name || user?.username || '?')[0]?.toUpperCase();
 
-  // ── Helpers ────────────────────────────────────────────────────
-  const initials   = (user?.name || user?.username || '?')[0]?.toUpperCase()
+  const StatBox = ({ label, value }) => (
+    <div className="flex flex-col items-center px-5 py-4">
+      <p className="text-2xl font-black" style={{ color: "#9B87D9" }}>{value}</p>
+      <p className="text-xs font-semibold mt-0.5" style={{ color: "#A89CC4" }}>{label}</p>
+    </div>
+  );
 
-  const submitReview = async () => {
-    if (!reviewText.trim()) return alert("Komentar review tidak boleh kosong!");
-    setSubmittingReview(true);
-    try {
-      await apiFetch(`/api/items/${reviewModal.itemId}/reviews`, {
-        method: 'POST',
-        body: JSON.stringify({ userId: user.id, rating: reviewRating, comment: reviewText })
-      });
-      alert("Review berhasil dikirim!");
-      setReviewModal(null);
-      setReviewText('');
-      setReviewRating(5);
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
-
-  // ── Render ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 font-black text-white">R</div>
-            <span className="text-xl font-black tracking-tight text-purple-600 cursor-pointer" onClick={() => navigate('/home')}>Rentopia.</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-semibold text-slate-500 hidden sm:block">Dashboard</span>
-            <button onClick={handleLogout} className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors">
-              <LogOut size={16} /> Logout
+    <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
+      {/* Navbar */}
+      <nav className="rp-navbar">
+        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/home')} className="rp-back-btn">
+              <ArrowLeft size={16} /> Beranda
             </button>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm" style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)" }}>R</div>
+            <span className="font-black text-lg hidden sm:block" style={{ color: "#9B87D9" }}>Rentopia</span>
           </div>
+          <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-colors" style={{ background: "#FFD6EC", color: "#9B4070" }}>
+            <LogOut size={15} /> Keluar
+          </button>
         </div>
       </nav>
 
-      {/* PROFILE SECTION */}
-      <div className="border-b border-slate-100 bg-white">
-        <div className="mx-auto max-w-screen-xl px-6 py-8">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-
+      {/* Profile Section */}
+      <div className="border-b" style={{ borderColor: "#E8DCFF", background: "#FFFFFF" }}>
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar */}
-            <div className="relative shrink-0 cursor-pointer group" onClick={handleAvatarClick}>
+            <div className="relative group cursor-pointer flex-shrink-0" onClick={() => fileRef.current?.click()}>
               {user?.avatarB64 ? (
-                <img src={user.avatarB64} className="h-24 w-24 rounded-2xl object-cover shadow-md ring-4 ring-purple-50" alt="avatar" />
+                <img src={user.avatarB64} className="w-24 h-24 rounded-2xl object-cover" style={{ border: "3px solid #E8DCFF" }} alt="avatar" />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-purple-600 text-3xl font-black text-white shadow-md ring-4 ring-purple-50">
+                <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-3xl font-black" style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B", border: "3px solid #E8DCFF" }}>
                   {initials}
                 </div>
               )}
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs font-bold text-white">Ganti Foto</span>
+              <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.3)" }}>
+                <Camera size={20} className="text-white" />
               </div>
             </div>
             <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
 
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-extrabold text-slate-900">{user?.name || user?.username}</h1>
-              <p className="mt-0.5 text-sm text-slate-400">@{user?.username}</p>
-              {user?.city        && <p className="mt-1 text-sm text-slate-500">📍 {user.city}</p>}
-              {user?.phone       && <p className="mt-1 text-sm text-slate-500">📞 {user.phone}</p>}
-              {user?.description && <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-600">{user.description}</p>}
-              <button
-                onClick={() => setShowEditProfile(prev => !prev)}
-                className="mt-4 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:border-purple-400 hover:text-purple-600 transition-all"
-              >
-                {showEditProfile ? '✕ Batal Edit' : '✏️ Edit Profil'}
+              <h1 className="text-2xl font-black" style={{ color: "#3D2F6B" }}>{user?.name || user?.username}</h1>
+              <p className="text-sm mt-0.5" style={{ color: "#A89CC4" }}>@{user?.username}</p>
+              {user?.city && <p className="text-sm mt-1" style={{ color: "#7B6AAA" }}>📍 {user.city}</p>}
+              {user?.description && <p className="text-sm mt-2 max-w-md leading-relaxed" style={{ color: "#7B6AAA" }}>{user.description}</p>}
+              <button onClick={() => setShowEdit(p => !p)} className="rp-btn-outline text-sm px-4 py-2 mt-4">
+                <Edit2 size={14} /> {showEdit ? 'Batal Edit' : 'Edit Profil'}
               </button>
             </div>
 
             {/* Stats */}
-            <div className="flex gap-0 rounded-2xl border border-slate-100 bg-slate-50 overflow-hidden shadow-sm">
+            <div className="flex rounded-2xl overflow-hidden" style={{ border: "1px solid #E8DCFF", background: "#FAF8FF" }}>
               {[
-                { label: 'Barang',    value: items.length },
-                { label: 'Disewa',    value: rentals.length  },
-                { label: 'Pengikut',  value: user?.followers ?? 0 },
-                { label: 'Mengikuti', value: user?.following ?? 0 },
+                { label: 'Barang',   value: items.length },
+                { label: 'Disewa',   value: rentals.length },
+                { label: 'Pengikut', value: user?.followers ?? 0 },
               ].map((s, i, arr) => (
                 <div key={s.label} className="flex items-stretch">
-                  <div className="flex flex-col items-center justify-center px-5 py-4 text-center">
-                    <p className="text-2xl font-black text-purple-600">{s.value}</p>
-                    <p className="text-xs font-semibold text-slate-500">{s.label}</p>
-                  </div>
-                  {i < arr.length - 1 && <div className="w-px bg-slate-200 my-3" />}
+                  <StatBox {...s} />
+                  {i < arr.length - 1 && <div className="w-px my-3" style={{ background: "#E8DCFF" }} />}
                 </div>
               ))}
             </div>
           </div>
+
+          {showEdit && (
+            <div className="mt-6 rp-card p-6">
+              <h3 className="font-black mb-4" style={{ color: "#3D2F6B" }}>Edit Profil</h3>
+              <EditProfileForm
+                user={user}
+                onSave={async data => { await updateUser(data); setShowEdit(false); }}
+                onCancel={() => setShowEdit(false)}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mx-auto max-w-screen-xl px-6 py-8">
-
-        {/* EDIT PROFILE FORM */}
-        {showEditProfile && (
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-sm font-extrabold text-slate-900">Edit Profil</h3>
-            <EditProfileForm
-              user={user}
-              onSave={async (data) => {
-                await updateUser(data)
-                setShowEditProfile(false)
-              }}
-              onCancel={() => setShowEditProfile(false)}
-            />
-          </div>
-        )}
-
-        {/* TABS */}
-        <div className="mb-6 flex gap-2 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
-          <button onClick={() => setTab('items')}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'items' ? 'bg-purple-600 text-white shadow' : 'text-slate-500 hover:text-purple-600'}`}>
-            Barang Saya ({items.length})
-          </button>
-          <button onClick={() => setTab('rentals')}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all ${tab === 'rentals' ? 'bg-purple-600 text-white shadow' : 'text-slate-500 hover:text-purple-600'}`}>
-            Sedang Saya Sewa ({rentals.length})
-          </button>
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 p-1.5 rounded-2xl" style={{ background: "#FFFFFF", border: "1px solid #E8DCFF" }}>
+          {[
+            { id: 'items',   label: `Barang Saya (${items.length})`,   icon: <Package size={15} /> },
+            { id: 'rentals', label: `Sedang Disewa (${rentals.length})`, icon: <ShoppingBag size={15} /> },
+          ].map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{
+                background: tab === t.id ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "transparent",
+                color: tab === t.id ? "#3D2F6B" : "#A89CC4"
+              }}>
+              {t.icon}{t.label}
+            </button>
+          ))}
         </div>
 
-        {/* ITEMS TAB */}
         {tab === 'items' && (
           <section>
-
-            {/* Header */}
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-base font-extrabold text-slate-900">Daftar Barang</h2>
-              <button onClick={() => navigate('/upload')}
-                className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white hover:bg-purple-700 transition-all shadow-sm">
-                + Tambah Barang
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-black" style={{ color: "#3D2F6B" }}>Daftar Barang</h2>
+              <button onClick={() => navigate('/upload')} className="rp-btn-primary text-sm px-4 py-2">
+                <Plus size={15} /> Tambah
               </button>
             </div>
-
-            {/* Search & Filter */}
-            <div className="mb-5 flex gap-3 flex-wrap">
-              <div className="relative flex-1 min-w-[200px]">
-                <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Cari nama barang..."
-                  className="w-full rounded-xl border border-slate-200 pl-9 pr-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100"
-                />
-              </div>
-
-              {categories.length > 0 && (
-                <select
-                  value={filterCat}
-                  onChange={e => setFilterCat(e.target.value)}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-100 bg-white text-slate-600 font-semibold cursor-pointer"
-                >
-                  <option value="">Semua Kategori</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              )}
+            <div className="mb-4">
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari barang..." className="rp-input text-sm" />
             </div>
-
-            {/* Item Cards */}
             {iLoad ? (
-              <p className="py-16 text-center text-sm text-slate-400">Memuat...</p>
-            ) : filteredItems.length === 0 && items.length > 0 ? (
-              <p className="py-16 text-center text-sm text-slate-400">Tidak ada barang yang cocok.</p>
-            ) : items.length === 0 ? (
-              <div className="py-16 text-center">
-                <p className="text-sm text-slate-400 mb-4">Belum ada barang yang diupload.</p>
-                <button onClick={() => navigate('/upload')} className="rounded-xl bg-purple-50 border border-purple-200 text-purple-600 px-4 py-2 text-sm font-bold hover:bg-purple-100 transition-colors">Mulai Upload Produk</button>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array(4).fill(0).map((_, i) => <div key={i} className="rp-skeleton h-40 rounded-2xl" />)}
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="rp-card py-16 text-center">
+                <div className="text-5xl mb-3">📦</div>
+                <p className="font-bold" style={{ color: "#3D2F6B" }}>Belum ada barang</p>
+                <button onClick={() => navigate('/upload')} className="rp-btn-primary mt-4 text-sm">Upload Produk</button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredItems.map(item => (
-                  <ItemCard
-                    key={item.id}
-                    item={item}
-                  />
+                  <div key={item.id} className="rp-product-card cursor-pointer" onClick={() => navigate(`/product/${item.id}`)}>
+                    <div className="aspect-square overflow-hidden" style={{ background: "#E8DCFF" }}>
+                      {item.image ? <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>}
+                    </div>
+                    <div className="p-3">
+                      <h3 className="text-sm font-bold line-clamp-1" style={{ color: "#3D2F6B" }}>{item.title}</h3>
+                      <p className="text-sm font-black mt-0.5" style={{ color: "#9B87D9" }}>
+                        {formatPrice(item.price_per_day || item.price)}<span className="text-xs font-normal" style={{ color: "#A89CC4" }}>/hari</span>
+                      </p>
+                      <span className="rp-badge rp-badge-mint mt-1.5 text-[10px]">{item.status || 'Tersedia'}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </section>
         )}
 
-        {/* RENTALS TAB */}
         {tab === 'rentals' && (
           <section>
-            <h2 className="mb-5 text-base font-extrabold text-slate-900">Sedang Disewa</h2>
+            <h2 className="font-black mb-4" style={{ color: "#3D2F6B" }}>Barang Sedang Disewa</h2>
             {rLoad ? (
-              <p className="py-16 text-center text-sm text-slate-400">Memuat...</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {Array(3).fill(0).map((_, i) => <div key={i} className="rp-skeleton h-40 rounded-2xl" />)}
+              </div>
             ) : rentals.length === 0 ? (
-              <p className="py-16 text-center text-sm text-slate-400">Belum ada rental aktif.</p>
+              <div className="rp-card py-16 text-center">
+                <div className="text-5xl mb-3">🛍️</div>
+                <p className="font-bold" style={{ color: "#3D2F6B" }}>Belum ada rental aktif</p>
+                <button onClick={() => navigate('/home')} className="rp-btn-primary mt-4 text-sm">Cari Produk</button>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {rentals.map(r => <RentalCard key={r.id} rental={r} onReview={(r) => setReviewModal(r)} />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rentals.map(r => (
+                  <div key={r.id} className="rp-card p-4 flex gap-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0" style={{ background: "#E8DCFF" }}>
+                      {r.image ? <img src={r.image} alt={r.title} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm line-clamp-1" style={{ color: "#3D2F6B" }}>{r.title}</h3>
+                      <p className="text-xs mt-0.5" style={{ color: "#9B87D9" }}>{formatPrice(r.price)}/hari</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#A89CC4" }}>dari: {r.store}</p>
+                      <span className="rp-badge rp-badge-blue mt-1.5 text-[10px]">Aktif</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>
         )}
-
       </div>
-
-      {/* REVIEW MODAL */}
-      {reviewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative animate-[popup_0.3s_ease]">
-            <button onClick={() => setReviewModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">✕</button>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Beri Ulasan</h2>
-            <p className="text-sm text-gray-500 mb-6">Bagaimana pengalaman Anda menyewa <span className="font-bold text-purple-600">{reviewModal.title}</span>?</p>
-            
-            <div className="flex justify-center gap-2 mb-6">
-              {[1,2,3,4,5].map(star => (
-                <button key={star} onClick={() => setReviewRating(star)} className={`text-4xl transition-transform active:scale-90 ${star <= reviewRating ? 'text-yellow-400' : 'text-gray-200'}`}>
-                  ★
-                </button>
-              ))}
-            </div>
-
-            <textarea 
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Ceritakan pengalaman Anda..."
-              className="w-full h-32 p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:border-purple-500 focus:bg-white transition-colors text-sm resize-none mb-6"
-            />
-
-            <button 
-              onClick={submitReview}
-              disabled={submittingReview}
-              className="w-full py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors disabled:opacity-50"
-            >
-              {submittingReview ? 'Mengirim...' : 'Kirim Ulasan'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
-  )
+  );
 }

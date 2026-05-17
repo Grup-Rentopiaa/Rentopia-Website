@@ -1,21 +1,10 @@
 function formatTime(dateStr) {
   if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date(dateStr).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
 
 function getAvatarColor(name = "") {
-  const colors = [
-    "bg-purple-500",
-    "bg-blue-500",
-    "bg-emerald-500",
-    "bg-orange-500",
-    "bg-pink-500",
-    "bg-teal-500",
-  ];
+  const colors = ["#C9B8FF","#FFD6EC","#D6F0FF","#C9EFDC","#FFB3D9","#A8DAFF"];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
   return colors[hash % colors.length];
@@ -23,54 +12,38 @@ function getAvatarColor(name = "") {
 
 export default function MessageBubble({ message, myId, senderName = "" }) {
   const isMe = Number(message.sender_id) === Number(myId);
-  const initials = (senderName || "?")[0].toUpperCase();
-  const colorClass = getAvatarColor(senderName);
   const isOptimistic = String(message.pesan_id).startsWith("opt_");
+  const initials = (senderName || "?")[0].toUpperCase();
+  const avatarColor = getAvatarColor(senderName);
 
   return (
-    <div
-      className={`flex items-end gap-2 group ${
-        isMe ? "flex-row-reverse" : "flex-row"
-      }`}
-    >
-      {/* Avatar for received messages */}
+    <div className={`flex items-end gap-2 group ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+      {/* Avatar for received */}
       {!isMe && (
-        <div
-          className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold mb-1 ${colorClass}`}
-        >
+        <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-black mb-1"
+          style={{ background: avatarColor, color: "#3D2F6B" }}>
           {initials}
         </div>
       )}
 
-      <div
-        className={`flex flex-col gap-1 max-w-[68%] ${
-          isMe ? "items-end" : "items-start"
-        }`}
-      >
-        {/* Bubble */}
+      <div className={`flex flex-col gap-0.5 max-w-[68%] ${isMe ? "items-end" : "items-start"}`}>
         <div
-          className={`px-4 py-2.5 text-sm leading-relaxed shadow-sm transition-all
-            ${
-              isMe
-                ? "bg-purple-600 text-white rounded-2xl rounded-tr-sm"
-                : "bg-white text-gray-800 rounded-2xl rounded-tl-sm border border-gray-100"
-            }
-            ${isOptimistic ? "opacity-70" : "opacity-100"}
-          `}
+          className="px-4 py-2.5 text-sm leading-relaxed"
+          style={{
+            background: isMe ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
+            color: isMe ? "#3D2F6B" : "#3D2F6B",
+            borderRadius: isMe ? "20px 20px 6px 20px" : "20px 20px 20px 6px",
+            boxShadow: "0 2px 8px rgba(180,150,255,0.12)",
+            border: isMe ? "none" : "1px solid #E8DCFF",
+            opacity: isOptimistic ? 0.7 : 1,
+            fontFamily: "Nunito, sans-serif",
+          }}
         >
           {message.isi_pesan}
         </div>
-
-        {/* Timestamp */}
-        <div
-          className={`flex items-center gap-1 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity px-1`}
-        >
-          <span>{formatTime(message.waktu)}</span>
-          {isMe && (
-            <span className="text-purple-400">
-              {isOptimistic ? "⏳" : "✓✓"}
-            </span>
-          )}
+        <div className="flex items-center gap-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[10px]" style={{ color: "#A89CC4" }}>{formatTime(message.waktu)}</span>
+          {isMe && <span className="text-[10px]" style={{ color: "#C9B8FF" }}>{isOptimistic ? "⏳" : "✓✓"}</span>}
         </div>
       </div>
     </div>

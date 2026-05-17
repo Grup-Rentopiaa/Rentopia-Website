@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, MapPin, Image } from 'lucide-react';
+import { Heart, MapPin, Star } from 'lucide-react';
+import { likeItemService } from '../services/itemService';
 
 function formatPrice(price) {
   return new Intl.NumberFormat('id-ID', {
@@ -9,61 +10,76 @@ function formatPrice(price) {
 }
 
 export default function ProductCard({ item }) {
-  const [liked, setLiked] = useState(false);
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const wishlistKey = user ? `rentopia_wishlist_${user.id}` : null;
+  const wishlist = wishlistKey ? JSON.parse(localStorage.getItem(wishlistKey) || '[]') : [];
+  const [liked, setLiked] = useState(wishlist.includes(item.id));
   const navigate = useNavigate();
 
+  async function handleLike(e) {
+    e.stopPropagation();
+    if (!user) { navigate('/login'); return; }
+    const newLiked = !liked;
+    setLiked(newLiked);
+    const updated = newLiked
+      ? [...wishlist.filter(id => id !== item.id), item.id]
+      : wishlist.filter(id => id !== item.id);
+    localStorage.setItem(wishlistKey, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('likeChanged'));
+    try {
+      await likeItemService(item.id, user.id);
+    } catch {}
+  }
+
   return (
-    <div 
-      className="product-card group relative cursor-pointer"
+    <div
+      className="rp-product-card group relative"
       onClick={() => navigate(`/product/${item.id}`)}
     >
-      {/* Photo Box */}
-      <div className="product-image-box aspect-square w-full overflow-hidden bg-gray-100 flex items-center justify-center">
+      {/* Image */}
+      <div className="relative aspect-square w-full overflow-hidden" style={{ background: "#E8DCFF" }}>
         {item.image ? (
           <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <Image size={40} strokeWidth={1.5} className="text-gray-300" />
+          <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
         )}
-      </div>
-
-      {/* Category badge - absolute overlay on image */}
-      {item.category_name && (
-        <div className="absolute top-3 left-3">
-          <span className="bg-purple-800/90 backdrop-blur-sm text-white text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-            {item.category_name}
-          </span>
-        </div>
-      )}
-
-      {/* Body */}
-      <div className="p-3 flex flex-col gap-1.5">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 flex-1" title={item.title}>
-            {item.title}
-          </h3>
-          <button
-            onClick={e => { e.stopPropagation(); setLiked(!liked); }}
-            title={liked ? 'Hapus dari wishlist' : 'Tambah ke wishlist'}
-            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-              shadow-sm border transition-all duration-150 hover:scale-110
-              ${liked ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}
-          >
-            <Heart size={15} className={liked ? 'text-red-500 fill-red-500' : 'text-gray-400'} />
-          </button>
-        </div>
-
-        {/* Price */}
-        <p className="text-purple-600 font-bold text-base">
-          {formatPrice(item.price_per_day)}
-          <span className="text-gray-400 font-normal text-xs"> /hari</span>
-        </p>
-
-        {item.location && (
-          <div className="flex items-center gap-1 text-gray-400 text-xs">
-            <MapPin size={11} className="flex-shrink-0" />
-            <span className="truncate">{item.location}</span>
+        {/* Category badge */}
+        {item.category_name && (
+          <div className="absolute top-2 left-2">
+            <span className="rp-badge rp-badge-primary text-[10px] px-2 py-0.5">{item.category_name}</span>
           </div>
         )}
+        {/* Like button */}
+        <button
+          onClick={handleLike}
+          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110"
+          style={{ background: liked ? "#FFD6EC" : "rgba(255,255,255,0.9)", boxShadow: "0 2px 8px rgba(180,150,255,0.2)" }}
+        >
+          <Heart size={15} fill={liked ? "#FF8FC5" : "none"} color={liked ? "#FF8FC5" : "#C9B8FF"} />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="p-3">
+        <h3 className="text-sm font-bold leading-snug line-clamp-2 mb-1" style={{ color: "#3D2F6B" }}>
+          {item.title}
+        </h3>
+        <p className="font-black text-sm mb-1" style={{ color: "#9B87D9" }}>
+          {formatPrice(item.price_per_day || item.price)}
+          <span className="font-normal text-xs" style={{ color: "#A89CC4" }}>/hari</span>
+        </p>
+        <div className="flex items-center gap-2 text-xs" style={{ color: "#A89CC4" }}>
+          {item.location && (
+            <span className="flex items-center gap-0.5 truncate">
+              <MapPin size={10} className="flex-shrink-0" />{item.location}
+            </span>
+          )}
+          {item.avg_rating > 0 && (
+            <span className="flex items-center gap-0.5 ml-auto flex-shrink-0">
+              <Star size={10} fill="#FFD6EC" color="#FFB3D9" />{Number(item.avg_rating).toFixed(1)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
