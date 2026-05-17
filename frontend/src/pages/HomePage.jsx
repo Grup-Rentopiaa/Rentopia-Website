@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Users, TrendingUp, Grid, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Grid, SlidersHorizontal, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import apiFetch from '../api';
 import useProducts from '../hooks/useProducts';
 import AppNavbar from '../components/AppNavbar';
 import ProductCard from '../components/ProductCard';
+import { CATEGORIES } from '../constants/categories';
 
 const RECOMMEND_TABS = [
   { id: 'semua',    label: 'Semua',    icon: <Grid size={14} /> },
@@ -12,16 +14,15 @@ const RECOMMEND_TABS = [
   { id: 'diikuti',  label: 'Diikuti',  icon: <Users size={14} /> },
 ];
 
-const CATEGORIES = ["Elektronik","Kamera","Fashion","Perlengkapan","Olahraga","Otomotif","Furnitur","Alat Musik","Buku","Lainnya"];
-
 const BANNERS = [
-  { gradient: "linear-gradient(135deg, #E8DCFF, #FFD6EC)", emoji: "🏕️", title: "Musim Camping Tiba!", sub: "Sewa alat camping premium mulai Rp50rb/hari" },
-  { gradient: "linear-gradient(135deg, #D6F0FF, #C9EFDC)",  emoji: "📷", title: "Weekend Photo Session?", sub: "Kamera DSLR & mirrorless tersedia di kotamu" },
-  { gradient: "linear-gradient(135deg, #FFD6EC, #E8DCFF)", emoji: "🎮", title: "Gaming Event Seru?", sub: "Sewa console & aksesori gaming terlengkap" },
+  { gradient: "linear-gradient(135deg, #E8DCFF, #FFD6EC)", emoji: "🏕️", title: "Musim Camping Tiba!", sub: "Sewa alat camping premium mulai Rp50rb/hari", category: "Camping & Outdoor" },
+  { gradient: "linear-gradient(135deg, #D6F0FF, #C9EFDC)",  emoji: "📷", title: "Weekend Photo Session?", sub: "Kamera DSLR & mirrorless tersedia di kotamu", category: "Kamera & Foto" },
+  { gradient: "linear-gradient(135deg, #FFD6EC, #E8DCFF)", emoji: "🎮", title: "Gaming Event Seru?", sub: "Sewa console & aksesori gaming terlengkap", category: "Elektronik" },
 ];
 
 export default function HomePage() {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const navigate = useNavigate();
   const [search, setSearch]             = useState('');
   const [category, setCategory]         = useState('');
   const [recommendTab, setRecommendTab] = useState('semua');
@@ -29,6 +30,10 @@ export default function HomePage() {
   const [filter, setFilter]             = useState({ sort: 'random', minPrice: '', maxPrice: '' });
   const [bannerIdx, setBannerIdx]       = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
+
+  // Following feed state
+  const [followingItems, setFollowingItems]   = useState([]);
+  const [followingLoading, setFollowingLoading] = useState(false);
 
   const { items, loading } = useProducts(search, category, filter, user?.id);
 
@@ -43,8 +48,17 @@ export default function HomePage() {
     if (recommendTab === 'semua')    setFilter(prev => ({ ...prev, sort: 'random',   filter: null }));
     if (recommendTab === 'trending') setFilter(prev => ({ ...prev, sort: 'trending', filter: null }));
     if (recommendTab === 'terdekat') setFilter(prev => ({ ...prev, sort: 'nearest',  filter: null }));
-    if (recommendTab === 'diikuti')  setFilter(prev => ({ ...prev, sort: 'random',   filter: 'following' }));
   }, [recommendTab]);
+
+  // Load following feed
+  useEffect(() => {
+    if (recommendTab !== 'diikuti' || !user?.id) return;
+    setFollowingLoading(true);
+    apiFetch(`/api/feed/following/${user.id}`)
+      .then(data => setFollowingItems(Array.isArray(data) ? data : []))
+      .catch(() => setFollowingItems([]))
+      .finally(() => setFollowingLoading(false));
+  }, [recommendTab, user?.id]);
 
   // Wishlist count
   useEffect(() => {
@@ -60,12 +74,20 @@ export default function HomePage() {
 
   const banner = BANNERS[bannerIdx];
 
+  function handleSearchSubmit(value) {
+    setSearch(value);
+  }
+
+  const displayItems = recommendTab === 'diikuti' ? followingItems : items;
+  const displayLoading = recommendTab === 'diikuti' ? followingLoading : loading;
+
   return (
     <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
       <AppNavbar
         wishlistCount={wishlistCount}
         onSearch={setSearch}
         searchValue={search}
+        onSearchSubmit={handleSearchSubmit}
       />
 
       <main className="max-w-7xl mx-auto px-4 pb-12">
@@ -85,7 +107,8 @@ export default function HomePage() {
               <h2 className="text-xl font-black mb-1" style={{ color: "#3D2F6B" }}>{banner.title}</h2>
               <p className="text-sm" style={{ color: "#7B6AAA" }}>{banner.sub}</p>
               <button
-                onClick={() => setCategory("")}
+                id={`banner-lihat-semua-${bannerIdx}`}
+                onClick={() => navigate(`/products?category=${encodeURIComponent(banner.category)}`)}
                 className="rp-btn-primary text-sm mt-4 px-5 py-2"
               >
                 Lihat Semua
@@ -108,11 +131,11 @@ export default function HomePage() {
         <div className="mb-6 flex gap-2 overflow-x-auto scrollbar-none pb-1">
           <button
             onClick={() => setCategory("")}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${!category ? "text-rp-text shadow-sm" : "border"}`}
+            className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
             style={{
               background: !category ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
               color: !category ? "#3D2F6B" : "#A89CC4",
-              borderColor: !category ? "transparent" : "#E8DCFF"
+              border: !category ? "none" : "1px solid #E8DCFF"
             }}
           >
             Semua
@@ -163,7 +186,7 @@ export default function HomePage() {
         {showFilter && (
           <div className="rp-card p-5 mb-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-sm" style={{ color: "#3D2F6B" }}>Filter & Urutkan</h3>
+              <h3 className="font-bold text-sm" style={{ color: "#3D2F6B" }}>Filter &amp; Urutkan</h3>
               <button onClick={() => setShowFilter(false)}><X size={16} style={{ color: "#A89CC4" }} /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -199,10 +222,20 @@ export default function HomePage() {
           <h2 className="font-black text-lg" style={{ color: "#3D2F6B" }}>
             {search ? `Hasil "${search}"` : category ? category : "Semua Produk"}
           </h2>
-          {!loading && <span className="text-sm font-semibold" style={{ color: "#A89CC4" }}>{items.length} barang</span>}
+          {!displayLoading && <span className="text-sm font-semibold" style={{ color: "#A89CC4" }}>{displayItems.length} barang</span>}
         </div>
 
-        {loading ? (
+        {/* Diikuti empty state */}
+        {recommendTab === 'diikuti' && !displayLoading && followingItems.length === 0 ? (
+          <div className="rp-card py-20 text-center">
+            <div className="text-5xl mb-4">💞</div>
+            <h3 className="font-black text-lg mb-2" style={{ color: "#3D2F6B" }}>Belum mengikuti siapa pun</h3>
+            <p className="text-sm mb-4" style={{ color: "#A89CC4" }}>
+              Ikuti penjual favoritmu untuk melihat produk mereka di sini.
+            </p>
+            <button onClick={() => navigate('/home')} className="rp-btn-primary">Temukan Penjual</button>
+          </div>
+        ) : displayLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {Array(10).fill(0).map((_, i) => (
               <div key={i} className="rp-card overflow-hidden">
@@ -214,7 +247,7 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : displayItems.length === 0 ? (
           <div className="rp-card py-20 text-center">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="font-black text-lg mb-2" style={{ color: "#3D2F6B" }}>
@@ -229,7 +262,7 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {items.map(item => (
+            {displayItems.map(item => (
               <ProductCard key={item.id} item={item} />
             ))}
           </div>

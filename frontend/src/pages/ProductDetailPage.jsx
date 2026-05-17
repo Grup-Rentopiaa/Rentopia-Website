@@ -43,6 +43,8 @@ export default function ProductDetailPage() {
   const [rating,    setRating]    = useState(5);
   const [comment,   setComment]   = useState("");
   const [submitting,setSubmitting]= useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [reviewAgreementId, setReviewAgreementId] = useState(null);
 
   useEffect(() => { fetchItem(); }, [id]);
 
@@ -55,6 +57,12 @@ export default function ProductDetailPage() {
       setLiked(data.likes?.some(l => l.user_id === user?.id) || wishlist.includes(Number(id)));
       const revs = await apiFetch(`/api/items/${id}/reviews`).catch(() => []);
       setReviews(Array.isArray(revs) ? revs : []);
+      // Check review eligibility
+      if (user?.id) {
+        const elig = await apiFetch(`/api/rental/eligibility/${user.id}/${id}`).catch(() => ({ canReview: false }));
+        setCanReview(!!elig?.canReview);
+        if (elig?.agreementId) setReviewAgreementId(elig.agreementId);
+      }
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }
@@ -77,7 +85,12 @@ export default function ProductDetailPage() {
     if (item) {
       localStorage.setItem("targetChatId", String(item.owner_id));
       localStorage.setItem("targetChatProduct", JSON.stringify({
-        id: item.id, title: item.title, price: item.price_per_day || item.price, image: item.image, status: item.status
+        id: item.id,
+        title: item.title,
+        price: item.price_per_day || item.price,
+        image: item.image,
+        status: item.status,
+        ownerId: item.owner_id,   // ← needed for seller/buyer role detection in ChatPage
       }));
     }
     navigate("/chat");
@@ -250,7 +263,7 @@ export default function ProductDetailPage() {
         <div className="mt-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-black" style={{ color: "#3D2F6B" }}>Ulasan ({reviews.length})</h2>
-            {user && !isOwner && !showReviewForm && (
+            {user && !isOwner && canReview && !showReviewForm && (
               <button onClick={() => setShowReviewForm(true)} className="rp-btn-primary text-sm px-4 py-2">
                 + Tulis Ulasan
               </button>

@@ -10,6 +10,7 @@ const {
   updateItemStatus,
   clearWishlist
 } = require('../models/item')
+const { prisma } = require('../lib/prisma')
 
 const getItems = async (req, res) => {
   try {
@@ -174,6 +175,41 @@ const createReview = async (req, res) => {
   }
 }
 
+const getFollowingFeed = async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId)
+    if (!userId) return res.json([])
+
+    // Get list of users this user follows
+    const follows = await prisma.follows.findMany({
+      where: { followerId: userId },
+      select: { followingId: true }
+    })
+    const followingIds = follows.map(f => f.followingId)
+    if (followingIds.length === 0) return res.json([])
+
+    const items = await prisma.item.findMany({
+      where: { owner_id: { in: followingIds } },
+      include: {
+        category: { select: { name: true } },
+        owner: { select: { id: true, username: true, avatarB64: true } },
+        likes: true,
+      },
+      orderBy: { created_at: 'desc' },
+      take: 50,
+    })
+
+    const result = items.map(i => ({
+      ...i,
+      category_name: i.category?.name || null,
+      price_per_day: Number(i.price_per_day),
+    }))
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
 module.exports = { 
   getItems, 
   getLikedItems,
@@ -186,5 +222,6 @@ module.exports = {
   updateStatus,
   clearAllLikedItems,
   getReviews,
-  createReview
+  createReview,
+  getFollowingFeed,
 }

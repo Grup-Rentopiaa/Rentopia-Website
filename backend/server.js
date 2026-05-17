@@ -17,7 +17,7 @@ app.use(cors({
   credentials: true
 }))
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
-app.use(express.json({ limit: '2mb' }))
+app.use(express.json({ limit: '5mb' }))
 
 const userRoutes = require('./routes/user')
 app.use('/api/users', userRoutes)
@@ -52,9 +52,21 @@ const rentalRoutes = require('./routes/rental')
 app.use('/api/rentals', rentalRoutes)
 app.use('/api/users/:userId/rentals', rentalRoutes)
 
-// Legacy routes from develop branch (can be refactored later if needed)
-// app.use('/api/products', require('./routes/products'));
-// app.use('/api/wishlist', require('./routes/wishlist'));
+// ── New routes ──────────────────────────────────────────────────────────────
+const rentalFlowRoutes = require('./routes/rentalFlow')
+app.use('/api/rental', rentalFlowRoutes)
+
+const adminRoutes = require('./routes/admin')
+app.use('/api/admin', adminRoutes)
+
+const socialRoutes = require('./routes/social')
+app.use('/api/search', socialRoutes)    // GET /api/search/users?q=
+app.use('/api/profile', socialRoutes)   // GET /api/profile/:userId/followers|following
+
+// Following feed — uses item controller
+const { getFollowingFeed } = require('./controllers/item')
+app.get('/api/feed/following/:userId', getFollowingFeed)
+
 
 wss.on('connection', (ws, req) => {
   try {

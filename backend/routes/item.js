@@ -11,7 +11,8 @@ const {
   updateStatus,
   clearAllLikedItems,
   getReviews,
-  createReview
+  createReview,
+  getFollowingFeed,
 } = require('../controllers/item')
 
 const router = express.Router({ mergeParams: true })

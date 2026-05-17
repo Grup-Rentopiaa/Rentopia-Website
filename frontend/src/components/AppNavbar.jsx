@@ -1,13 +1,16 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, Bell, MessageCircle, User, LogOut, Search, Upload, ChevronDown, Home } from "lucide-react";
+import apiFetch from "../api";
 
-export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "" }) {
+export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropRef = useRef(null);
 
+  // Close dropdown on outside click
   useEffect(() => {
     function handler(e) {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -18,6 +21,21 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Fetch unread notification count
+  const fetchUnread = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await apiFetch(`/api/notifications/${user.id}/unread-count`);
+      setUnreadCount(data?.count || 0);
+    } catch {}
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // refresh every 30s
+    return () => clearInterval(interval);
+  }, [fetchUnread]);
+
   function handleLogout() {
     const storedUser = JSON.parse(localStorage.getItem("user") || "null");
     if (storedUser?.id) {
@@ -27,6 +45,18 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
     localStorage.removeItem("user");
     fetch("http://localhost:3000/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
     navigate("/", { replace: true });
+  }
+
+  const [localSearch, setLocalSearch] = useState(searchValue);
+
+  function handleSearchKeyDown(e) {
+    if (e.key === "Enter" && localSearch.trim()) {
+      navigate(`/search?q=${encodeURIComponent(localSearch.trim())}`);
+    }
+  }
+
+  function handleSearchButtonClick() {
+    if (localSearch.trim()) navigate(`/search?q=${encodeURIComponent(localSearch.trim())}`);
   }
 
   const initials = (user?.username || user?.name || "U")[0].toUpperCase();
@@ -42,21 +72,31 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
           <span className="text-lg font-black hidden sm:block" style={{ color: "#9B87D9" }}>Rentopia</span>
         </Link>
 
-        {/* Search */}
-        {onSearch !== undefined && (
-          <div className="flex-1 max-w-lg">
-            <div className="relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#C9B8FF" }} />
-              <input
-                type="text"
-                placeholder="Cari barang sewaanmu..."
-                value={searchValue}
-                onChange={e => onSearch(e.target.value)}
-                className="rp-input pl-10 py-2.5 text-sm"
-              />
-            </div>
+        {/* Search — always shown, navigates to /search?q= */}
+        <div className="flex-1 max-w-lg">
+          <div className="relative flex items-center">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "#C9B8FF" }} />
+            <input
+              id="navbar-search-input"
+              type="text"
+              placeholder="Cari barang atau pengguna..."
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="rp-input pl-10 pr-12 py-2.5 text-sm"
+            />
+            <button
+              id="navbar-search-btn"
+              onClick={handleSearchButtonClick}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
+              style={{ background: "linear-gradient(135deg, #C9B8FF, #B09FEF)", color: "#3D2F6B" }}
+              title="Cari"
+            >
+              <Search size={14} />
+            </button>
           </div>
-        )}
+        </div>
+
 
         {/* Actions */}
         <div className="flex items-center gap-1 ml-auto">
@@ -73,6 +113,22 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
             )}
           </button>
 
+          {/* Bell — notifications */}
+          <button
+            id="navbar-bell-btn"
+            onClick={() => { navigate("/notifications"); setUnreadCount(0); }}
+            className="relative p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
+            title="Notifikasi"
+            style={{ color: "#9B87D9" }}
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center" style={{ background: "#FFB3D9", color: "#7B3F68" }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
           <button onClick={() => navigate("/chat")} className="p-2 rounded-xl transition-colors hover:bg-rp-primary-lt" title="Pesan" style={{ color: "#9B87D9" }}>
             <MessageCircle size={20} />
           </button>
@@ -84,6 +140,7 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
           {/* User dropdown */}
           <div className="relative" ref={dropRef}>
             <button
+              id="navbar-user-menu-btn"
               onClick={() => setDropdownOpen(v => !v)}
               className="flex items-center gap-2 ml-1 px-3 py-2 rounded-xl transition-colors"
               style={{ background: dropdownOpen ? "#E8DCFF" : "transparent" }}
@@ -101,16 +158,24 @@ export default function AppNavbar({ wishlistCount = 0, onSearch, searchValue = "
                   <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{user?.username}</p>
                   <p className="text-xs" style={{ color: "#A89CC4" }}>{user?.email}</p>
                 </div>
-                <button onClick={() => { navigate("/dashboard"); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors hover:bg-rp-primary-lt" style={{ color: "#7B6AAA" }}>
-                  <User size={16} /> Dashboard Saya
-                </button>
-                <button onClick={() => { navigate("/profile"); setDropdownOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors hover:bg-rp-primary-lt" style={{ color: "#7B6AAA" }}>
+                {/* "Dashboard Saya" removed per revision #5 */}
+                <button
+                  id="navbar-profile-btn"
+                  onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors hover:bg-rp-primary-lt"
+                  style={{ color: "#7B6AAA" }}
+                >
                   <User size={16} /> Profil
                 </button>
                 <div className="border-t mt-1 pt-1" style={{ borderColor: "#E8DCFF" }}>
-                  <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors" style={{ color: "#FF8FC5" }}
+                  <button
+                    id="navbar-logout-btn"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors"
+                    style={{ color: "#FF8FC5" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#FFD6EC"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
                     <LogOut size={16} /> Keluar
                   </button>
                 </div>
