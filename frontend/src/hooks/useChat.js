@@ -37,12 +37,29 @@ function useChat(myId) {
     source.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
-        // Only append if message is from/to the currently open conversation
+
+        // Ignore pure ping/connect messages
+        if (payload.message === "SSE connected") return;
+
+        // ── Agreement-level events (type field) ──────────────────────────────
+        // These are pushed by rental state transitions (e.g. approval, guarantee, etc.)
+        // They're handled separately in ChatPage via the WS listener.
+        // Here we just reload messages so system messages appear immediately.
+        if (payload.type === "agreement_update" || payload.type === "rental_request") {
+          const current = targetUserRef.current;
+          if (current) loadMessages(current.id);
+          return;
+        }
+
+        // ── Regular / System chat messages ───────────────────────────────────
         const current = targetUserRef.current;
-        if (
-          current &&
-          (payload.from === current.id || payload.to === current.id)
-        ) {
+        if (!current) return;
+
+        // System messages: from === null, we show them if the conversation is open
+        const isSystemMsg = payload.from === null && payload.is_system === true;
+        const isFromCurrent = payload.from === current.id || payload.to === current.id;
+
+        if (isSystemMsg || isFromCurrent) {
           setMessages((prev) => {
             // Avoid duplicate if we already added it optimistically on send
             const alreadyExists = prev.some(
@@ -55,15 +72,17 @@ function useChat(myId) {
             return [
               ...prev,
               {
-                pesan_id: Date.now(),
-                sender_id: payload.from,
+                pesan_id:    Date.now(),
+                sender_id:   payload.from,
                 receiver_id: payload.to,
-                isi_pesan: payload.text,
-                waktu: payload.time,
+                isi_pesan:   payload.text,
+                waktu:       payload.time,
+                is_system:   payload.is_system || payload.from === null,
               },
             ];
           });
         }
+
         // Refresh user list to update last_message previews
         loadUsers(false);
       } catch (_) {}

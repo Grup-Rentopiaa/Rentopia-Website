@@ -50,14 +50,13 @@ const getMessages = async (req, res) => {
     try {
         const auth = getAuthPayload(req);
         const targetId = Number(req.params.id);
-        const messages = await prisma.message.findMany({
+    const messages = await prisma.message.findMany({
             where: {
                 OR: [
                     { sender_id: auth.id, receiver_id: targetId },
                     { sender_id: targetId, receiver_id: auth.id },
-                    // System messages: sender_id = null, receiver_id = either party
+                    // System messages — only show the copy addressed to the current user
                     { sender_id: null, receiver_id: auth.id },
-                    { sender_id: null, receiver_id: targetId },
                 ]
             },
             orderBy: { waktu: 'asc' }
