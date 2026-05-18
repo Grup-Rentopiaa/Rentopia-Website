@@ -173,6 +173,7 @@ function useChat(myId) {
     usersLoading,
     sendMessage,
     chooseUser,
+    refreshMessages: loadMessages,
   };
 }
 

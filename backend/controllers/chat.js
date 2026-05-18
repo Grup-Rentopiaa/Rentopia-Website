@@ -54,7 +54,10 @@ const getMessages = async (req, res) => {
             where: {
                 OR: [
                     { sender_id: auth.id, receiver_id: targetId },
-                    { sender_id: targetId, receiver_id: auth.id }
+                    { sender_id: targetId, receiver_id: auth.id },
+                    // System messages: sender_id = null, receiver_id = either party
+                    { sender_id: null, receiver_id: auth.id },
+                    { sender_id: null, receiver_id: targetId },
                 ]
             },
             orderBy: { waktu: 'asc' }

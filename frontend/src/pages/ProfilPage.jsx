@@ -272,8 +272,20 @@ function OtherProfile({ profileId, loggedInUserId }) {
         {/* Profile Card */}
         <div className="rp-card p-8 mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="w-24 h-24 rounded-2xl flex-shrink-0 flex items-center justify-center text-3xl font-black" style={{ background: avatarColor, color: "#3D2F6B", border: "3px solid #E8DCFF" }}>
-              {initials}
+          <div className="flex-shrink-0">
+              {user.avatarB64 ? (
+                <img
+                  src={user.avatarB64}
+                  alt={user.username}
+                  className="w-24 h-24 rounded-2xl object-cover"
+                  style={{ border: "3px solid #E8DCFF" }}
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-2xl flex-shrink-0 flex items-center justify-center text-3xl font-black"
+                  style={{ background: avatarColor, color: "#3D2F6B", border: "3px solid #E8DCFF" }}>
+                  {initials}
+                </div>
+              )}
             </div>
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-2xl font-black" style={{ color: "#3D2F6B" }}>{user.name || user.username}</h1>

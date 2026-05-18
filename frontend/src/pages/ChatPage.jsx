@@ -30,51 +30,72 @@ export default function ChatPage() {
   const [showReview, setShowReview] = useState(false);
   const endRef = useRef(null);
 
-  const { users, targetUser, messages, loading, usersLoading, sendMessage, chooseUser } = useChat(user?.id);
+  const { users, targetUser, messages, loading, usersLoading, sendMessage, chooseUser, refreshMessages } = useChat(user?.id);
 
   const productStr = localStorage.getItem("targetChatProduct");
   const product = productStr ? (() => { try { return JSON.parse(productStr); } catch { return null; } })() : null;
 
-  const isSeller = !!(product && user?.id === product.ownerId);
-  const isBuyer  = !!(product && user?.id !== product.ownerId);
-  const buyerId  = product ? (isBuyer ? user?.id : targetUser?.id) : null;
-  const sellerId = product ? (isSeller ? user?.id : targetUser?.id) : null;
+  // isSeller/isBuyer from localStorage product (primary) OR from fetched agreement (fallback)
+  const isSeller = !!(
+    (product && user?.id === product.ownerId) ||
+    (agreement && user?.id === agreement.sellerId)
+  );
+  const isBuyer = !!(
+    (product && user?.id !== product.ownerId) ||
+    (agreement && user?.id === agreement.buyerId)
+  );
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages]);
+  // Derived IDs — used for API calls
+  const buyerId  = product
+    ? (isBuyer ? user?.id : targetUser?.id)
+    : (agreement?.buyerId ?? null);
+  const sellerId = product
+    ? (isSeller ? user?.id : targetUser?.id)
+    : (agreement?.sellerId ?? null);
 
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  // ── Fetch the current rental agreement from the DB ────────────────────────
   const fetchAgreement = useCallback(async () => {
     if (!targetUser || !product || !user) return;
     setAgLoading(true);
     try {
-      const data = await apiFetch(`/api/rental/agreement?buyerId=${buyerId}&sellerId=${sellerId}&itemId=${product.id}`);
+      const data = await apiFetch(
+        `/api/rental/agreement?buyerId=${buyerId}&sellerId=${sellerId}&itemId=${product.id}`
+      );
       setAgreement(data || null);
     } catch { setAgreement(null); }
     finally { setAgLoading(false); }
-  }, [targetUser?.id, product?.id, user?.id]);
+  }, [targetUser?.id, product?.id, user?.id, buyerId, sellerId]);
 
   useEffect(() => { fetchAgreement(); }, [fetchAgreement]);
 
-  async function doAction(endpoint, body, sysMsg) {
+  // ── Generic action runner ─────────────────────────────────────────────────
+  // NOTE: system messages are now inserted server-side; we just reload messages.
+  async function doAction(endpoint, body) {
+    if (actionLoading) return;
     setActionLoading(true);
     try {
-      await apiFetch(endpoint, { method:"POST", body: body ? JSON.stringify(body) : undefined });
-      if (sysMsg) await sendMessage(sysMsg);
+      await apiFetch(endpoint, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+      // Reload both agreement state AND message thread (server inserts system msg)
       await fetchAgreement();
+      if (refreshMessages && targetUser?.id) await refreshMessages(targetUser.id);
     } catch (err) { alert(err.message); }
     finally { setActionLoading(false); }
   }
 
   const handlers = {
     onApprove: () => doAction("/api/rental/approve",
-      { buyerId, sellerId, itemId: product?.id },
-      "✅ Penjual menyetujui penyewaan. Menunggu data jaminan dari penyewa."),
-    onHandover: () => doAction(`/api/rental/${agreement?.id}/confirm-handover`, null,
-      `📋 Penjual mengonfirmasi barang diserahkan. Kode Sewa: ${agreement?.rentalCode} · Durasi: ${agreement?.durationDays} hari.`),
-    onReceived: () => doAction(`/api/rental/${agreement?.id}/confirm-received`, null,
-      "🟢 Penyewa mengonfirmasi menerima barang. Masa sewa dimulai sekarang!"),
-    onReturned: () => doAction(`/api/rental/${agreement?.id}/confirm-returned`, null,
-      "✅ Barang telah dikembalikan. Terima kasih telah menggunakan Rentopia!"),
+      { buyerId, sellerId, itemId: product?.id }),
+
+    onHandover: () => doAction(`/api/rental/${agreement?.id}/confirm-handover`, null),
+
+    onReceived: () => doAction(`/api/rental/${agreement?.id}/confirm-received`, null),
+
+    onReturned: () => doAction(`/api/rental/${agreement?.id}/confirm-returned`, null),
+
     onOpenGuarantee: () => setShowGuarantee(true),
+
     onReview: () => setShowReview(true),
   };
 
@@ -117,8 +138,14 @@ export default function ChatPage() {
           </button>
           {targetUser ? (
             <>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
-                style={{ background:targetColor, color:"#3D2F6B" }}>{targetInitials}</div>
+              {targetUser.avatarB64 ? (
+                <img src={targetUser.avatarB64} alt={targetUser.username}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                  style={{ border: "2px solid #E8DCFF" }} />
+              ) : (
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+                  style={{ background: targetColor, color:"#3D2F6B" }}>{targetInitials}</div>
+              )}
               <div className="flex-1 min-w-0">
                 <h3 className="font-black text-sm truncate" style={{ color:"#3D2F6B" }}>{targetUser.name || targetUser.username}</h3>
                 <p className="text-xs" style={{ color:"#9B87D9" }}>● Aktif</p>
@@ -239,7 +266,11 @@ export default function ChatPage() {
       {showGuarantee && (
         <GuaranteeModal
           buyerId={buyerId} sellerId={sellerId} itemId={product?.id}
-          onSuccess={() => { setShowGuarantee(false); fetchAgreement(); }}
+          onSuccess={async () => {
+            setShowGuarantee(false);
+            await fetchAgreement();
+            if (refreshMessages && targetUser?.id) await refreshMessages(targetUser.id);
+          }}
           onClose={() => setShowGuarantee(false)}
         />
       )}

@@ -32,6 +32,26 @@ function makeConversationKey(buyerId, sellerId, itemId) {
   return `${lo}-${hi}-${itemId}`
 }
 
+// ── Insert system message into the message table ─────────────────────────────
+// sender_id=null, is_system=true, receiver_id=buyerId
+// Wrapped in try/catch so that if the DB migration hasn't run yet it won't
+// crash the state transition endpoints.
+async function insertSystemMessage(buyerId, sellerId, text) {
+  try {
+    await prisma.message.create({
+      data: {
+        sender_id:   null,
+        receiver_id: buyerId,
+        is_system:   true,
+        isi_pesan:   text,
+      },
+    })
+  } catch (err) {
+    // Log but don't rethrow — state transition must succeed even if message fails
+    console.error('[SystemMsg] Failed to insert system message:', err.message)
+  }
+}
+
 // ── GET status for a conversation (used by ChatPage on load) ─────────────────
 const getChatStatus = async (req, res) => {
   try {
@@ -59,6 +79,10 @@ const approveRental = async (req, res) => {
       update: { status: 'approved' },
     })
 
+    // System message visible to both parties
+    await insertSystemMessage(+buyerId, +sellerId,
+      '✅ Penjual menyetujui penyewaan. Menunggu data jaminan dari penyewa.')
+
     const seller = await prisma.users.findUnique({ where: { id: +sellerId }, select: { username: true } })
     await createNotification(+buyerId, 'rental_request',
       `${seller?.username || 'Penjual'} menyetujui penyewaanmu. Kirim data jaminan sekarang.`, agreement.id)
@@ -75,7 +99,7 @@ const submitGuarantee = async (req, res) => {
       return res.status(400).json({ message: 'Semua field wajib diisi' })
 
     const key = makeConversationKey(+buyerId, +sellerId, +itemId)
-    const rentalCode = `RNT-${buyerId}-${Date.now()}`
+    const rentalCode = `RNT-${Date.now()}`
     const encryptedData = encrypt(JSON.stringify({ fullName, phone, address, ktpB64: ktpB64 || null, durationDays }))
 
     const agreement = await prisma.rentalAgreement.upsert({
@@ -84,6 +108,10 @@ const submitGuarantee = async (req, res) => {
                 status: 'guarantee_submitted', rentalCode, durationDays: +durationDays, guaranteeData: encryptedData },
       update: { status: 'guarantee_submitted', rentalCode, durationDays: +durationDays, guaranteeData: encryptedData },
     })
+
+    // System message with rental code
+    await insertSystemMessage(+buyerId, +sellerId,
+      `📋 Data jaminan dikirim. Kode Sewa: ${rentalCode} · Durasi: ${durationDays} hari · Silakan lakukan COD.`)
 
     const buyer = await prisma.users.findUnique({ where: { id: +buyerId }, select: { username: true } })
     await createNotification(+sellerId, 'guarantee_submitted',
@@ -104,6 +132,9 @@ const confirmHandover = async (req, res) => {
     const updated = await prisma.rentalAgreement.update({
       where: { id: rentalId }, data: { status: 'handover_confirmed' },
     })
+
+    await insertSystemMessage(agreement.buyerId, agreement.sellerId,
+      '📦 Penjual mengonfirmasi barang siap diserahkan. Konfirmasi saat kamu menerima barang.')
 
     const seller = await prisma.users.findUnique({ where: { id: agreement.sellerId }, select: { username: true } })
     await createNotification(agreement.buyerId, 'item_received',
@@ -128,6 +159,12 @@ const confirmReceived = async (req, res) => {
     const updated = await prisma.rentalAgreement.update({
       where: { id: rentalId }, data: { status: 'received', startDate, endDate },
     })
+
+    const startStr = startDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })
+    const endStr   = endDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    const days = agreement.durationDays || 1
+    await insertSystemMessage(agreement.buyerId, agreement.sellerId,
+      `🟢 Masa sewa dimulai ${startStr} → ${endStr} (${days} hari)`)
 
     const buyer = await prisma.users.findUnique({ where: { id: agreement.buyerId }, select: { username: true } })
     await createNotification(agreement.sellerId, 'item_received',
@@ -158,6 +195,9 @@ const confirmReturned = async (req, res) => {
     const updated = await prisma.rentalAgreement.update({
       where: { id: rentalId }, data: { status: 'returned' },
     })
+
+    await insertSystemMessage(agreement.buyerId, agreement.sellerId,
+      '✅ Barang telah dikembalikan. Terima kasih telah menggunakan Rentopia!')
 
     await createNotification(agreement.buyerId, 'item_returned',
       `Masa sewa selesai. Terima kasih telah menggunakan Rentopia! Tulis ulasanmu sekarang.`, rentalId,
@@ -205,7 +245,6 @@ const checkReviewEligibility = async (req, res) => {
     const userId    = parseInt(req.params.userId)
     const productId = parseInt(req.params.productId)
 
-    // Check if there is a returned/reviewed agreement for this buyer+item
     const agreement = await prisma.rentalAgreement.findFirst({
       where: {
         buyerId: userId,
@@ -215,10 +254,7 @@ const checkReviewEligibility = async (req, res) => {
     })
 
     if (!agreement) return res.json({ canReview: false })
-
-    // Can only review if status is 'returned' (not yet reviewed)
     const canReview = agreement.status === 'returned'
-
     res.json({ canReview, agreementId: agreement.id })
   } catch (err) { res.status(500).json({ message: err.message }) }
 }

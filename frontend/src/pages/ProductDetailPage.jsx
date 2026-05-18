@@ -304,27 +304,43 @@ export default function ProductDetailPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {reviews.map((r, i) => (
-                <div key={i} className="rp-card p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black" style={{ background: "#E8DCFF", color: "#9B87D9" }}>
-                        {(r.username || r.user?.username || "U")[0].toUpperCase()}
+              {reviews.map((r, i) => {
+                const reviewer = r.user || {};
+                const name = r.username || reviewer.username || "Pengguna";
+                const avatarB64 = r.avatarB64 || reviewer.avatarB64;
+                return (
+                  <div key={r.id || i} className="rp-card p-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        {avatarB64 ? (
+                          <img src={avatarB64} alt={name}
+                            className="w-9 h-9 rounded-full object-cover"
+                            style={{ border: "2px solid #E8DCFF" }} />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black"
+                            style={{ background: "#E8DCFF", color: "#9B87D9" }}>
+                            {name[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{name}</p>
+                          <StarRating value={r.rating} size={14} />
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{r.username || r.user?.username || "Pengguna"}</p>
-                        <StarRating value={r.rating} size={14} />
-                      </div>
+                      {(r.created_at || r.createdAt) && (
+                        <span className="text-xs" style={{ color: "#A89CC4" }}>
+                          {new Date(r.created_at || r.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                        </span>
+                      )}
                     </div>
-                    {r.created_at && (
-                      <span className="text-xs" style={{ color: "#A89CC4" }}>
-                        {new Date(r.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-                      </span>
+                    <p className="text-sm leading-relaxed" style={{ color: "#7B6AAA" }}>{r.comment}</p>
+                    {(r.photoB64 || r.photo_url) && (
+                      <img src={r.photoB64 || r.photo_url} alt="review"
+                        className="mt-3 w-full max-h-40 object-cover rounded-xl" />
                     )}
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: "#7B6AAA" }}>{r.comment}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
