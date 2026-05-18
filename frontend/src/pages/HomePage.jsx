@@ -16,38 +16,37 @@ const RECOMMEND_TABS = [
 
 const BANNERS = [
   { gradient: "linear-gradient(135deg, #E8DCFF, #FFD6EC)", emoji: "🏕️", title: "Musim Camping Tiba!", sub: "Sewa alat camping premium mulai Rp50rb/hari", category: "Camping & Outdoor" },
-  { gradient: "linear-gradient(135deg, #D6F0FF, #C9EFDC)",  emoji: "📷", title: "Weekend Photo Session?", sub: "Kamera DSLR & mirrorless tersedia di kotamu", category: "Kamera & Foto" },
+  { gradient: "linear-gradient(135deg, #D6F0FF, #C9EFDC)", emoji: "📷", title: "Weekend Photo Session?", sub: "Kamera DSLR & mirrorless tersedia di kotamu", category: "Kamera & Foto" },
   { gradient: "linear-gradient(135deg, #FFD6EC, #E8DCFF)", emoji: "🎮", title: "Gaming Event Seru?", sub: "Sewa console & aksesori gaming terlengkap", category: "Elektronik" },
 ];
 
 export default function HomePage() {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const user     = JSON.parse(localStorage.getItem('user') || 'null');
   const navigate = useNavigate();
-  const [search, setSearch]             = useState('');
-  const [category, setCategory]         = useState('');
-  const [recommendTab, setRecommendTab] = useState('semua');
-  const [showFilter, setShowFilter]     = useState(false);
-  const [filter, setFilter]             = useState({ sort: 'random', minPrice: '', maxPrice: '' });
-  const [bannerIdx, setBannerIdx]       = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
 
-  // Following feed state
-  const [followingItems, setFollowingItems]   = useState([]);
-  const [followingLoading, setFollowingLoading] = useState(false);
+  const [search,          setSearch]          = useState('');
+  const [category,        setCategory]        = useState('');
+  const [recommendTab,    setRecommendTab]    = useState('semua');
+  const [showFilter,      setShowFilter]      = useState(false);
+  const [filter,          setFilter]          = useState({ sort: 'random', minPrice: '', maxPrice: '' });
+  const [bannerIdx,       setBannerIdx]       = useState(0);
+  const [wishlistCount,   setWishlistCount]   = useState(0);
+  const [followingItems,  setFollowingItems]  = useState([]);
+  const [followingLoading,setFollowingLoading]= useState(false);
 
   const { items, loading } = useProducts(search, category, filter, user?.id);
 
-  // Carousel auto-rotate
+  // Banner carousel
   useEffect(() => {
     const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
   }, []);
 
-  // Sync recommendTab with filter
+  // Sync tab ke filter
   useEffect(() => {
-    if (recommendTab === 'semua')    setFilter(prev => ({ ...prev, sort: 'random',   filter: null }));
-    if (recommendTab === 'trending') setFilter(prev => ({ ...prev, sort: 'trending', filter: null }));
-    if (recommendTab === 'terdekat') setFilter(prev => ({ ...prev, sort: 'nearest',  filter: null }));
+    if (recommendTab === 'semua')    setFilter(p => ({ ...p, sort: 'random',   filter: null }));
+    if (recommendTab === 'trending') setFilter(p => ({ ...p, sort: 'trending', filter: null }));
+    if (recommendTab === 'terdekat') setFilter(p => ({ ...p, sort: 'nearest',  filter: null }));
   }, [recommendTab]);
 
   // Load following feed
@@ -62,23 +61,18 @@ export default function HomePage() {
 
   // Wishlist count
   useEffect(() => {
-    function countWishlist() {
+    function count() {
       if (!user) return;
       const list = JSON.parse(localStorage.getItem(`rentopia_wishlist_${user.id}`) || '[]');
       setWishlistCount(list.length);
     }
-    countWishlist();
-    window.addEventListener('likeChanged', countWishlist);
-    return () => window.removeEventListener('likeChanged', countWishlist);
+    count();
+    window.addEventListener('likeChanged', count);
+    return () => window.removeEventListener('likeChanged', count);
   }, []);
 
-  const banner = BANNERS[bannerIdx];
-
-  function handleSearchSubmit(value) {
-    setSearch(value);
-  }
-
-  const displayItems = recommendTab === 'diikuti' ? followingItems : items;
+  const banner       = BANNERS[bannerIdx];
+  const displayItems   = recommendTab === 'diikuti' ? followingItems : items;
   const displayLoading = recommendTab === 'diikuti' ? followingLoading : loading;
 
   return (
@@ -87,11 +81,12 @@ export default function HomePage() {
         wishlistCount={wishlistCount}
         onSearch={setSearch}
         searchValue={search}
-        onSearchSubmit={handleSearchSubmit}
+        onSearchSubmit={setSearch}
       />
 
       <main className="max-w-7xl mx-auto px-4 pb-12">
-        {/* ── Greeting ── */}
+
+        {/* Greeting */}
         <div className="pt-6 pb-4">
           <h1 className="text-2xl font-black" style={{ color: "#3D2F6B" }}>
             Halo, {user?.username || "Pengguna"}! 👋
@@ -99,15 +94,17 @@ export default function HomePage() {
           <p className="text-sm mt-0.5" style={{ color: "#A89CC4" }}>Mau sewa apa hari ini?</p>
         </div>
 
-        {/* ── Hero Banner Carousel ── */}
-        <div className="rounded-3xl overflow-hidden mb-6 relative" style={{ background: banner.gradient, minHeight: "160px" }}>
+        {/* Banner carousel */}
+        <div className="rounded-3xl overflow-hidden mb-6 relative"
+          style={{ background: banner.gradient, minHeight: "160px" }}>
           <div className="p-8 flex items-center gap-6">
             <div className="flex-1">
-              <p className="text-xs font-bold mb-1 uppercase tracking-wider" style={{ color: "#9B87D9" }}>Promosi Spesial</p>
+              <p className="text-xs font-bold mb-1 uppercase tracking-wider" style={{ color: "#9B87D9" }}>
+                Promosi Spesial
+              </p>
               <h2 className="text-xl font-black mb-1" style={{ color: "#3D2F6B" }}>{banner.title}</h2>
               <p className="text-sm" style={{ color: "#7B6AAA" }}>{banner.sub}</p>
               <button
-                id={`banner-lihat-semua-${bannerIdx}`}
                 onClick={() => navigate(`/products?category=${encodeURIComponent(banner.category)}`)}
                 className="rp-btn-primary text-sm mt-4 px-5 py-2"
               >
@@ -116,47 +113,35 @@ export default function HomePage() {
             </div>
             <div className="text-6xl flex-shrink-0 hidden sm:block">{banner.emoji}</div>
           </div>
-          {/* Dots */}
           <div className="absolute bottom-3 right-3 flex gap-1.5">
             {BANNERS.map((_, i) => (
               <button key={i} onClick={() => setBannerIdx(i)}
                 className="w-2 h-2 rounded-full transition-all"
-                style={{ background: i === bannerIdx ? "#9B87D9" : "#C9B8FF" }}
-              />
+                style={{ background: i === bannerIdx ? "#9B87D9" : "#C9B8FF" }} />
             ))}
           </div>
         </div>
 
-        {/* ── Categories ── */}
+        {/* Category pills — pakai cat.id dan cat.name */}
         <div className="mb-6 flex gap-2 overflow-x-auto scrollbar-none pb-1">
-          <button
-            onClick={() => setCategory("")}
-            className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
-            style={{
-              background: !category ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
-              color: !category ? "#3D2F6B" : "#A89CC4",
-              border: !category ? "none" : "1px solid #E8DCFF"
-            }}
-          >
-            Semua
-          </button>
           {CATEGORIES.map(cat => (
             <button
-              key={cat}
-              onClick={() => setCategory(category === cat ? "" : cat)}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border"
+              key={cat.id}
+              onClick={() => setCategory(category === cat.id ? "" : cat.id)}
+              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
               style={{
-                background: category === cat ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
-                color: category === cat ? "#3D2F6B" : "#A89CC4",
-                borderColor: category === cat ? "transparent" : "#E8DCFF"
+                background: category === cat.id
+                  ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "#FFFFFF",
+                color: category === cat.id ? "#3D2F6B" : "#A89CC4",
+                border: category === cat.id ? "none" : "1px solid #E8DCFF",
               }}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>
 
-        {/* ── Filter Tabs + Filter button ── */}
+        {/* Recommend tabs + filter button */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex gap-2 overflow-x-auto scrollbar-none">
             {RECOMMEND_TABS.map(tab => (
@@ -166,7 +151,7 @@ export default function HomePage() {
                 className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all"
                 style={{
                   background: recommendTab === tab.id ? "#E8DCFF" : "transparent",
-                  color: recommendTab === tab.id ? "#9B87D9" : "#A89CC4"
+                  color: recommendTab === tab.id ? "#9B87D9" : "#A89CC4",
                 }}
               >
                 {tab.icon}{tab.label}
@@ -182,27 +167,33 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* ── Filter Panel ── */}
+        {/* Filter panel */}
         {showFilter && (
           <div className="rp-card p-5 mb-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-sm" style={{ color: "#3D2F6B" }}>Filter &amp; Urutkan</h3>
-              <button onClick={() => setShowFilter(false)}><X size={16} style={{ color: "#A89CC4" }} /></button>
+              <button onClick={() => setShowFilter(false)}>
+                <X size={16} style={{ color: "#A89CC4" }} />
+              </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Harga Min (Rp)</label>
-                <input type="number" value={filter.minPrice} onChange={e => setFilter(p => ({ ...p, minPrice: e.target.value }))}
+                <input type="number" value={filter.minPrice}
+                  onChange={e => setFilter(p => ({ ...p, minPrice: e.target.value }))}
                   placeholder="0" className="rp-input text-sm py-2" />
               </div>
               <div>
                 <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Harga Max (Rp)</label>
-                <input type="number" value={filter.maxPrice} onChange={e => setFilter(p => ({ ...p, maxPrice: e.target.value }))}
+                <input type="number" value={filter.maxPrice}
+                  onChange={e => setFilter(p => ({ ...p, maxPrice: e.target.value }))}
                   placeholder="∞" className="rp-input text-sm py-2" />
               </div>
               <div>
                 <label className="text-xs font-bold mb-1.5 block" style={{ color: "#7B6AAA" }}>Urutkan</label>
-                <select value={filter.sort} onChange={e => setFilter(p => ({ ...p, sort: e.target.value }))} className="rp-input text-sm py-2">
+                <select value={filter.sort}
+                  onChange={e => setFilter(p => ({ ...p, sort: e.target.value }))}
+                  className="rp-input text-sm py-2">
                   <option value="random">Default</option>
                   <option value="price_asc">Harga Terendah</option>
                   <option value="price_desc">Harga Tertinggi</option>
@@ -211,18 +202,24 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => setFilter({ sort: 'random', minPrice: '', maxPrice: '' })} className="rp-btn-outline text-sm py-2 flex-1">Reset</button>
-              <button onClick={() => setShowFilter(false)} className="rp-btn-primary text-sm py-2 flex-1">Terapkan</button>
+              <button onClick={() => setFilter({ sort: 'random', minPrice: '', maxPrice: '' })}
+                className="rp-btn-outline text-sm py-2 flex-1">Reset</button>
+              <button onClick={() => setShowFilter(false)}
+                className="rp-btn-primary text-sm py-2 flex-1">Terapkan</button>
             </div>
           </div>
         )}
 
-        {/* ── Product Grid ── */}
+        {/* Product grid header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-black text-lg" style={{ color: "#3D2F6B" }}>
             {search ? `Hasil "${search}"` : category ? category : "Semua Produk"}
           </h2>
-          {!displayLoading && <span className="text-sm font-semibold" style={{ color: "#A89CC4" }}>{displayItems.length} barang</span>}
+          {!displayLoading && (
+            <span className="text-sm font-semibold" style={{ color: "#A89CC4" }}>
+              {displayItems.length} barang
+            </span>
+          )}
         </div>
 
         {/* Diikuti empty state */}
@@ -269,8 +266,8 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t py-6 text-center text-sm" style={{ borderColor: "#E8DCFF", color: "#A89CC4" }}>
+      <footer className="border-t py-6 text-center text-sm"
+        style={{ borderColor: "#E8DCFF", color: "#A89CC4" }}>
         © 2025 Rentopia — Dibuat dengan 💜
       </footer>
     </div>

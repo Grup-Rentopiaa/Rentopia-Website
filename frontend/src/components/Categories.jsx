@@ -1,21 +1,8 @@
-import {
-  Layers, Zap, Car, Shirt, Home, Bike,
-  Camera, Music, BookOpen, Baby, Tag, LayoutGrid,
-} from 'lucide-react';
+// ── components/Categories.jsx ────────────────────────────────────────────────
+// Navbar kategori horizontal dengan icon.
+// Data diambil dari constants/categories.js — tidak ada definisi duplikat di sini.
 
-export const CATEGORIES = [
-  { id: '',  name: 'Semua',        Icon: LayoutGrid },
-  { id: 1,   name: 'Elektronik',   Icon: Zap },
-  { id: 2,   name: 'Kendaraan',    Icon: Car },
-  { id: 3,   name: 'Pakaian',      Icon: Shirt },
-  { id: 4,   name: 'Rumah',        Icon: Home },
-  { id: 5,   name: 'Olahraga',     Icon: Bike },
-  { id: 6,   name: 'Kamera',       Icon: Camera },
-  { id: 7,   name: 'Alat Musik',   Icon: Music },
-  { id: 8,   name: 'Edukasi',      Icon: BookOpen },
-  { id: 9,   name: 'Bayi & Anak',  Icon: Baby },
-  { id: 10,  name: 'Lainnya',      Icon: Tag },
-];
+import { CATEGORIES } from '../constants/categories';
 
 export default function Categories({ selected, onSelect }) {
   return (

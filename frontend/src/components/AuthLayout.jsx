@@ -1,12 +1,19 @@
+// ── components/AuthLayout.jsx ────────────────────────────────────────────────
+// Wrapper untuk semua halaman auth (login, register, OTP, forgot password).
+// Pakai design system rp- yang konsisten dengan seluruh app.
+
 export default function AuthLayout({ children }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden ring-1 ring-slate-200">
-        <div className="flex items-center gap-2 justify-center pt-6 pb-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600 text-base font-black text-white shadow-md">
+    <div className="min-h-screen flex items-center justify-center p-4 rp-page"
+      style={{ background: "#FAF8FF" }}>
+      <div className="w-full max-w-sm rp-card overflow-hidden">
+        {/* Logo */}
+        <div className="flex items-center gap-2 justify-center pt-6 pb-4">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg"
+            style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)" }}>
             R
           </div>
-          <span className="text-xl font-black tracking-tight text-purple-600">Rentopia</span>
+          <span className="text-xl font-black" style={{ color: "#9B87D9" }}>Rentopia</span>
         </div>
         {children}
       </div>

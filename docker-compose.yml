@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   db:
     image: postgres:16-alpine
     container_name: rentopia_db
@@ -8,9 +9,9 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER:     ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB:       ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -30,8 +31,10 @@ services:
     env_file:
       - .env
     environment:
+      # Pakai nama service 'db' bukan localhost — ini wajib di Docker network
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       PORT: 3000
+      NODE_ENV: production
     ports:
       - "3000:3000"
     depends_on:
@@ -43,16 +46,30 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # VITE_ env vars harus di-inject saat BUILD TIME, bukan runtime
+        # Browser mengakses backend lewat host machine (localhost),
+        # bukan lewat Docker internal network
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/auth}
+        VITE_TRACKING_URL: ${VITE_TRACKING_URL:-http://localhost:3000/api/tracking/track-visitor}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3000}
     container_name: rentopia_frontend
     restart: unless-stopped
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:3000/api/auth
-      - VITE_TRACKING_URL=http://localhost:3000/api/tracking/track-visitor
     depends_on:
       backend:
         condition: service_started
 
 volumes:
   postgres_data:
+
+# ── Catatan untuk tim ──────────────────────────────────────────────────────────
+# Cara jalankan:
+#   1. Copy .env.example ke .env dan isi semua variabel
+#   2. docker compose up --build
+#
+# Kalau deploy ke server (bukan localhost), ganti nilai VITE_* di .env:
+#   VITE_API_URL=https://api.namadomain.com/api/auth
+#   VITE_TRACKING_URL=https://api.namadomain.com/api/tracking/track-visitor
+#   VITE_WS_URL=wss://api.namadomain.com

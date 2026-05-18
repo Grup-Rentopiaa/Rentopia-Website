@@ -109,7 +109,7 @@ export default function LoginPage() {
         </div>
 
         <button onClick={() => navigate("/")} className="rp-back-btn mx-auto flex mt-6">
-          <ArrowLeft size={16} /> Kembali ke Beranda
+          <ArrowLeft size={16} /> Kembali ke Landing Page
         </button>
       </div>
     </div>
