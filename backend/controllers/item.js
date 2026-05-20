@@ -151,11 +151,8 @@ const createReview = async (req, res) => {
       }
     });
 
-    // Also update item rating average
     const allReviews = await prisma.review.findMany({ where: { itemId } });
     if (allReviews.length > 0) {
-      // For now we don't store average rating on Item but we could.
-      // But we can store it on the owner!
       const item = await prisma.item.findUnique({ where: { id: itemId } });
       if (item && item.owner_id) {
         const ownerReviews = await prisma.review.findMany({ 
@@ -180,7 +177,6 @@ const getFollowingFeed = async (req, res) => {
     const userId = parseInt(req.params.userId)
     if (!userId) return res.json([])
 
-    // Get list of users this user follows
     const follows = await prisma.follows.findMany({
       where: { followerId: userId },
       select: { followingId: true }

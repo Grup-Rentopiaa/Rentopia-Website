@@ -3,7 +3,6 @@ const crypto = require('crypto')
 const { createNotification } = require('../utils/notificationUtils')
 const { sendWsToUser, sendSseToUser } = require('../utils/chatUtils')
 
-// ── Encryption ──────────────────────────────────────────────────────────────
 const ENCRYPTION_KEY = (process.env.ENCRYPTION_KEY || 'rentopia_aes_key_32bytes_secure!!').slice(0, 32)
 const IV_LENGTH = 16
 
@@ -26,7 +25,6 @@ function decrypt(text) {
   } catch { return null }
 }
 
-// ── Conversation key ─────────────────────────────────────────────────────────
 function makeConversationKey(buyerId, sellerId, itemId) {
   const lo = Math.min(buyerId, sellerId)
   const hi = Math.max(buyerId, sellerId)

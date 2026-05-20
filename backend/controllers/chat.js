@@ -55,7 +55,6 @@ const getMessages = async (req, res) => {
                 OR: [
                     { sender_id: auth.id, receiver_id: targetId },
                     { sender_id: targetId, receiver_id: auth.id },
-                    // System messages — only show the copy addressed to the current user
                     { sender_id: null, receiver_id: auth.id },
                 ]
             },
