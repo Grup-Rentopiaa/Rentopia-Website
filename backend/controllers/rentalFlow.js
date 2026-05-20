@@ -3,6 +3,10 @@ const crypto = require('crypto')
 const { createNotification } = require('../utils/notificationUtils')
 const { sendWsToUser, sendSseToUser } = require('../utils/chatUtils')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5dd34eb502646a4fe0d045379e3e9af938be267
 const ENCRYPTION_KEY = (process.env.ENCRYPTION_KEY || 'rentopia_aes_key_32bytes_secure!!').slice(0, 32)
 const IV_LENGTH = 16
 
@@ -31,11 +35,10 @@ function makeConversationKey(buyerId, sellerId, itemId) {
   return `${lo}-${hi}-${itemId}`
 }
 
-// ── Insert system message to BOTH parties ───────────────────────────────────
-// BUG FIX: Previously only sent to buyer. Now broadcasts to both.
+
 async function insertSystemMessage(buyerId, sellerId, text) {
   try {
-    // Message for buyer
+    
     const msgBuyer = await prisma.message.create({
       data: {
         sender_id:   null,
@@ -44,7 +47,7 @@ async function insertSystemMessage(buyerId, sellerId, text) {
         isi_pesan:   text,
       },
     })
-    // Message for seller
+    
     const msgSeller = await prisma.message.create({
       data: {
         sender_id:   null,
@@ -54,7 +57,7 @@ async function insertSystemMessage(buyerId, sellerId, text) {
       },
     })
 
-    // Push via SSE/WS so both see it in real-time without refresh
+    
     const ssePayload = { from: null, to: buyerId, text, time: msgBuyer.waktu, is_system: true }
     sendSseToUser(buyerId,  { ...ssePayload, to: buyerId })
     sendSseToUser(sellerId, { ...ssePayload, to: sellerId })
@@ -65,7 +68,7 @@ async function insertSystemMessage(buyerId, sellerId, text) {
   }
 }
 
-// ── GET status for a conversation (used by ChatPage on load) ─────────────────
+
 const getChatStatus = async (req, res) => {
   try {
     const { buyerId, sellerId, itemId } = req.query
@@ -76,12 +79,10 @@ const getChatStatus = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── GET agreement (alias) ────────────────────────────────────────────────────
+
 const getAgreement = getChatStatus
 
-// ── NEW: State -1→0: Buyer initiates chat (creates pending agreement) ────────
-// This is called automatically when User A opens chat with a product attached.
-// It creates a "pending" agreement and pushes a real-time notification to the seller.
+
 const initiateRental = async (req, res) => {
   try {
     const { buyerId, sellerId, itemId } = req.body
@@ -90,24 +91,24 @@ const initiateRental = async (req, res) => {
 
     const key = makeConversationKey(+buyerId, +sellerId, +itemId)
 
-    // Only create if doesn't already exist — never overwrite an existing agreement
+    
     let agreement = await prisma.rentalAgreement.findUnique({ where: { conversationKey: key } })
     if (!agreement) {
       agreement = await prisma.rentalAgreement.create({
         data: { conversationKey: key, buyerId: +buyerId, sellerId: +sellerId, itemId: +itemId, status: 'pending' },
       })
 
-      // Fetch item + buyer info for the notification message
+      
       const item  = await prisma.item.findUnique({ where: { id: +itemId }, select: { title: true } })
       const buyer = await prisma.users.findUnique({ where: { id: +buyerId }, select: { username: true } })
 
       const notifMsg = `🔔 ${buyer?.username || 'Seseorang'} ingin menyewa "${item?.title || 'produkmu'}". Buka chat untuk menyetujui.`
 
-      // Real-time push to seller
+      
       sendWsToUser(+sellerId, { type: 'rental_request', message: notifMsg, buyerId: +buyerId, itemId: +itemId })
       sendSseToUser(+sellerId, { type: 'rental_request', message: notifMsg, buyerId: +buyerId, itemId: +itemId })
 
-      // Persistent notification
+      
       await createNotification(+sellerId, 'rental_request', notifMsg, agreement.id)
     }
 
@@ -115,7 +116,7 @@ const initiateRental = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── State 0→1: Seller approves ────────────────────────────────────────────────
+
 const approveRental = async (req, res) => {
   try {
     const { buyerId, sellerId, itemId } = req.body
@@ -128,7 +129,7 @@ const approveRental = async (req, res) => {
       update: { status: 'approved' },
     })
 
-    // System message visible to both parties
+    
     await insertSystemMessage(+buyerId, +sellerId,
       '✅ Penjual menyetujui penyewaan. Menunggu data jaminan dari penyewa.')
 
@@ -136,7 +137,7 @@ const approveRental = async (req, res) => {
     await createNotification(+buyerId, 'rental_request',
       `${seller?.username || 'Penjual'} menyetujui penyewaanmu. Kirim data jaminan sekarang.`, agreement.id)
 
-    // Push real-time to buyer so their action bar updates
+    
     sendWsToUser(+buyerId, { type: 'agreement_update', status: 'approved', agreementId: agreement.id })
     sendSseToUser(+buyerId, { type: 'agreement_update', status: 'approved', agreementId: agreement.id })
 
@@ -144,7 +145,7 @@ const approveRental = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── State 1→2: Buyer submits guarantee ────────────────────────────────────────
+
 const submitGuarantee = async (req, res) => {
   try {
     const { buyerId, sellerId, itemId, fullName, phone, address, ktpB64, durationDays } = req.body
@@ -162,7 +163,7 @@ const submitGuarantee = async (req, res) => {
       update: { status: 'guarantee_submitted', rentalCode, durationDays: +durationDays, guaranteeData: encryptedData },
     })
 
-    // System message with rental code — to BOTH parties
+    
     await insertSystemMessage(+buyerId, +sellerId,
       `📋 Data jaminan dikirim. Kode Sewa: ${rentalCode} · Durasi: ${durationDays} hari · Silakan lakukan COD.`)
 
@@ -171,7 +172,7 @@ const submitGuarantee = async (req, res) => {
       `${buyer?.username || 'Penyewa'} mengirim data jaminan. Kode: ${rentalCode}. Durasi: ${durationDays} hari. Lakukan COD sekarang.`,
       agreement.id)
 
-    // Push to seller so their action bar updates
+    
     sendWsToUser(+sellerId, { type: 'agreement_update', status: 'guarantee_submitted', agreementId: agreement.id, rentalCode, durationDays: +durationDays })
     sendSseToUser(+sellerId, { type: 'agreement_update', status: 'guarantee_submitted', agreementId: agreement.id, rentalCode, durationDays: +durationDays })
 
@@ -179,7 +180,7 @@ const submitGuarantee = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── State 2→3: Seller confirms handover ──────────────────────────────────────
+
 const confirmHandover = async (req, res) => {
   try {
     const rentalId = parseInt(req.params.rentalId)
@@ -198,7 +199,7 @@ const confirmHandover = async (req, res) => {
       `${seller?.username || 'Penjual'} mengonfirmasi barang siap diserahkan. Konfirmasi saat kamu menerimanya.`,
       rentalId)
 
-    // Push to buyer
+    
     sendWsToUser(agreement.buyerId, { type: 'agreement_update', status: 'handover_confirmed', agreementId: rentalId })
     sendSseToUser(agreement.buyerId, { type: 'agreement_update', status: 'handover_confirmed', agreementId: rentalId })
 
@@ -206,7 +207,7 @@ const confirmHandover = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── State 3→4: Buyer confirms received ────────────────────────────────────────
+
 const confirmReceived = async (req, res) => {
   try {
     const rentalId = parseInt(req.params.rentalId)
@@ -221,7 +222,7 @@ const confirmReceived = async (req, res) => {
       where: { id: rentalId }, data: { status: 'received', startDate, endDate },
     })
 
-    // BUG FIX: Update item status to 'rented' automatically
+    
     if (agreement.itemId) {
       await prisma.item.update({
         where: { id: agreement.itemId },
@@ -239,11 +240,11 @@ const confirmReceived = async (req, res) => {
     await createNotification(agreement.sellerId, 'item_received',
       `${buyer?.username || 'Penyewa'} mengonfirmasi menerima barang. Masa sewa dimulai.`, rentalId)
 
-    // Push to seller
+    
     sendWsToUser(agreement.sellerId, { type: 'agreement_update', status: 'received', agreementId: rentalId })
     sendSseToUser(agreement.sellerId, { type: 'agreement_update', status: 'received', agreementId: rentalId })
 
-    // Schedule return reminder notification (1 day before)
+    
     const reminderDate = new Date(endDate)
     reminderDate.setDate(reminderDate.getDate() - 1)
     const msUntilReminder = reminderDate.getTime() - Date.now()
@@ -258,7 +259,7 @@ const confirmReceived = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── State 4→5: Seller confirms returned ───────────────────────────────────────
+
 const confirmReturned = async (req, res) => {
   try {
     const rentalId = parseInt(req.params.rentalId)
@@ -269,7 +270,7 @@ const confirmReturned = async (req, res) => {
       where: { id: rentalId }, data: { status: 'returned' },
     })
 
-    // BUG FIX: Restore item status to 'available' automatically
+    
     if (agreement.itemId) {
       await prisma.item.update({
         where: { id: agreement.itemId },
@@ -284,7 +285,7 @@ const confirmReturned = async (req, res) => {
       `Masa sewa selesai. Terima kasih telah menggunakan Rentopia! Tulis ulasanmu sekarang.`, rentalId,
       agreement.itemId)
 
-    // Push to buyer so their review button appears
+    
     sendWsToUser(agreement.buyerId, { type: 'agreement_update', status: 'returned', agreementId: rentalId })
     sendSseToUser(agreement.buyerId, { type: 'agreement_update', status: 'returned', agreementId: rentalId })
 
@@ -292,7 +293,7 @@ const confirmReturned = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── Review submission ─────────────────────────────────────────────────────────
+
 const submitReview = async (req, res) => {
   try {
     const rentalId = parseInt(req.params.rentalId)
@@ -312,7 +313,7 @@ const submitReview = async (req, res) => {
       `${buyer?.username || 'Penyewa'} memberikan ulasan bintang ${rating} untuk produkmu.`,
       agreement.itemId, agreement.itemId)
 
-    // Update seller's average rating
+    
     const item = await prisma.item.findUnique({ where: { id: agreement.itemId } })
     if (item?.owner_id) {
       const ownerReviews = await prisma.review.findMany({ where: { item: { owner_id: item.owner_id } } })
@@ -324,7 +325,7 @@ const submitReview = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── Review eligibility check ──────────────────────────────────────────────────
+
 const checkReviewEligibility = async (req, res) => {
   try {
     const userId    = parseInt(req.params.userId)
@@ -344,9 +345,7 @@ const checkReviewEligibility = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── Active rentals for user ───────────────────────────────────────────────────
-// BUG FIX: Added 'approved' to the status filter so items appear in profile tab
-// right after seller approves, not only after handover.
+
 const getActiveRentals = async (req, res) => {
   try {
     const userId = parseInt(req.params.userId)
@@ -368,7 +367,7 @@ const getActiveRentals = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── Admin: list guarantees ────────────────────────────────────────────────────
+
 const listGuarantees = async (req, res) => {
   try {
     const agreements = await prisma.rentalAgreement.findMany({
@@ -379,7 +378,7 @@ const listGuarantees = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── Admin: guarantee detail ───────────────────────────────────────────────────
+
 const getGuaranteeDetail = async (req, res) => {
   try {
     const rentalId = parseInt(req.params.rentalId)
@@ -393,9 +392,7 @@ const getGuaranteeDetail = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }) }
 }
 
-// ── GET most-recent active agreement between two users (no itemId needed) ─────
-// Used by the SELLER side: they don't have targetChatProduct in localStorage,
-// but we can still surface the agreement & product via this lookup.
+
 const getAgreementBetween = async (req, res) => {
   try {
     const { userId, otherId } = req.query

@@ -74,7 +74,7 @@ export default function ProductDetailPage() {
     try { await likeItemService(id, user.id); } catch {}
   }
 
-  // Buyer: buka chat dengan product context supaya rental flow bisa dimulai
+  
   function handleChatAsBuyer() {
     if (!user) { navigate("/login"); return; }
     localStorage.setItem("targetChatId", String(item.owner_id));
@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
     navigate("/chat");
   }
 
-  // Owner: buka chat tanpa product context — lihat semua percakapan masuk
+  
   function handleChatAsSeller() {
     localStorage.removeItem("targetChatProduct");
     navigate("/chat");

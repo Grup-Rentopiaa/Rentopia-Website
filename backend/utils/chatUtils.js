@@ -6,8 +6,7 @@ const sseClients = new Map();
 let latestMessage = "No new messages yet";
 
 function getAuthPayload(req) {
-    // Accept token from both Authorization header and ?token= query param
-    // (EventSource cannot set custom headers, so query param is needed for SSE)
+    
     const queryToken = req.query?.token;
     const authHeader = req.headers.authorization || "";
     const token = queryToken || (authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null);

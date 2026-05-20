@@ -34,7 +34,7 @@ export default function ChatPage() {
   const [showReview,       setShowReview]       = useState(false);
   const [agreementProduct, setAgreementProduct] = useState(null);
 
-  // Ref untuk mencegah double-initiate di React StrictMode
+  
   const initiatedRef = useRef(new Set());
   const endRef       = useRef(null);
   const wsRef        = useRef(null);
@@ -44,9 +44,6 @@ export default function ChatPage() {
     usersLoading, sendMessage, chooseUser, refreshMessages,
   } = useChat(user?.id);
 
-  // ── Product context ────────────────────────────────────────────────────────
-  // Buyer: product disimpan di localStorage saat klik "Chat & Sewa" di ProductDetailPage
-  // Seller: product di-fetch dari agreement setelah agreement ditemukan
   const localProduct = (() => {
     try {
       const s = localStorage.getItem("targetChatProduct");
@@ -56,7 +53,7 @@ export default function ChatPage() {
 
   const product = localProduct || agreementProduct;
 
-  // ── Role detection ─────────────────────────────────────────────────────────
+  
   const isSeller = !!(
     (localProduct && user?.id === localProduct.ownerId) ||
     (agreement   && user?.id === agreement.sellerId)
@@ -66,31 +63,26 @@ export default function ChatPage() {
     (agreement   && user?.id === agreement.buyerId)
   );
 
-  // IDs yang dipakai untuk API call — agreement selalu lebih akurat dari localStorage
+  
   const buyerId  = agreement?.buyerId  ?? (isBuyer  ? user?.id : targetUser?.id) ?? null;
   const sellerId = agreement?.sellerId ?? (isSeller ? user?.id : targetUser?.id) ?? null;
 
-  // ── Scroll to bottom ───────────────────────────────────────────────────────
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // ── Fetch agreement ────────────────────────────────────────────────────────
-  // Dibuat stable dengan useCallback agar tidak trigger re-render loop
   const fetchAgreement = useCallback(async () => {
     if (!targetUser || !user) return;
     setAgLoading(true);
     try {
       let data = null;
 
-      // Strategi A: buyer punya product di localStorage → pakai exact match
       if (localProduct?.id && buyerId && sellerId) {
         data = await apiFetch(
           `/api/rental/agreement?buyerId=${buyerId}&sellerId=${sellerId}&itemId=${localProduct.id}`
         ).catch(() => null);
       }
 
-      // Strategi B: seller (atau buyer tanpa product context) → lookup by user pair
       if (!data) {
         data = await apiFetch(
           `/api/rental/between?userId=${user.id}&otherId=${targetUser.id}`
@@ -99,7 +91,6 @@ export default function ChatPage() {
 
       setAgreement(data || null);
 
-      // Kalau seller dan ada agreement dengan itemId, fetch product-nya
       if (data?.itemId && !localProduct) {
         apiFetch(`/api/items/${data.itemId}`)
           .then(item => setAgreementProduct({
@@ -117,18 +108,17 @@ export default function ChatPage() {
     } finally {
       setAgLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [targetUser?.id, user?.id, localProduct?.id]);
-  // Sengaja tidak include buyerId/sellerId karena keduanya derived dari state yang sama
+  
 
-  // ── Reset & fetch saat ganti percakapan ───────────────────────────────────
   useEffect(() => {
     setAgreementProduct(null);
     setAgreement(null);
     if (targetUser?.id) fetchAgreement();
   }, [targetUser?.id]); // hanya trigger saat targetUser berubah, bukan fetchAgreement
 
-  // ── WebSocket untuk real-time agreement update ────────────────────────────
+  
   useEffect(() => {
     if (!user?.id) return;
     const token = localStorage.getItem("token");
@@ -141,7 +131,7 @@ export default function ChatPage() {
       try {
         const payload = JSON.parse(e.data);
         if (payload.type === "agreement_update" || payload.type === "rental_request") {
-          // Fetch ulang agreement dan messages saat ada update
+          
           fetchAgreement();
           if (targetUser?.id) refreshMessages(targetUser.id);
         }
@@ -150,16 +140,16 @@ export default function ChatPage() {
     ws.onerror = () => {};
 
     return () => { ws.close(); };
-  }, [user?.id]); // hanya saat user berubah — tidak include fetchAgreement untuk hindari loop
+  }, [user?.id]); 
 
-  // ── Polling fallback jika WS tidak konek ─────────────────────────────────
+  
   useEffect(() => {
     if (!targetUser?.id) return;
     const interval = setInterval(fetchAgreement, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [targetUser?.id]); // hanya berdasarkan targetUser, bukan fetchAgreement
 
-  // ── Auto-initiate rental (buyer saja) ────────────────────────────────────
+  
   useEffect(() => {
     if (!targetUser || !localProduct || !user || !buyerId || !sellerId) return;
     if (!isBuyer) return;
@@ -174,11 +164,11 @@ export default function ChatPage() {
     })
       .then(res => { if (res?.agreement) setAgreement(res.agreement); })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  
   }, [targetUser?.id, localProduct?.id]);
-  // Sengaja minimal dependency untuk hindari double-initiate
+  
 
-  // ── Action handler ─────────────────────────────────────────────────────────
+  
   async function doAction(endpoint, body) {
     if (actionLoading) return;
     setActionLoading(true);

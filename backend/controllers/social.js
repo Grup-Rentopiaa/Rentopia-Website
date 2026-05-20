@@ -1,6 +1,6 @@
 const { prisma } = require('../lib/prisma')
 
-// GET /api/search/users?q=
+
 const searchUsers = async (req, res) => {
   try {
     const q = (req.query.q || '').trim()
@@ -21,7 +21,7 @@ const searchUsers = async (req, res) => {
   }
 }
 
-// GET /api/profile/:userId/followers
+
 const getFollowers = async (req, res) => {
   try {
     const userId = parseInt(req.params.userId)
@@ -35,7 +35,7 @@ const getFollowers = async (req, res) => {
   }
 }
 
-// GET /api/profile/:userId/following
+
 const getFollowing = async (req, res) => {
   try {
     const userId = parseInt(req.params.userId)
@@ -49,11 +49,11 @@ const getFollowing = async (req, res) => {
   }
 }
 
-// DELETE /api/profile/:userId/followers/:followerId  (remove someone from your followers)
+
 const removeFollower = async (req, res) => {
   try {
-    const userId     = parseInt(req.params.userId)     // the profile owner
-    const followerId = parseInt(req.params.followerId) // person to remove
+    const userId     = parseInt(req.params.userId)     
+    const followerId = parseInt(req.params.followerId) 
 
     const existing = await prisma.follows.findUnique({
       where: { followerId_followingId: { followerId, followingId: userId } }
@@ -63,7 +63,7 @@ const removeFollower = async (req, res) => {
     await prisma.follows.delete({
       where: { followerId_followingId: { followerId, followingId: userId } }
     })
-    // Decrement counters
+    
     await prisma.users.update({ where: { id: userId },     data: { followers: { decrement: 1 } } })
     await prisma.users.update({ where: { id: followerId }, data: { following: { decrement: 1 } } })
 

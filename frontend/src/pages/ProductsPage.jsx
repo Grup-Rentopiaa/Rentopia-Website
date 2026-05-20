@@ -19,12 +19,12 @@ export default function ProductsPage() {
 
   const { items, loading } = useProducts(search, category, filter, user?.id);
 
-  // Sync URL param → state
+ 
   useEffect(() => {
     setCategory(searchParams.get("category") || "");
   }, [searchParams]);
 
-  // Wishlist count
+  
   useEffect(() => {
     if (!user) return;
     const count = () => {

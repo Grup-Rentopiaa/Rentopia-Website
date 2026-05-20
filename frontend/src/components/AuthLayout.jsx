@@ -1,6 +1,4 @@
-// ── components/AuthLayout.jsx ────────────────────────────────────────────────
-// Wrapper untuk semua halaman auth (login, register, OTP, forgot password).
-// Pakai design system rp- yang konsisten dengan seluruh app.
+
 
 export default function AuthLayout({ children }) {
   return (

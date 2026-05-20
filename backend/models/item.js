@@ -15,7 +15,7 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
     if (cat) {
       where.category_id = cat.id;
     } else {
-      where.category_id = -1; // No items should match if category doesn't exist
+      where.category_id = -1; 
     }
   }
 
@@ -24,7 +24,7 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   }
 
   if (followerId) {
-    // Get list of followed user IDs
+    
     const following = await prisma.follows.findMany({
       where: { followerId: parseInt(followerId) },
       select: { followingId: true }
@@ -61,7 +61,7 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
     owner_name: item.owner?.username || null,
   }))
 
-  // Randomize if requested or on refresh as fallback
+  
   if (sort === 'random') {
     result = result.sort(() => Math.random() - 0.5)
   }
@@ -110,8 +110,7 @@ const clearWishlist = async (userId) => {
 }
 
 const findItemById = async (id) => {
-// ... existing code ...
-  // Increment views
+
   await prisma.item.update({
     where: { id: parseInt(id) },
     data: { views: { increment: 1 } }
@@ -249,4 +248,4 @@ module.exports = {
   toggleLike, 
   updateItemStatus,
   clearWishlist
-}
+}

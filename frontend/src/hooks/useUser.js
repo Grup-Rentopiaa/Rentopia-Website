@@ -16,7 +16,7 @@ export function useUser() {
         apiFetch(`/api/users/${parsed.id}`)
           .then(data => {
              setUser(data)
-             // Update localStorage with fresh data
+             
              localStorage.setItem('user', JSON.stringify({ ...parsed, ...data }))
           })
           .catch(err => setError(err.message))
@@ -37,7 +37,6 @@ export function useUser() {
     })
     setUser(prev => ({ ...prev, ...data }))
     
-    // Update local storage too so it persists
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     localStorage.setItem('user', JSON.stringify({ ...storedUser, ...data }));
 

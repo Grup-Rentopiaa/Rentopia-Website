@@ -146,4 +146,4 @@ export default function Cookies({ onAccept, onClose }) {
   );
 }
 
-
+

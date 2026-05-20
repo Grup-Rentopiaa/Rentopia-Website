@@ -3,7 +3,7 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 const { listGuarantees, getGuaranteeDetail } = require('../controllers/rentalFlow')
 
-// Middleware: admin only
+
 function requireAdmin(req, res, next) {
   try {
     const authHeader = req.headers.authorization || ''
@@ -18,10 +18,10 @@ function requireAdmin(req, res, next) {
   }
 }
 
-// GET /api/admin/guarantees
+
 router.get('/guarantees', requireAdmin, listGuarantees)
 
-// GET /api/admin/guarantees/:rentalId
+
 router.get('/guarantees/:rentalId', requireAdmin, getGuaranteeDetail)
 
 module.exports = router

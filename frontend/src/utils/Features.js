@@ -1,4 +1,4 @@
-// IndexedDB Module
+
 const RENTOPIA_DB_NAME = 'rentopia_catalog_db';
 const RENTOPIA_STORE_NAME = 'items_store';
 let dbInstance = null;
@@ -44,7 +44,7 @@ export async function getCatalogFromIndexedDB() {
   });
 }
 
-// Data Export/Import Module
+
 function _downloadFile(content, contentType, filename) {
   const blob = new Blob([content], { type: contentType });
   const url = URL.createObjectURL(blob);
@@ -83,7 +83,7 @@ export async function parseJSON(file) {
   });
 }
 
-// Cookie Module
+
 export function setCookie(name, value, days) {
   let expires = "";
   if (days) {
@@ -105,12 +105,12 @@ export function getCookie(name) {
   return null;
 }
 
-// History API Module
+
 export function pushHistoryState(stateObj, title, url) {
   window.history.pushState(stateObj, title, url);
 }
 
-// Events Module
+
 export function triggerDataChanged(eventType = 'rentopia:data_update', detailData = {}) {
   const event = new CustomEvent(eventType, { detail: detailData });
   window.dispatchEvent(event);
@@ -121,7 +121,7 @@ export function listenToEvent(eventType, callback) {
   return () => window.removeEventListener(eventType, callback);
 }
 
-// Toast UI Module
+
 export function setupToastContainer() {
   let container = document.getElementById('rentopia-toast-container');
   if (!container) {
@@ -176,7 +176,7 @@ export function renderToastKasar(message, type = 'info') {
   }, 3000);
 }
 
-// Auto-initialize required subsystems
+
 if (typeof window !== 'undefined') {
   initIndexedDB();
   if (document.readyState === 'loading') {

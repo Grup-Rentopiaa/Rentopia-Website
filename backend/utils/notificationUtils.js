@@ -21,7 +21,7 @@ async function createNotification(userId, type, message, relatedId = null, itemI
       },
     })
   } catch (err) {
-    // Never throw — notifications are non-critical
+    
     console.error('[notificationUtils] Failed to create notification:', err.message)
     return null
   }

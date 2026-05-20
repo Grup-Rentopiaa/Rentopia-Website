@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function seed() {
   const hash = await bcrypt.hash('Test1234!', 10);
   
-  // Create buyer
+  
   const buyer = await prisma.users.upsert({
     where: { email: 'buyer@test.com' },
     update: {},
@@ -17,7 +17,7 @@ async function seed() {
     create: { user_id: buyer.id, password: hash }
   });
   
-  // Create seller  
+   
   const seller = await prisma.users.upsert({
     where: { email: 'seller@test.com' },
     update: {},

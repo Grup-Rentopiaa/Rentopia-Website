@@ -52,6 +52,10 @@ const rentalRoutes = require('./routes/rental')
 app.use('/api/rentals', rentalRoutes)
 app.use('/api/users/:userId/rentals', rentalRoutes)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5dd34eb502646a4fe0d045379e3e9af938be267
 const rentalFlowRoutes = require('./routes/rentalFlow')
 app.use('/api/rental', rentalFlowRoutes)
 
@@ -61,6 +65,10 @@ app.use('/api/admin', adminRoutes)
 const socialRoutes = require('./routes/social')
 app.use('/api/search', socialRoutes)    
 app.use('/api/profile', socialRoutes)   
+<<<<<<< HEAD
+=======
+
+>>>>>>> e5dd34eb502646a4fe0d045379e3e9af938be267
 
 const { getFollowingFeed } = require('./controllers/item')
 app.get('/api/feed/following/:userId', getFollowingFeed)
