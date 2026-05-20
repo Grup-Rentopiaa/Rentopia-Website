@@ -25,6 +25,7 @@ export default function LoginPage() {
     setFieldErrors({});
     const result = await login({ email, password });
     if (result) {
+      localStorage.clear(); // tambah ini
       localStorage.setItem("token", result.token);
       localStorage.setItem("user",  JSON.stringify(result.user));
       navigate("/home", { replace: true });

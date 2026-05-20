@@ -268,7 +268,7 @@ export default function HomePage() {
 
       <footer className="border-t py-6 text-center text-sm"
         style={{ borderColor: "#E8DCFF", color: "#A89CC4" }}>
-        © 2025 Rentopia — Dibuat dengan 💜
+        © 2028 Rentopia Dibuat dengan 💜 oleh kelompok 3 MWP kelas B
       </footer>
     </div>
   );

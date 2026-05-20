@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute  from "./components/PublicRoute";
+import CookieConsent from "./components/CookieConsent";
 
 import LandingPage         from "./pages/LandingPage";
 import LoginPage           from "./pages/LoginPage";
@@ -24,14 +25,21 @@ import AdminGuaranteesPage from "./pages/AdminGuaranteesPage";
 import FollowersPage       from "./pages/FollowersPage";
 import FollowingPage       from "./pages/FollowingPage";
 
+
 import "./index.css";
 
 export default function App() {
   return (
     <BrowserRouter>
+      
       <Routes>
         {/* ── Public-only (redirect ke /home kalau sudah login) ── */}
-        <Route path="/"         element={<PublicRoute><LandingPage /></PublicRoute>} />
+        <Route path="/"         element={
+          <PublicRoute>
+            <LandingPage />
+            <CookieConsent onAccept={(consent) => console.log("Cookie consent:", consent)} />
+          </PublicRoute>} />
+        
         <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><SignUpPage /></PublicRoute>} />
 
@@ -57,6 +65,8 @@ export default function App() {
         <Route path="/product/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
         <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
         <Route path="/admin/guarantees" element={<PrivateRoute><AdminGuaranteesPage /></PrivateRoute>} />
+
+        
 
         {/* ── Fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
