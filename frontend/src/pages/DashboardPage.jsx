@@ -28,7 +28,6 @@ export default function DashboardPage() {
     if (userId) localStorage.removeItem(`rentopia_wishlist_${userId}`);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // Pakai apiFetch — tidak hardcode localhost
     apiFetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     navigate('/', { replace: true });
   }

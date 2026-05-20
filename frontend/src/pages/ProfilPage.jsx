@@ -19,7 +19,7 @@ function getAvatarColor(name = "") {
   return colors[hash % colors.length];
 }
 
-// ── OWN PROFILE ──────────────────────────────────────────────────────────────
+
 function OwnProfile() {
   const navigate = useNavigate();
   const { user: self, updateUser, userId } = useUser();
@@ -247,7 +247,7 @@ function OwnProfile() {
   );
 }
 
-// ── OTHER USER'S PROFILE ─────────────────────────────────────────────────────
+
 function OtherProfile({ profileId, loggedInUserId }) {
   const navigate = useNavigate();
   const { profile: user, loading, error, isFollowing, followLoading, toggleFollow } = useProfile(profileId, loggedInUserId);
@@ -368,7 +368,7 @@ function OtherProfile({ profileId, loggedInUserId }) {
   );
 }
 
-// ── MAIN EXPORT ───────────────────────────────────────────────────────────────
+
 export default function ProfilPage() {
   const { id } = useParams();
   const loggedInUserId = JSON.parse(localStorage.getItem("user") || "null")?.id;

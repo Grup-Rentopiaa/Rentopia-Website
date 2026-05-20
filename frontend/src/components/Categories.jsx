@@ -1,6 +1,4 @@
-// ── components/Categories.jsx ────────────────────────────────────────────────
-// Navbar kategori horizontal dengan icon.
-// Data diambil dari constants/categories.js — tidak ada definisi duplikat di sini.
+
 
 import { CATEGORIES } from '../constants/categories';
 

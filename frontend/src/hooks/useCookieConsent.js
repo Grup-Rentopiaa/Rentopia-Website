@@ -68,7 +68,7 @@ export function useCookieConsent() {
   }, []);
 
   function acceptCookie(preferences) {
-    // Default to all allowed if no preferences provided (Allow All button)
+    
     const finalPrefs = preferences || { necessary: true, prefs: true, stats: true, marketing: true };
     
     localStorage.setItem("cookieConsent", "accepted");

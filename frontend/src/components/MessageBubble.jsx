@@ -12,7 +12,7 @@ function getAvatarColor(name = "") {
   return colors[hash % colors.length];
 }
 
-// Matches: "RNT-1234567890" or "RNT-123-456"
+
 const RENTAL_CODE_RE = /RNT-[A-Z0-9]+(?:-[A-Z0-9]+)*/g;
 
 function CopyableBadge({ code }) {
@@ -58,7 +58,7 @@ export default function MessageBubble({ message, myId, senderName = "" }) {
   const initials = (senderName || "?")[0].toUpperCase();
   const avatarColor = getAvatarColor(senderName);
 
-  // ── System message ──────────────────────────────────────────────────────────
+  
   if (isSystem) {
     return (
       <div className="flex justify-center my-2">
@@ -76,7 +76,7 @@ export default function MessageBubble({ message, myId, senderName = "" }) {
     );
   }
 
-  // ── Regular message ─────────────────────────────────────────────────────────
+  
   return (
     <div className={`flex items-end gap-2 group ${isMe ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar for received */}

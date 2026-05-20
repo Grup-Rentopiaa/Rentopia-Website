@@ -52,7 +52,7 @@ const rentalRoutes = require('./routes/rental')
 app.use('/api/rentals', rentalRoutes)
 app.use('/api/users/:userId/rentals', rentalRoutes)
 
-// ── New routes ──────────────────────────────────────────────────────────────
+
 const rentalFlowRoutes = require('./routes/rentalFlow')
 app.use('/api/rental', rentalFlowRoutes)
 
@@ -60,10 +60,10 @@ const adminRoutes = require('./routes/admin')
 app.use('/api/admin', adminRoutes)
 
 const socialRoutes = require('./routes/social')
-app.use('/api/search', socialRoutes)    // GET /api/search/users?q=
-app.use('/api/profile', socialRoutes)   // GET /api/profile/:userId/followers|following
+app.use('/api/search', socialRoutes)    
+app.use('/api/profile', socialRoutes)   
 
-// Following feed — uses item controller
+
 const { getFollowingFeed } = require('./controllers/item')
 app.get('/api/feed/following/:userId', getFollowingFeed)
 

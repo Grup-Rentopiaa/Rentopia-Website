@@ -16,7 +16,7 @@ function useChat(myId) {
   const sseRef = useRef(null);
   const targetUserRef = useRef(null);
 
-  // Keep ref in sync so SSE handler always has latest targetUser
+  
   useEffect(() => {
     targetUserRef.current = targetUser;
   }, [targetUser]);
@@ -26,7 +26,7 @@ function useChat(myId) {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    // Close existing connection
+    
     if (sseRef.current) {
       sseRef.current.close();
     }
@@ -38,30 +38,24 @@ function useChat(myId) {
       try {
         const payload = JSON.parse(e.data);
 
-        // Ignore pure ping/connect messages
+        
         if (payload.message === "SSE connected") return;
 
-        // ── Agreement-level events (type field) ──────────────────────────────
-        // These are pushed by rental state transitions (e.g. approval, guarantee, etc.)
-        // They're handled separately in ChatPage via the WS listener.
-        // Here we just reload messages so system messages appear immediately.
         if (payload.type === "agreement_update" || payload.type === "rental_request") {
           const current = targetUserRef.current;
           if (current) loadMessages(current.id);
           return;
         }
 
-        // ── Regular / System chat messages ───────────────────────────────────
         const current = targetUserRef.current;
         if (!current) return;
 
-        // System messages: from === null, we show them if the conversation is open
         const isSystemMsg = payload.from === null && payload.is_system === true;
         const isFromCurrent = payload.from === current.id || payload.to === current.id;
 
         if (isSystemMsg || isFromCurrent) {
           setMessages((prev) => {
-            // Avoid duplicate if we already added it optimistically on send
+            
             const alreadyExists = prev.some(
               (m) =>
                 m.isi_pesan === payload.text &&
@@ -83,14 +77,14 @@ function useChat(myId) {
           });
         }
 
-        // Refresh user list to update last_message previews
+        
         loadUsers(false);
       } catch (_) {}
     };
 
     source.onerror = () => {
       source.close();
-      // Reconnect after 3s
+      
       setTimeout(() => connectSSE(), 3000);
     };
 
@@ -106,7 +100,7 @@ function useChat(myId) {
       const savedTargetId = Number(localStorage.getItem("targetChatId"));
       setTargetUser((prev) => {
         if (prev) {
-          // Update last_message for current targetUser from fresh list
+          
           const updated = result.find((u) => u.id === prev.id);
           return updated || prev;
         }
@@ -141,7 +135,7 @@ function useChat(myId) {
     if (!targetUser?.id || !text.trim()) return false;
     const trimmed = text.trim();
 
-    // Optimistic update
+   
     const optimistic = {
       pesan_id: `opt_${Date.now()}`,
       sender_id: myId,
@@ -156,7 +150,7 @@ function useChat(myId) {
       return true;
     } catch (error) {
       console.error("SEND MESSAGE ERROR:", error);
-      // Remove optimistic message on failure
+      
       setMessages((prev) =>
         prev.filter((m) => m.pesan_id !== optimistic.pesan_id)
       );

@@ -1,16 +1,4 @@
-/**
- * Rental action bar — shows the correct button/label for each rental state.
- *
- * SIMPLIFIED FLOW (per user request):
- *   pending           → seller: "Setujui Penyewaan"
- *   approved          → buyer:  "Kirim Data Jaminan"
- *   guarantee_submitted → buyer: "✅ Saya Sudah Terima Barang" (COD terjadi offline)
- *                         seller: info label saja
- *   received          → seller: "🔄 Barang Sudah Dikembalikan"
- *                         buyer:  info masa sewa berjalan
- *   returned          → buyer:  "⭐ Tulis Ulasan"
- *   reviewed          → selesai
- */
+
 export default function RentalActionBar({
   agreement, isSeller, isBuyer, loading,
   onApprove, onOpenGuarantee, onReceived, onReturned, onReview,
@@ -58,20 +46,19 @@ export default function RentalActionBar({
     );
   }
 
-  // ── No agreement yet or pending → seller can approve ──────────────────────
+  
   if (!status || status === "pending") {
     if (isSeller) return <Btn onClick={onApprove}>👍 Setujui Penyewaan</Btn>;
     return <Label text="Menunggu persetujuan penjual..." />;
   }
 
-  // ── Approved → buyer sends guarantee data ─────────────────────────────────
+  
   if (status === "approved") {
     if (isBuyer) return <Btn onClick={onOpenGuarantee} color="pink">🛡️ Kirim Data Jaminan</Btn>;
     return <Label text="Menunggu data jaminan dari penyewa..." />;
   }
 
-  // ── Guarantee submitted → buyer confirms receipt (COD done offline) ────────
-  // Seller has no action here — the handover happens in real life (COD)
+  
   if (status === "guarantee_submitted") {
     if (isBuyer) {
       return (
@@ -86,13 +73,13 @@ export default function RentalActionBar({
     return <Label text="Menunggu penyewa konfirmasi penerimaan barang..." icon="📦" />;
   }
 
-  // ── handover_confirmed (legacy, map to same as guarantee_submitted) ─────────
+  
   if (status === "handover_confirmed") {
     if (isBuyer) return <Btn onClick={onReceived} color="green">✅ Saya Sudah Menerima Barang</Btn>;
     return <Label text="Menunggu penyewa konfirmasi penerimaan..." />;
   }
 
-  // ── Received → masa sewa berjalan, seller confirms return ──────────────────
+  
   if (status === "received") {
     if (isSeller) {
       return (
@@ -107,7 +94,7 @@ export default function RentalActionBar({
     return <Label text="Masa sewa berjalan. Kembalikan barang tepat waktu." icon="🟢" />;
   }
 
-  // ── Returned → buyer can write review ─────────────────────────────────────
+  
   if (status === "returned") {
     if (isBuyer) {
       return (
@@ -122,7 +109,7 @@ export default function RentalActionBar({
     return <Label text="Menunggu ulasan dari penyewa..." icon="⭐" />;
   }
 
-  // ── Reviewed → done ────────────────────────────────────────────────────────
+  
   if (status === "reviewed") {
     return (
       <p className="text-center text-xs py-2 font-bold" style={{ color: "#2D7A55" }}>

@@ -2,11 +2,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function seedProduct() {
-  // seller_test has id=5 from previous seed
+  
   const seller = await prisma.users.findUnique({ where: { email: 'seller@test.com' } });
   if (!seller) { console.error('Seller not found!'); process.exit(1); }
 
-  // Get or create category
+  
   let cat = await prisma.category.findFirst({ where: { name: 'Elektronik' } });
   if (!cat) cat = await prisma.category.create({ data: { name: 'Elektronik' } });
 

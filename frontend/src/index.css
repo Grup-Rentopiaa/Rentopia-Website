@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-/* ── Pastel Design Tokens ─────────────────────────── */
+
 @theme {
   --color-rp-bg:          #FAF8FF;
   --color-rp-card:        #FFFFFF;
@@ -22,7 +22,7 @@
   --color-rp-shadow:      rgba(180,150,255,0.12);
 }
 
-/* ── Global Reset ─────────────────────────────────── */
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -38,7 +38,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Card Shadow ──────────────────────────────────── */
+
 .rp-card {
   background: #FFFFFF;
   border-radius: 20px;
@@ -53,7 +53,7 @@ body {
   border: 1px solid #E8DCFF;
 }
 
-/* ── Buttons ──────────────────────────────────────── */
+
 .rp-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -121,7 +121,7 @@ body {
   box-shadow: 0 6px 20px rgba(255,150,200,0.3);
 }
 
-/* ── Input ────────────────────────────────────────── */
+
 .rp-input {
   width: 100%;
   padding: 12px 16px;
@@ -141,7 +141,7 @@ body {
 }
 .rp-input.error { border-color: #FFB3D9; }
 
-/* ── Badge ────────────────────────────────────────── */
+
 .rp-badge {
   display: inline-flex;
   align-items: center;
@@ -156,7 +156,7 @@ body {
 .rp-badge-mint    { background: #C9EFDC; color: #2D7A55; }
 .rp-badge-blue    { background: #D6F0FF; color: #2660A4; }
 
-/* ── Back Button ──────────────────────────────────── */
+
 .rp-back-btn {
   display: inline-flex;
   align-items: center;
@@ -174,7 +174,7 @@ body {
 }
 .rp-back-btn:hover { background: #C9B8FF; color: #3D2F6B; }
 
-/* ── Navbar ───────────────────────────────────────── */
+
 .rp-navbar {
   position: sticky;
   top: 0;
@@ -184,11 +184,9 @@ body {
   border-bottom: 1px solid #E8DCFF;
 }
 
-/* ── Chat specific (kept from previous build) ─────── */
 .scrollbar-none { scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ── Product Card ─────────────────────────────────── */
 .rp-product-card {
   background: #FFFFFF;
   border-radius: 20px;
@@ -203,14 +201,12 @@ body {
   box-shadow: 0 8px 32px rgba(180, 150, 255, 0.22);
 }
 
-/* ── Page transition ──────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .rp-page { animation: fadeIn 0.25s ease; }
 
-/* ── Skeleton ─────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }
@@ -222,7 +218,6 @@ body {
   border-radius: 12px;
 }
 
-/* ── primary-pill-button (legacy compat) ──────────── */
 .primary-pill-button {
   display: inline-flex;
   align-items: center;
@@ -245,7 +240,7 @@ body {
   box-shadow: 0 4px 16px rgba(180,150,255,0.3);
 }
 
-/* ── Toast ────────────────────────────────────────── */
+
 .rp-toast {
   position: fixed;
   bottom: 24px;

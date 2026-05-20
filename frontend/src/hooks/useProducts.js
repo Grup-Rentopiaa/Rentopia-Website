@@ -16,7 +16,7 @@ export default function useProducts(search, category, filter, followerId) {
       if (searchVal?.trim()) params.set('search', searchVal.trim());
       if (categoryVal) params.set('category', categoryVal);
       
-      // Handle recommendation tabs
+      
       if (filterVal?.sort) {
         params.set('sort', filterVal.sort);
       }
@@ -28,7 +28,7 @@ export default function useProducts(search, category, filter, followerId) {
       if (filterVal?.minPrice) params.set('min_price', filterVal.minPrice);
       if (filterVal?.maxPrice) params.set('max_price', filterVal.maxPrice);
       
-      // Handle location for 'nearest'
+      
       if (filterVal?.sort === 'nearest' && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
           params.set('lat', pos.coords.latitude);
@@ -43,7 +43,7 @@ export default function useProducts(search, category, filter, followerId) {
 
       await saveCatalogToIndexedDB(data);
     } catch {
-      // ... fallback to indexedDB ...
+      
     } finally {
       setLoading(false);
     }

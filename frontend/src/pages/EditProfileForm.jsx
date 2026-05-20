@@ -1,13 +1,7 @@
 import { useState } from 'react'
 import { Save, X } from 'lucide-react'
 
-/**
- * Inline edit profile form — used inside ProfilPage's own profile view.
- * Props:
- *   user     — current user data
- *   onSave   — async fn(data) to call on save
- *   onCancel — fn() to close the form
- */
+
 export default function EditProfileForm({ user, onSave, onCancel }) {
   const [form, setForm] = useState({
     name:        user?.name        || '',

@@ -36,20 +36,17 @@ export default function HomePage() {
 
   const { items, loading } = useProducts(search, category, filter, user?.id);
 
-  // Banner carousel
   useEffect(() => {
     const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
   }, []);
 
-  // Sync tab ke filter
   useEffect(() => {
     if (recommendTab === 'semua')    setFilter(p => ({ ...p, sort: 'random',   filter: null }));
     if (recommendTab === 'trending') setFilter(p => ({ ...p, sort: 'trending', filter: null }));
     if (recommendTab === 'terdekat') setFilter(p => ({ ...p, sort: 'nearest',  filter: null }));
   }, [recommendTab]);
 
-  // Load following feed
   useEffect(() => {
     if (recommendTab !== 'diikuti' || !user?.id) return;
     setFollowingLoading(true);
@@ -59,7 +56,6 @@ export default function HomePage() {
       .finally(() => setFollowingLoading(false));
   }, [recommendTab, user?.id]);
 
-  // Wishlist count
   useEffect(() => {
     function count() {
       if (!user) return;

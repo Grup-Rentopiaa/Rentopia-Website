@@ -59,7 +59,7 @@ const updateProfile = async (id, data) => {
 const followUser = async (followerId, followingId) => {
   if (followerId === followingId) throw new Error("Cannot follow yourself")
   
-  // Use a transaction to ensure atomic updates
+  
   return await prisma.$transaction(async (tx) => {
     const existing = await tx.follows.findUnique({
       where: { followerId_followingId: { followerId, followingId } }
@@ -71,7 +71,7 @@ const followUser = async (followerId, followingId) => {
       data: { followerId, followingId }
     })
 
-    // Increment counts
+    
     await tx.users.update({
       where: { id: followingId },
       data: { followers: { increment: 1 } }
@@ -98,7 +98,7 @@ const unfollowUser = async (followerId, followingId) => {
       where: { followerId_followingId: { followerId, followingId } }
     })
 
-    // Decrement counts
+    
     await tx.users.update({
       where: { id: followingId },
       data: { followers: { decrement: 1 } }

@@ -14,7 +14,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
   const [localSearch,  setLocalSearch]  = useState(searchValue);
   const dropRef = useRef(null);
 
-  // Tutup dropdown kalau klik di luar
+  
   useEffect(() => {
     function handler(e) {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -25,7 +25,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Fetch unread notification count
+  
   const fetchUnread = useCallback(async () => {
     if (!user?.id) return;
     try {
@@ -47,7 +47,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    // Pakai apiFetch supaya base URL konsisten
+    
     apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     navigate("/", { replace: true });
   }
