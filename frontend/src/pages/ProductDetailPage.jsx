@@ -306,8 +306,15 @@ export default function ProductDetailPage() {
                     </div>
                     <p className="text-sm leading-relaxed" style={{ color: "#7B6AAA" }}>{r.comment}</p>
                     {(r.photoB64 || r.photo_url) && (
-                      <img src={r.photoB64 || r.photo_url} alt="review"
-                        className="mt-3 w-full max-h-40 object-cover rounded-xl" />
+                      <div style={{ width: 200, height: 200, marginTop: 12 }}>
+                        <img src={r.photoB64 || r.photo_url} alt="review"
+                          style={{ 
+                            width: "100%", 
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: 12,
+                          }} />
+                      </div>
                     )}
                   </div>
                 );
