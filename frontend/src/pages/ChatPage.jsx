@@ -19,7 +19,7 @@ function getAvatarColor(name = "") {
 
 const QUICK_REPLIES = ["Halo, masih tersedia?", "Berapa harga sewanya?", "Bisa COD tidak?"];
 const BASE_WS = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
-const POLL_INTERVAL_MS = 8000; // polling setiap 8 detik, bukan 5
+const POLL_INTERVAL_MS = 8000; 
 
 export default function ChatPage() {
   const user     = JSON.parse(localStorage.getItem("user") || "null");
