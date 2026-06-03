@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -25,7 +29,7 @@ export default function LoginPage() {
     setFieldErrors({});
     const result = await login({ email, password });
     if (result) {
-      localStorage.clear(); // tambah ini
+      localStorage.clear();
       localStorage.setItem("token", result.token);
       localStorage.setItem("user",  JSON.stringify(result.user));
       navigate("/home", { replace: true });
@@ -33,85 +37,160 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 rp-page" style={{ background: "#FAF8FF" }}>
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl font-black" style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)" }}>
-              R
+    <div className="min-h-screen flex">
+
+      {/* Kiri - Ungu dengan Reni */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden" style={{background: '#7C4DFF'}}>
+
+        <div style={{position:'absolute', top:'-60px', left:'-60px', width:'250px', height:'250px', background:'rgba(255,255,255,0.06)', borderRadius:'50%'}}></div>
+        <div style={{position:'absolute', bottom:'-80px', right:'-80px', width:'300px', height:'300px', background:'rgba(255,255,255,0.06)', borderRadius:'50%'}}></div>
+        <div style={{position:'absolute', top:'40%', left:'-40px', width:'150px', height:'150px', background:'rgba(255,255,255,0.04)', borderRadius:'50%'}}></div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background:'rgba(255,255,255,0.2)'}}>
+              <svg width="28" height="28" viewBox="0 0 28 28">
+                <ellipse cx="14" cy="17" rx="8" ry="6" fill="#E0E0E0"/>
+                <ellipse cx="14" cy="15" rx="7" ry="5" fill="#fff"/>
+                <circle cx="11" cy="13" r="1.5" fill="#2D1B69"/>
+                <circle cx="17" cy="13" r="1.5" fill="#2D1B69"/>
+                <ellipse cx="14" cy="15" rx="2" ry="1.2" fill="#FFB6C1"/>
+                <ellipse cx="10.5" cy="16.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
+                <ellipse cx="17.5" cy="16.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
+                <path d="M6 8 Q4 2 10 5 Q12 6 10 9 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
+                <path d="M22 8 Q24 2 18 5 Q16 6 18 9 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
+                <path d="M6 8 Q4 2 10 5 Q12 6 10 9 Z" fill="#FFB6C1" opacity="0.5"/>
+                <path d="M22 8 Q24 2 18 5 Q16 6 18 9 Z" fill="#FFB6C1" opacity="0.5"/>
+              </svg>
             </div>
-            <span className="text-2xl font-black" style={{ color: "#9B87D9" }}>Rentopia</span>
+            <span className="font-black text-xl text-white">Rentopia</span>
           </div>
-          <h1 className="text-2xl font-black" style={{ color: "#3D2F6B" }}>Selamat Datang Kembali! 👋</h1>
-          <p className="mt-1 text-sm" style={{ color: "#A89CC4" }}>Masuk ke akunmu dan mulai menyewa</p>
         </div>
 
-        <div className="rp-card p-8">
-          {/* Error banner */}
+        <div className="relative z-10 flex flex-col items-center">
+          <svg width="320" height="360" viewBox="0 0 320 360">
+            <ellipse cx="160" cy="348" rx="110" ry="12" fill="rgba(0,0,0,0.15)"/>
+            <path d="M105 185 Q90 148 103 128 Q113 112 126 125 Q120 155 123 183 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
+            <path d="M215 185 Q230 148 217 128 Q207 112 194 125 Q200 155 197 183 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
+            <path d="M105 185 Q90 148 103 128 Q113 112 126 125 Q120 155 123 183 Z" fill="#FFB6C1" opacity="0.45"/>
+            <path d="M215 185 Q230 148 217 128 Q207 112 194 125 Q200 155 197 183 Z" fill="#FFB6C1" opacity="0.45"/>
+            <ellipse cx="160" cy="242" rx="67" ry="76" fill="#E8E8E8"/>
+            <ellipse cx="160" cy="232" rx="61" ry="68" fill="#F0F0F0"/>
+            <ellipse cx="160" cy="221" rx="50" ry="52" fill="#fff"/>
+            <circle cx="143" cy="208" r="8" fill="#2D1B69"/>
+            <circle cx="177" cy="208" r="8" fill="#2D1B69"/>
+            <circle cx="145.5" cy="206" r="3.2" fill="#fff"/>
+            <circle cx="179.5" cy="206" r="3.2" fill="#fff"/>
+            <ellipse cx="160" cy="221" rx="7" ry="5" fill="#FFB6C1"/>
+            <path d="M153 228 Q160 233 167 228" stroke="#E8956D" strokeWidth="2" fill="none" strokeLinecap="round"/>
+            <ellipse cx="145" cy="232" rx="9.5" ry="5" fill="#FFB6C1"/>
+            <ellipse cx="175" cy="232" rx="9.5" ry="5" fill="#FFB6C1"/>
+            <rect x="115" y="284" width="90" height="65" rx="26" fill="#7C4DFF" opacity="0.8"/>
+            <rect x="121" y="290" width="78" height="53" rx="20" fill="#9C6FFF" opacity="0.8"/>
+            <path d="M102 272 Q83 247 97 218 Q110 192 123 202 Q116 233 119 268 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
+            <path d="M218 272 Q237 247 223 218 Q210 192 197 202 Q204 233 201 268 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
+            <path d="M76 308 Q62 332 71 350 Q80 360 94 350 Q103 332 94 308 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
+            <path d="M244 308 Q258 332 249 350 Q240 360 226 350 Q217 332 226 308 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
+            <circle cx="240" cy="155" r="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" strokeWidth="1"/>
+            <text x="240" y="161" textAnchor="middle" fontSize="14" fill="rgba(255,255,255,0.8)">👋</text>
+          </svg>
+        </div>
+
+        <div className="relative z-10">
+          <h2 className="font-black text-3xl text-white mb-2" style={{letterSpacing: '-0.5px'}}>
+            Selamat datang<br/>kembali!
+          </h2>
+          <p className="text-sm" style={{color: 'rgba(255,255,255,0.65)'}}>
+            Masuk dan lanjutkan pengalamanmu bersama Rentopia.
+          </p>
+        </div>
+      </div>
+
+      {/* Kanan - Form */}
+      <div className="flex-1 flex flex-col justify-center items-center px-8 py-12" style={{background: '#fff'}}>
+        <div className="w-full max-w-sm">
+
+          <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{background: '#7C4DFF'}}>
+              <span className="text-white font-black text-sm">R</span>
+            </div>
+            <span className="font-black text-lg" style={{color: '#7C4DFF'}}>Rentopia</span>
+          </div>
+
+          <h1 className="font-black text-3xl mb-1" style={{color: '#1A1A2E', letterSpacing: '-0.5px'}}>Masuk</h1>
+          <p className="text-sm mb-8" style={{color: '#888'}}>
+            Belum punya akun?{" "}
+            <Link to="/register" className="font-black" style={{color: '#7C4DFF'}}>Daftar gratis</Link>
+          </p>
+
           {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl text-sm font-semibold" style={{ background: "#FFD6EC", color: "#9B4070" }}>
+            <div className="mb-5 px-4 py-3 rounded-xl text-sm font-semibold" style={{background: '#FFF0F0', color: '#C0394A', border: '1.5px solid #FFB3B3'}}>
               ⚠️ {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-bold mb-1.5" style={{ color: "#7B6AAA" }}>Email</label>
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            <div className="space-y-1.5">
+              <Label className="font-bold text-sm" style={{color: '#1A1A2E'}}>Email</Label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#C9B8FF" }} />
-                <input
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color: '#9C6FFF'}}/>
+                <Input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="contoh@email.com"
                   autoComplete="email"
-                  className={`rp-input pl-10 ${fieldErrors.email ? "error" : ""}`}
+                  className="pl-10 rounded-xl h-11"
+                  style={{borderColor: fieldErrors.email ? '#FFB3B3' : '#E0D5FF', borderWidth: '2px'}}
                 />
               </div>
-              {fieldErrors.email && <p className="text-xs mt-1 font-semibold" style={{ color: "#FFB3D9" }}>{fieldErrors.email}</p>}
+              {fieldErrors.email && <p className="text-xs font-semibold" style={{color: '#C0394A'}}>{fieldErrors.email}</p>}
             </div>
 
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-bold" style={{ color: "#7B6AAA" }}>Password</label>
-                <Link to="/forgot-password" className="text-xs font-bold" style={{ color: "#C9B8FF" }}>Lupa password?</Link>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label className="font-bold text-sm" style={{color: '#1A1A2E'}}>Password</Label>
+                <Link to="/forgot-password" className="text-xs font-bold" style={{color: '#7C4DFF'}}>Lupa password?</Link>
               </div>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#C9B8FF" }} />
-                <input
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color: '#9C6FFF'}}/>
+                <Input
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Masukkan password"
                   autoComplete="current-password"
-                  className={`rp-input pl-10 pr-10 ${fieldErrors.password ? "error" : ""}`}
+                  className="pl-10 pr-10 rounded-xl h-11"
+                  style={{borderColor: fieldErrors.password ? '#FFB3B3' : '#E0D5FF', borderWidth: '2px'}}
                 />
-                <button type="button" onClick={() => setShowPass(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "#C9B8FF" }}>
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                <button type="button" onClick={() => setShowPass(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{color: '#9C6FFF'}}>
+                  {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
                 </button>
               </div>
-              {fieldErrors.password && <p className="text-xs mt-1 font-semibold" style={{ color: "#FFB3D9" }}>{fieldErrors.password}</p>}
+              {fieldErrors.password && <p className="text-xs font-semibold" style={{color: '#C0394A'}}>{fieldErrors.password}</p>}
             </div>
 
-            <button type="submit" disabled={loading} className="rp-btn-primary w-full py-3.5 text-base mt-2">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 rounded-xl font-black text-base"
+              style={{background: '#7C4DFF', color: '#fff'}}
+            >
               {loading ? (
-                <><span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> Masuk...</>
-              ) : "Masuk 🚀"}
-            </button>
+                <><span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"/>Masuk...</>
+              ) : "Masuk"}
+            </Button>
           </form>
 
-          <p className="text-center text-sm mt-6" style={{ color: "#A89CC4" }}>
-            Belum punya akun?{" "}
-            <Link to="/register" className="font-bold" style={{ color: "#9B87D9" }}>Daftar gratis</Link>
-          </p>
-        </div>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full mt-6 text-sm font-semibold flex items-center justify-center gap-2"
+            style={{color: '#888'}}
+          >
+            ← Kembali ke Landing Page
+          </button>
 
-        <button onClick={() => navigate("/")} className="rp-back-btn mx-auto flex mt-6">
-          <ArrowLeft size={16} /> Kembali ke Landing Page
-        </button>
+        </div>
       </div>
     </div>
   );

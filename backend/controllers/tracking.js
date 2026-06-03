@@ -1,13 +1,13 @@
 const { saveVisitor, getAllVisitors } = require('../models/visitor')
 
 const trackVisitor = async (req, res) => {
-    const { visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent } = req.body
+    const { visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent, location } = req.body
 
     if (!visitorId || !page || !visitedAt) {
         return res.status(400).json({ message: 'Data tidak lengkap' })
     }
 
-    await saveVisitor(visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent)
+    await saveVisitor(visitorId, page, path, browser, language, screenWidth, screenHeight, visitedAt, consent, location)
     res.status(201).json({ message: 'Data pengunjung berhasil disimpan' })
 }
 

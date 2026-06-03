@@ -12,11 +12,40 @@ function getCookie(name) {
   return found ? decodeURIComponent(found.split("=")[1]) : null;
 }
 
+async function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { "Accept-Language": "id" } }
+          );
+          const data = await res.json();
+          resolve({
+            latitude,
+            longitude,
+            city: data.address?.city || data.address?.town || data.address?.village || null,
+            country: data.address?.country || null,
+          });
+        } catch {
+          resolve({ latitude, longitude, city: null, country: null });
+        }
+      },
+      () => resolve(null)
+    );
+  });
+}
+
 async function trackVisitor() {
   const consentStatus = localStorage.getItem("cookieConsent");
   if (consentStatus !== "accepted") return;
 
   const preferences = JSON.parse(localStorage.getItem("cookiePreferences") || "{}");
+  const location = preferences.location ? await getLocation() : null;
+
   let visitorId = localStorage.getItem("landingVisitorId") || getCookie("landingVisitorId");
 
   if (!visitorId) {
@@ -35,7 +64,8 @@ async function trackVisitor() {
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
     visitedAt: new Date().toISOString(),
-    consent: preferences
+    consent: preferences,
+    location,
   };
 
   localStorage.setItem("landingLastVisit", JSON.stringify(visitorData));
@@ -68,9 +98,8 @@ export function useCookieConsent() {
   }, []);
 
   function acceptCookie(preferences) {
-    
     const finalPrefs = preferences || { necessary: true, prefs: true, stats: true, marketing: true };
-    
+
     localStorage.setItem("cookieConsent", "accepted");
     localStorage.setItem("cookiePreferences", JSON.stringify(finalPrefs));
     setCookie("cookieConsent", "accepted", 7);

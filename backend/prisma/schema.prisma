@@ -132,6 +132,10 @@ model Visitor {
   consent_preferences Boolean  @default(false)
   consent_statistics  Boolean  @default(false)
   consent_marketing   Boolean  @default(false)
+  country             String?
+  city                String?
+  latitude            Float?
+  longitude           Float?
   created_at          DateTime @default(now())
 }
 

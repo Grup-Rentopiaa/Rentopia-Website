@@ -33,23 +33,19 @@ export default function App() {
     <BrowserRouter>
       
       <Routes>
-        {/* ── Public-only (redirect ke /home kalau sudah login) ── */}
-        <Route path="/"         element={
+        <Route path="/" element={
           <PublicRoute>
             <LandingPage />
-            <CookieConsent onAccept={(consent) => console.log("Cookie consent:", consent)} />
+            <CookieConsent />
           </PublicRoute>} />
-        
-        <Route path="/login"    element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><SignUpPage /></PublicRoute>} />
 
-        {/* ── Auth flow ── */}
-        <Route path="/verify-otp"        element={<VerifyOtpPage />} />
-        <Route path="/forgot-password"   element={<ForgotPasswordPage />} />
+        <Route path="/verify-otp" element={<VerifyOtpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-otp-forgot" element={<VerifyOtpForgotPage />} />
-        <Route path="/reset-password"    element={<ResetPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* ── Protected ── */}
         <Route path="/home"        element={<PrivateRoute><HomePage /></PrivateRoute>} />
         <Route path="/search"      element={<PrivateRoute><SearchPage /></PrivateRoute>} />
         <Route path="/products"    element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
@@ -66,9 +62,6 @@ export default function App() {
         <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
         <Route path="/admin/guarantees" element={<PrivateRoute><AdminGuaranteesPage /></PrivateRoute>} />
 
-        
-
-        {/* ── Fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
