@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Heart, Bell, MessageCircle, User, LogOut,
-  Search, Upload, ChevronDown, Home,
+  Search, Upload, ChevronDown, Home, BarChart2,
 } from "lucide-react";
 import apiFetch from "../api";
 
@@ -14,7 +14,6 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
   const [localSearch,  setLocalSearch]  = useState(searchValue);
   const dropRef = useRef(null);
 
-  
   useEffect(() => {
     function handler(e) {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -25,7 +24,6 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  
   const fetchUnread = useCallback(async () => {
     if (!user?.id) return;
     try {
@@ -47,7 +45,6 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    
     apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
     navigate("/", { replace: true });
   }
@@ -175,7 +172,14 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
                 <div className="px-4 py-2 border-b" style={{ borderColor: "#E8DCFF" }}>
                   <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{user?.username}</p>
                   <p className="text-xs" style={{ color: "#A89CC4" }}>{user?.email}</p>
+                  {user?.isAdmin && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full mt-1 inline-block"
+                      style={{ background: "#C9EFDC", color: "#2D7A55" }}>
+                      Admin
+                    </span>
+                  )}
                 </div>
+
                 <button
                   id="navbar-profile-btn"
                   onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
@@ -184,6 +188,20 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
                 >
                   <User size={16} /> Profil
                 </button>
+
+                {/* Link admin — hanya muncul kalau isAdmin */}
+                {user?.isAdmin && (
+                  <button
+                    onClick={() => { navigate("/admin/visitors"); setDropdownOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors"
+                    style={{ color: "#2D7A55" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "#C9EFDC"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    <BarChart2 size={16} /> Visitor Analytics
+                  </button>
+                )}
+
                 <div className="border-t mt-1 pt-1" style={{ borderColor: "#E8DCFF" }}>
                   <button
                     id="navbar-logout-btn"

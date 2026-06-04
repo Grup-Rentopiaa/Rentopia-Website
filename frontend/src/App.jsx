@@ -24,6 +24,7 @@ import ProductsPage        from "./pages/ProductsPage";
 import AdminGuaranteesPage from "./pages/AdminGuaranteesPage";
 import FollowersPage       from "./pages/FollowersPage";
 import FollowingPage       from "./pages/FollowingPage";
+import AdminVisitorPage from "./pages/AdminVisitorPage";
 
 
 import "./index.css";
@@ -33,6 +34,7 @@ export default function App() {
     <BrowserRouter>
       
       <Routes>
+        <Route path="/admin/visitors" element={<AdminVisitorPage />} />
         <Route path="/" element={
           <PublicRoute>
             <LandingPage />
