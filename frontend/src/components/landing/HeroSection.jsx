@@ -8,7 +8,7 @@ function HeroSection() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{background: '#7C4DFF'}}>
+    <div style={{background: '#7C4DFF', display: 'flex', flexDirection: 'column'}}>
 
       {/* Navbar */}
       <nav className="flex justify-between items-center px-12 py-4" style={{background: 'rgba(255,255,255,0.12)', borderBottom: '1px solid rgba(255,255,255,0.15)'}}>
@@ -51,10 +51,18 @@ function HeroSection() {
       </nav>
 
       {/* Hero Content */}
-      <div className="flex flex-1 items-end px-12 gap-8 py-12">
+      <div style={{ display: 'flex', alignItems: 'stretch' }}>
 
         {/* Kiri */}
-        <div className="flex flex-col gap-5 w-1/2">
+        <div style={{
+          width: '38%',
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          justifyContent: 'center',
+          padding: '48px',
+        }}>
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold text-white w-fit" style={{background: 'rgba(255,255,255,0.25)', border: '1.5px solid rgba(255,255,255,0.5)'}}>
             Platform Sewa Barang #1 Indonesia
           </div>
@@ -86,42 +94,35 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* Kanan - Karakter */}
-        <div className="flex-1 flex justify-center items-end">
-          <svg width="340" height="420" viewBox="0 0 340 420">
-            <ellipse cx="170" cy="405" rx="120" ry="14" fill="rgba(0,0,0,0.15)"/>
-            <path d="M112 195 Q96 155 110 135 Q120 118 133 132 Q127 162 130 192 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
-            <path d="M228 195 Q244 155 230 135 Q220 118 207 132 Q213 162 210 192 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
-            <path d="M112 195 Q96 155 110 135 Q120 118 133 132 Q127 162 130 192 Z" fill="#FFB6C1" opacity="0.45"/>
-            <path d="M228 195 Q244 155 230 135 Q220 118 207 132 Q213 162 210 192 Z" fill="#FFB6C1" opacity="0.45"/>
-            <ellipse cx="170" cy="255" rx="70" ry="80" fill="#E8E8E8"/>
-            <ellipse cx="170" cy="245" rx="64" ry="72" fill="#F0F0F0"/>
-            <ellipse cx="170" cy="233" rx="52" ry="54" fill="#fff"/>
-            <circle cx="152" cy="220" r="8.5" fill="#2D1B69"/>
-            <circle cx="188" cy="220" r="8.5" fill="#2D1B69"/>
-            <circle cx="154.5" cy="218" r="3.5" fill="#fff"/>
-            <circle cx="190.5" cy="218" r="3.5" fill="#fff"/>
-            <ellipse cx="170" cy="233" rx="7" ry="5" fill="#FFB6C1"/>
-            <path d="M163 240 Q170 245 177 240" stroke="#E8956D" strokeWidth="2" fill="none" strokeLinecap="round"/>
-            <ellipse cx="154" cy="244" rx="10" ry="5.5" fill="#FFB6C1"/>
-            <ellipse cx="186" cy="244" rx="10" ry="5.5" fill="#FFB6C1"/>
-            <rect x="122" y="298" width="96" height="70" rx="28" fill="#7C4DFF"/>
-            <rect x="128" y="304" width="84" height="58" rx="22" fill="#9C6FFF"/>
-            <path d="M108 285 Q88 258 102 228 Q116 200 130 212 Q122 244 126 280 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
-            <path d="M232 285 Q252 258 238 228 Q224 200 210 212 Q218 244 214 280 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
-            <path d="M80 320 Q65 345 75 365 Q85 375 100 365 Q110 345 100 320 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
-            <path d="M260 320 Q275 345 265 365 Q255 375 240 365 Q230 345 240 320 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
-            <rect x="66" y="275" width="54" height="38" rx="12" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
-            <rect x="71" y="280" width="44" height="28" rx="8" fill="#F3EEFF"/>
-            <text x="93" y="296" textAnchor="middle" fontSize="9" fill="#7C4DFF" fontWeight="800">KAMERA</text>
-            <text x="93" y="306" textAnchor="middle" fontSize="8" fill="#9C6FFF">Rp25K/hari</text>
-            <rect x="220" y="275" width="54" height="38" rx="12" fill="#fff" stroke="#E0E0E0" strokeWidth="1"/>
-            <rect x="225" y="280" width="44" height="28" rx="8" fill="#FFF5E8"/>
-            <text x="247" y="292" textAnchor="middle" fontSize="9" fill="#F4A261" fontWeight="800">Rp25.000</text>
-            <circle cx="247" cy="302" r="6" fill="#4CAF50"/>
-            <path d="M244 302 L246.5 304.5 L250 300" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-          </svg>
-        </div>
+        {/* Kanan - Hero Banner full tanpa crop */}
+<div style={{
+  width: '62%',
+  flexShrink: 0,
+  margin: 0,
+  padding: 0,
+  lineHeight: 0,
+  position: 'relative',
+}}>
+  {/* Gradasi dari kiri */}
+  <div style={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '30%',
+    height: '100%',
+    background: 'linear-gradient(to right, #7C4DFF, transparent)',
+    zIndex: 1,
+  }} />
+  <img
+    src="/banner-hero.png"
+    alt="Rentopia Hero Banner"
+    style={{
+      width: '100%',
+      height: 'auto',
+      display: 'block',
+    }}
+  />
+</div>
 
       </div>
     </div>

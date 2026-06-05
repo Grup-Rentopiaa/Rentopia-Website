@@ -19,53 +19,55 @@ app.use(cors({
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
 app.use(express.json({ limit: '10mb' }))
 
-const userRoutes = require('./routes/user')
-app.use('/api/users', userRoutes)
-
-const authRoutes = require('./routes/auth')
-app.use('/api/auth', authRoutes)
-
-const trackingRoutes = require('./routes/tracking')
-app.use('/api/tracking', trackingRoutes)
-
-const itemRoutes = require('./routes/item')
-app.use('/api/items', itemRoutes)
-app.use('/api/users/:userId/items', itemRoutes)
-
-const keywordRoutes = require('./routes/keyword')
-app.use('/api/keywords', keywordRoutes)
-
+// ── Load semua routes ──
+const userRoutes        = require('./routes/user')
+const authRoutes        = require('./routes/auth')
+const trackingRoutes    = require('./routes/tracking')
+const itemRoutes        = require('./routes/item')
+const keywordRoutes     = require('./routes/keyword')
 const notificationRoutes = require('./routes/notification')
-app.use('/api/notifications', notificationRoutes)
+const chatRoutes        = require('./routes/chat')
+const penawaranRoutes   = require('./routes/penawaran')
+const listingRoutes     = require('./routes/listing')
+const rentalRoutes      = require('./routes/rental')
+const rentalFlowRoutes  = require('./routes/rentalFlow')
+const adminRoutes       = require('./routes/admin')
+const socialRoutes      = require('./routes/social')
 
-const chatRoutes = require('./routes/chat')
-app.use('/api/chat', chatRoutes)
-
-const penawaranRoutes = require('./routes/penawaran')
-app.use('/api/penawaran', penawaranRoutes)
-
-const listingRoutes = require('./routes/listing')
-app.use('/api/listings', listingRoutes)
+// ── Route asli (internal) ──
+app.use('/api/users',              userRoutes)
+app.use('/api/auth',               authRoutes)
+app.use('/api/tracking',           trackingRoutes)
+app.use('/api/items',              itemRoutes)
+app.use('/api/users/:userId/items', itemRoutes)
+app.use('/api/keywords',           keywordRoutes)
+app.use('/api/notifications',      notificationRoutes)
+app.use('/api/chat',               chatRoutes)
+app.use('/api/penawaran',          penawaranRoutes)
+app.use('/api/listings',           listingRoutes)
 app.use('/api/users/:userId/listings', listingRoutes)
-
-const rentalRoutes = require('./routes/rental')
-app.use('/api/rentals', rentalRoutes)
+app.use('/api/rentals',            rentalRoutes)
 app.use('/api/users/:userId/rentals', rentalRoutes)
+app.use('/api/rental',             rentalFlowRoutes)
+app.use('/api/admin',              adminRoutes)
+app.use('/api/search',             socialRoutes)
+app.use('/api/profile',            socialRoutes)
 
-const rentalFlowRoutes = require('./routes/rentalFlow')
-app.use('/api/rental', rentalFlowRoutes)
-
-const adminRoutes = require('./routes/admin')
-app.use('/api/admin', adminRoutes)
-
-const socialRoutes = require('./routes/social')
-app.use('/api/search', socialRoutes)    
-app.use('/api/profile', socialRoutes)   
+// ── Virtual Directory / Path Aliasing ──
+// URL publik yang menyembunyikan nama file dan struktur folder asli
+app.use('/api/catalog',      itemRoutes)         // alias → routes/item.js
+app.use('/api/account',      userRoutes)         // alias → routes/user.js
+app.use('/api/messages',     chatRoutes)         // alias → routes/chat.js
+app.use('/api/activity',     notificationRoutes) // alias → routes/notification.js
+app.use('/api/marketplace',  rentalFlowRoutes)   // alias → routes/rentalFlow.js
+app.use('/api/store',        listingRoutes)      // alias → routes/listing.js
+app.use('/api/identity',     authRoutes)         // alias → routes/auth.js
+app.use('/api/analytics',    trackingRoutes)     // alias → routes/tracking.js
 
 const { getFollowingFeed } = require('./controllers/item')
 app.get('/api/feed/following/:userId', getFollowingFeed)
 
-
+// ── WebSocket ──
 wss.on('connection', (ws, req) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`)

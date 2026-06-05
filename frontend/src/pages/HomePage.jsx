@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Users, TrendingUp, Grid, SlidersHorizontal, X, Flame, Zap } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Grid, SlidersHorizontal, Flame, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiFetch from '../api';
 import useProducts from '../hooks/useProducts';
@@ -15,21 +15,8 @@ const RECOMMEND_TABS = [
 ];
 
 const BANNERS = [
-  { image: '/banner1.png', category: 'Camping & Outdoor' },
-  { image: '/banner2.png', category: 'Kamera & Foto' },
-  { image: '/banner3.png', category: 'Elektronik' },
+  { image: '/Banner.png', category: 'Sports & Outdoor' },
 ];
-
-const CATEGORY_ICONS = {
-  'Kamera & Foto': '📷',
-  'Elektronik': '💻',
-  'Camping & Outdoor': '⛺',
-  'Gaming': '🎮',
-  'Fashion & Kostum': '👗',
-  'Peralatan': '🔧',
-  'Musik': '🎵',
-  'Olahraga': '⚽',
-};
 
 export default function HomePage() {
   const user     = JSON.parse(localStorage.getItem('user') || 'null');
@@ -91,7 +78,7 @@ export default function HomePage() {
         onSearchSubmit={setSearch}
       />
 
-      {/* Banner - full width, tinggi */}
+      {/* Banner */}
       <div style={{background: '#fff', borderBottom: '1px solid #E8DCFF'}}>
         <div className="relative cursor-pointer overflow-hidden"
           style={{height: '220px'}}
@@ -104,7 +91,7 @@ export default function HomePage() {
             }}
           />
           <div style={{display:'none', background:'linear-gradient(135deg,#7C4DFF,#9C6FFF)', height:'220px', width:'100%', alignItems:'center', justifyContent:'center', position:'absolute', top:0, left:0}}>
-            <span style={{color:'rgba(255,255,255,0.5)', fontSize:'13px'}}>Upload banner di /public/banner1.png</span>
+            <span style={{color:'rgba(255,255,255,0.5)', fontSize:'13px'}}>Upload banner di /public/Banner.png</span>
           </div>
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
             {BANNERS.map((_, i) => (
@@ -125,72 +112,61 @@ export default function HomePage() {
       </div>
 
       {/* Categories */}
-<div style={{background: '#fff', borderBottom: '2px solid #E8DCFF'}}>
-  <div className="max-w-6xl mx-auto px-4 py-4">
-    <p className="text-xs font-black mb-3 tracking-widest" style={{color: '#888', textTransform: 'uppercase'}}>Kategori</p>
-    <div style={{display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', border: '1px solid #E8DCFF'}}>
-      
-      <button
-        onClick={() => setCategory('')}
-        style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-          padding: '16px 8px', cursor: 'pointer', border: 'none',
-          borderRight: '1px solid #E8DCFF', borderBottom: '1px solid #E8DCFF',
-          background: category==='' ? '#F3EEFF' : '#fff',
-        }}>
-        <div style={{width: '72px', height: '72px', borderRadius: '50%', background: '#F0EEFF', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-          <Grid size={28} color="#7C4DFF"/>
-        </div>
-        <span style={{fontSize: '12px', fontWeight: '700', color: category==='' ? '#7C4DFF' : '#333', textAlign: 'center', lineHeight: '1.3'}}>Semua</span>
-      </button>
+      <div style={{background: '#fff', borderBottom: '2px solid #E8DCFF'}}>
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <p className="text-xs font-black mb-3 tracking-widest" style={{color: '#888', textTransform: 'uppercase'}}>Kategori</p>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', border: '1px solid #E8DCFF'}}>
 
-      {CATEGORIES.map((cat, idx) => (
-        <button key={cat.id}
-          onClick={() => setCategory(category===cat.id ? '' : cat.id)}
-          style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-            padding: '16px 8px', cursor: 'pointer', border: 'none',
-            borderRight: (idx + 1) % 10 === 9 ? 'none' : '1px solid #E8DCFF',
-            borderBottom: '1px solid #E8DCFF',
-            background: category===cat.id ? '#F3EEFF' : '#fff',
-          }}>
-          <div style={{width: '72px', height: '72px', borderRadius: '50%', background: '#F5F5F5', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-            <img
-              src={`/categories/${cat.id}.png`}
-              alt={cat.name}
-              style={{width: '100%', height: '100%', objectFit: 'cover'}}
-              onError={e => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-            <span style={{display: 'none', fontSize: '28px'}}>{CATEGORY_ICONS[cat.name] || '📦'}</span>
+            {/* Tombol Semua */}
+            <button
+              onClick={() => setCategory('')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                padding: '16px 8px', cursor: 'pointer', border: 'none',
+                borderRight: '1px solid #E8DCFF', borderBottom: '1px solid #E8DCFF',
+                background: category==='' ? '#F3EEFF' : '#fff',
+              }}>
+              <div style={{width: '64px', height: '64px', borderRadius: '50%', background: '#F0EEFF', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Grid size={28} color="#7C4DFF"/>
+              </div>
+              <span style={{fontSize: '11px', fontWeight: '700', color: category==='' ? '#7C4DFF' : '#333', textAlign: 'center', lineHeight: '1.3'}}>Semua</span>
+            </button>
+
+            {CATEGORIES.map((cat, idx) => (
+              <button key={cat.id}
+                onClick={() => setCategory(category===cat.id ? '' : cat.id)}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                  padding: '16px 8px', cursor: 'pointer', border: 'none',
+                  borderRight: (idx + 1) % 8 === 7 ? 'none' : '1px solid #E8DCFF',
+                  borderBottom: '1px solid #E8DCFF',
+                  background: category===cat.id ? '#F3EEFF' : '#fff',
+                }}>
+                <div style={{width: '64px', height: '64px', borderRadius: '50%', background: '#F5F5F5', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {cat.image ? (
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                      onError={e => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                  ) : null}
+                  <span style={{display: 'none', fontSize: '24px'}}>📦</span>
+                </div>
+                <span style={{fontSize: '11px', fontWeight: '700', color: category===cat.id ? '#7C4DFF' : '#333', textAlign: 'center', lineHeight: '1.3', maxWidth: '64px'}}>
+                  {cat.name}
+                </span>
+              </button>
+            ))}
           </div>
-          <span style={{fontSize: '12px', fontWeight: '700', color: category===cat.id ? '#7C4DFF' : '#333', textAlign: 'center', lineHeight: '1.3', maxWidth: '72px'}}>
-            {cat.name}
-          </span>
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
+        </div>
+      </div>
 
       {/* Main */}
       <div className="max-w-6xl mx-auto px-4 py-3">
-
-        {/* Greeting */}
-        <div style={{background: '#fff', borderRadius: '10px', border: '1px solid #E8DCFF', padding: '12px 16px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-          <div>
-            <h1 className="font-black text-base" style={{color: '#1A1A2E', margin: 0}}>
-              Halo, {user?.username || 'Pengguna'}! 👋
-            </h1>
-            <p className="text-xs mt-0.5" style={{color: '#888'}}>Mau sewa apa hari ini?</p>
-          </div>
-          <button onClick={() => navigate('/upload')}
-            style={{background: '#7C4DFF', color: '#fff', borderRadius: '8px', border: 'none', cursor: 'pointer', padding: '8px 14px', fontSize: '12px', fontWeight: '800', fontFamily: 'inherit'}}>
-            + Sewakan Barang
-          </button>
-        </div>
 
         {/* Tabs + Filter */}
         <div style={{background: '#fff', borderRadius: '10px', border: '1px solid #E8DCFF', padding: '10px 14px', marginBottom: '8px'}}>
@@ -326,7 +302,7 @@ export default function HomePage() {
 
       <footer className="mt-6 py-5 text-center text-xs"
         style={{borderTop: '1px solid #E8DCFF', color: '#aaa', background: '#fff'}}>
-        © 2025 Rentopia · Dibuat dengan 💜 oleh kelompok 3 MWP kelas B
+        © 2026 Rentopia · Oleh kelompok 3 MWP kelas B
       </footer>
     </div>
   );

@@ -1,24 +1,27 @@
-
-import {
-  LayoutGrid, Zap, Tent, Bike, Car,
-  Shirt, Baby, Home, Camera, BookOpen, Tag,
-} from 'lucide-react';
-
-
 export const CATEGORIES = [
-  { id: '',                  name: 'Semua',            Icon: LayoutGrid },
-  { id: 'Elektronik',        name: 'Elektronik',       Icon: Zap        },
-  { id: 'Camping & Outdoor', name: 'Camping & Outdoor',Icon: Tent       },
-  { id: 'Olahraga',          name: 'Olahraga',         Icon: Bike       },
-  { id: 'Kendaraan',         name: 'Kendaraan',        Icon: Car        },
-  { id: 'Pakaian & Kostum',  name: 'Pakaian & Kostum', Icon: Shirt      },
-  { id: 'Bayi & Anak',       name: 'Bayi & Anak',      Icon: Baby       },
-  { id: 'Peralatan Rumah',   name: 'Peralatan Rumah',  Icon: Home       },
-  { id: 'Kamera & Foto',     name: 'Kamera & Foto',    Icon: Camera     },
-  { id: 'Buku & Alat Belajar', name: 'Buku & Alat Belajar', Icon: BookOpen },
-  { id: 'Lainnya',           name: 'Lainnya',          Icon: Tag        },
-];
+  { id: 'Electronics',           name: 'Electronics',           image: '/icon-category/Electronic.png'              },
+  { id: 'Computer & Accessories',name: 'Computer & Accessories', image: '/icon-category/Computer & Accessories.png' },
+  { id: 'Mobile & Accessories',  name: 'Mobile & Accessories',  image: '/icon-category/Mobile & Accessories.png'   },
+  { id: 'Men Clothes',           name: 'Men Clothes',           image: '/icon-category/Men Clothes.png'            },
+  { id: 'Men Shoes',             name: 'Men Shoes',             image: '/icon-category/Men Shoes.png'              },
+  { id: 'Men Bags',              name: 'Men Bags',              image: '/icon-category/Men Bags.png'               },
+  { id: 'Fashion Accessories',   name: 'Fashion Accessories',   image: '/icon-category/Fashion Accessories.png'    },
+  { id: 'Watches',               name: 'Watches',               image: '/icon-category/Watch.png'                  },
+  { id: 'Health',                name: 'Health',                image: '/icon-category/Health.png'                 },
+  { id: 'Hobby & Collection',    name: 'Hobby & Collection',    image: '/icon-category/Hobby.png'                  },
+  { id: 'Beauty & Care',         name: 'Beauty & Care',         image: '/icon-category/Beauty & Care.png'          },
+  { id: 'Home & Living',         name: 'Home & Living',         image: '/icon-category/Home & Living.png'          },
+  { id: 'Women Clothes',         name: 'Women Clothes',         image: '/icon-category/Women Clothes.png'          },
+  { id: 'Muslim Fashion',        name: 'Muslim Fashion',        image: '/icon-category/Muslim Fashion.png'         },
+  { id: 'Baby & Kids Fashion',   name: 'Baby & Kids Fashion',   image: '/icon-category/Baby & Kids Fashion.png'   },
+  { id: 'Mom & Baby',            name: 'Mom & Baby',            image: '/icon-category/Mom & Baby.png'             },
+  { id: 'Women Shoes',           name: 'Women Shoes',           image: '/icon-category/Women Shoes.png'            },
+  { id: 'Women Bags',            name: 'Women Bags',            image: '/icon-category/Women Bags.png'             },
+  { id: 'Automotive',            name: 'Automotive',            image: '/icon-category/Automotive.png'             },
+  { id: 'Sports & Outdoor',      name: 'Sports & Outdoor',      image: '/icon-category/Sports & Outdoor.png'       },
+  { id: 'Party Supplies',        name: 'Party Supplies',        image: '/icon-category/Party Supplies.png'         },
+  { id: 'Stationery & Books',    name: 'Stationery & Books',    image: '/icon-category/Stationary & Books.png'     },
+  { id: 'Photography',           name: 'Photography',           image: '/icon-category/Photography.png'            },
+]
 
-export const CATEGORY_NAMES = CATEGORIES
-  .filter(c => c.id !== '')   
-  .map(c => c.name);
+export const CATEGORY_NAMES = CATEGORIES.map(c => c.name)

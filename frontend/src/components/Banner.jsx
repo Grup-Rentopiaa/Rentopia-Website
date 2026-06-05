@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const BANNERS = [
-  { id: 1, src: '/banner1.png', alt: 'Promo Elektronik & Gadget' },
-  { id: 2, src: '/banner2.png', alt: 'Petualangan Outdoor Hemat' },
-  { id: 3, src: '/banner3.png', alt: 'Kendaraan & Alat Musik' },
+  { id: 1, src: '/Banner.png', alt: 'Promo Elektronik & Gadget' },
 ];
 
 export default function Banner() {

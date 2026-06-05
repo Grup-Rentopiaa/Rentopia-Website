@@ -62,57 +62,82 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
   const initials = (user?.username || user?.name || "U")[0].toUpperCase();
 
   return (
-    <nav className="rp-navbar">
+    <nav style={{
+      background: '#7C4DFF',
+      borderBottom: '1px solid rgba(255,255,255,0.15)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+    }}>
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
 
-        {/* Logo */}
         <Link to="/home" className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-            style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)" }}>
-            R
+          <div className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.2)' }}>
+            <svg width="22" height="22" viewBox="0 0 36 36">
+              <ellipse cx="18" cy="21" rx="9" ry="7" fill="#E8E8E8"/>
+              <ellipse cx="18" cy="19" rx="6" ry="4" fill="#fff"/>
+              <circle cx="15" cy="17" r="2" fill="#2D1B69"/>
+              <circle cx="21" cy="17" r="2" fill="#2D1B69"/>
+              <ellipse cx="18" cy="20" rx="2" ry="1.2" fill="#FFB6C1"/>
+              <ellipse cx="14" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
+              <ellipse cx="22" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
+            </svg>
           </div>
-          <span className="text-lg font-black hidden sm:block" style={{ color: "#9B87D9" }}>
+          <span className="text-lg font-black hidden sm:block text-white" style={{letterSpacing: '-0.5px'}}>
             Rentopia
           </span>
         </Link>
 
-        {/* Search */}
         <div className="flex-1 max-w-lg">
           <div className="relative flex items-center">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: "#C9B8FF" }} />
+              style={{ color: 'rgba(255,255,255,0.6)' }} />
             <input
-              id="navbar-search-input"
-              type="text"
-              placeholder="Cari barang atau pengguna..."
-              value={localSearch}
-              onChange={e => setLocalSearch(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              className="rp-input pl-10 pr-12 py-2.5 text-sm"
-            />
+  id="navbar-search-input"
+  type="text"
+  placeholder="Cari barang atau pengguna..."
+  value={localSearch}
+  onChange={e => setLocalSearch(e.target.value)}
+  onKeyDown={handleSearchKeyDown}
+  className="w-full pl-10 pr-12 py-2.5 text-sm rounded-xl outline-none"
+  style={{
+    background: '#fff',
+    border: 'none',
+    color: '#3D2F6B',
+  }}
+/>
             <button
               id="navbar-search-btn"
               onClick={handleSearchButtonClick}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center transition-colors"
-              style={{ background: "linear-gradient(135deg, #C9B8FF, #B09FEF)", color: "#3D2F6B" }}
-              title="Cari"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}
             >
               <Search size={14} />
             </button>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1 ml-auto">
-          <button onClick={() => navigate("/home")}
-            className="p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
-            title="Beranda" style={{ color: "#9B87D9" }}>
-            <Home size={20} />
-          </button>
+          {[
+            { icon: <Home size={20} />, onClick: () => navigate("/home"), title: "Beranda" },
+            { icon: <MessageCircle size={20} />, onClick: () => navigate("/chat"), title: "Pesan" },
+            { icon: <Upload size={20} />, onClick: () => navigate("/upload"), title: "Upload" },
+          ].map((btn, i) => (
+            <button key={i} onClick={btn.onClick} title={btn.title}
+              className="p-2 rounded-xl transition-colors"
+              style={{ color: 'rgba(255,255,255,0.85)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              {btn.icon}
+            </button>
+          ))}
 
           <button onClick={() => navigate("/wishlist")}
-            className="relative p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
-            title="Wishlist" style={{ color: "#9B87D9" }}>
+            className="relative p-2 rounded-xl transition-colors"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <Heart size={20} />
             {wishlistCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center"
@@ -122,11 +147,12 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
             )}
           </button>
 
-          <button
-            id="navbar-bell-btn"
+          <button id="navbar-bell-btn"
             onClick={() => { navigate("/notifications"); setUnreadCount(0); }}
-            className="relative p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
-            title="Notifikasi" style={{ color: "#9B87D9" }}>
+            className="relative p-2 rounded-xl transition-colors"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <Bell size={20} />
             {unreadCount > 0 && (
               <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center"
@@ -136,81 +162,60 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
             )}
           </button>
 
-          <button onClick={() => navigate("/chat")}
-            className="p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
-            title="Pesan" style={{ color: "#9B87D9" }}>
-            <MessageCircle size={20} />
-          </button>
-
-          <button onClick={() => navigate("/upload")}
-            className="p-2 rounded-xl transition-colors hover:bg-rp-primary-lt"
-            title="Upload Produk" style={{ color: "#9B87D9" }}>
-            <Upload size={20} />
-          </button>
-
-          {/* User dropdown */}
           <div className="relative" ref={dropRef}>
-            <button
-              id="navbar-user-menu-btn"
+            <button id="navbar-user-menu-btn"
               onClick={() => setDropdownOpen(v => !v)}
               className="flex items-center gap-2 ml-1 px-3 py-2 rounded-xl transition-colors"
-              style={{ background: dropdownOpen ? "#E8DCFF" : "transparent" }}
-            >
+              style={{ background: dropdownOpen ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+              onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+              onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'transparent' }}>
               <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
-                style={{ background: "#C9B8FF", color: "#3D2F6B" }}>
+                style={{ background: 'rgba(255,255,255,0.3)', color: '#fff' }}>
                 {initials}
               </div>
-              <span className="text-sm font-bold hidden sm:block" style={{ color: "#7B6AAA" }}>
+              <span className="text-sm font-bold hidden sm:block text-white">
                 {user?.username || "Pengguna"}
               </span>
-              <ChevronDown size={14} style={{ color: "#A89CC4" }} />
+              <ChevronDown size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-52 rp-card py-2 z-50"
-                style={{ boxShadow: "0 8px 32px rgba(180,150,255,0.2)" }}>
+              <div className="absolute right-0 top-full mt-2 w-52 py-2 z-50 rounded-2xl"
+                style={{ background: '#fff', boxShadow: "0 8px 32px rgba(124,77,255,0.25)", border: '1px solid #E8DCFF' }}>
                 <div className="px-4 py-2 border-b" style={{ borderColor: "#E8DCFF" }}>
                   <p className="font-bold text-sm" style={{ color: "#3D2F6B" }}>{user?.username}</p>
                   <p className="text-xs" style={{ color: "#A89CC4" }}>{user?.email}</p>
                   {user?.isAdmin && (
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full mt-1 inline-block"
-                      style={{ background: "#C9EFDC", color: "#2D7A55" }}>
-                      Admin
-                    </span>
+                      style={{ background: "#C9EFDC", color: "#2D7A55" }}>Admin</span>
                   )}
                 </div>
 
-                <button
-                  id="navbar-profile-btn"
+                <button id="navbar-profile-btn"
                   onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors hover:bg-rp-primary-lt"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left"
                   style={{ color: "#7B6AAA" }}
-                >
+                  onMouseEnter={e => e.currentTarget.style.background = '#F3EEFF'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                   <User size={16} /> Profil
                 </button>
 
-                {/* Link admin — hanya muncul kalau isAdmin */}
                 {user?.isAdmin && (
-                  <button
-                    onClick={() => { navigate("/admin/visitors"); setDropdownOpen(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors"
+                  <button onClick={() => { navigate("/admin/visitors"); setDropdownOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left"
                     style={{ color: "#2D7A55" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#C9EFDC"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
+                    onMouseEnter={e => e.currentTarget.style.background = '#C9EFDC'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <BarChart2 size={16} /> Visitor Analytics
                   </button>
                 )}
 
                 <div className="border-t mt-1 pt-1" style={{ borderColor: "#E8DCFF" }}>
-                  <button
-                    id="navbar-logout-btn"
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left transition-colors"
+                  <button id="navbar-logout-btn" onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left"
                     style={{ color: "#FF8FC5" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#FFD6EC"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                  >
+                    onMouseEnter={e => e.currentTarget.style.background = '#FFD6EC'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <LogOut size={16} /> Keluar
                   </button>
                 </div>
