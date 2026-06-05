@@ -163,7 +163,7 @@ export default function DashboardPage() {
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all"
               style={{
                 background: tab === t.id ? "linear-gradient(135deg, #C9B8FF, #B09FEF)" : "transparent",
-                color: tab === t.id ? "#3D2F6B" : "#A89CC4",
+                color: tab === t.id ? "#7C4DFF" : "#ffffff",
               }}>
               {t.icon}{t.label}
             </button>

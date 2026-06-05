@@ -77,13 +77,13 @@ function OwnProfile() {
             {/* Avatar */}
             <div className="relative group cursor-pointer flex-shrink-0" onClick={() => fileRef.current?.click()}>
               {self?.avatarB64 ? (
-                <img src={self.avatarB64} className="w-24 h-24 rounded-2xl object-cover" style={{ border: "3px solid #E8DCFF" }} alt="avatar" />
+                <img src={self.avatarB64} className="w-24 h-24 rounded-full object-cover" style={{ border: "3px solid #E8DCFF" }} alt="avatar" />
               ) : (
-                <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-3xl font-black" style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B", border: "3px solid #E8DCFF" }}>
+                <div className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black" style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B", border: "3px solid #E8DCFF" }}>
                   {initials}
                 </div>
               )}
-              <div className="absolute inset-0 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.3)" }}>
+              <div className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.3)" }}>
                 <Camera size={20} className="text-white" />
               </div>
             </div>

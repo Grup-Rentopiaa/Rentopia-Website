@@ -19,7 +19,7 @@ function getAvatarColor(name = "") {
 
 const QUICK_REPLIES = ["Halo, masih tersedia?", "Berapa harga sewanya?", "Bisa COD tidak?"];
 const BASE_WS = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
-const POLL_INTERVAL_MS = 8000; 
+const POLL_INTERVAL_MS = 8000;
 
 export default function ChatPage() {
   const user     = JSON.parse(localStorage.getItem("user") || "null");
@@ -34,7 +34,6 @@ export default function ChatPage() {
   const [showReview,       setShowReview]       = useState(false);
   const [agreementProduct, setAgreementProduct] = useState(null);
 
-  
   const initiatedRef = useRef(new Set());
   const endRef       = useRef(null);
   const wsRef        = useRef(null);
@@ -53,7 +52,6 @@ export default function ChatPage() {
 
   const product = localProduct || agreementProduct;
 
-  
   const isSeller = !!(
     (localProduct && user?.id === localProduct.ownerId) ||
     (agreement   && user?.id === agreement.sellerId)
@@ -63,7 +61,6 @@ export default function ChatPage() {
     (agreement   && user?.id === agreement.buyerId)
   );
 
-  
   const buyerId  = agreement?.buyerId  ?? (isBuyer  ? user?.id : targetUser?.id) ?? null;
   const sellerId = agreement?.sellerId ?? (isSeller ? user?.id : targetUser?.id) ?? null;
 
@@ -76,21 +73,17 @@ export default function ChatPage() {
     setAgLoading(true);
     try {
       let data = null;
-
       if (localProduct?.id && buyerId && sellerId) {
         data = await apiFetch(
           `/api/rental/agreement?buyerId=${buyerId}&sellerId=${sellerId}&itemId=${localProduct.id}`
         ).catch(() => null);
       }
-
       if (!data) {
         data = await apiFetch(
           `/api/rental/between?userId=${user.id}&otherId=${targetUser.id}`
         ).catch(() => null);
       }
-
       setAgreement(data || null);
-
       if (data?.itemId && !localProduct) {
         apiFetch(`/api/items/${data.itemId}`)
           .then(item => setAgreementProduct({
@@ -108,67 +101,53 @@ export default function ChatPage() {
     } finally {
       setAgLoading(false);
     }
-  
   }, [targetUser?.id, user?.id, localProduct?.id]);
-  
 
   useEffect(() => {
     setAgreementProduct(null);
     setAgreement(null);
     if (targetUser?.id) fetchAgreement();
-  }, [targetUser?.id]); // hanya trigger saat targetUser berubah, bukan fetchAgreement
+  }, [targetUser?.id]);
 
-  
   useEffect(() => {
     if (!user?.id) return;
     const token = localStorage.getItem("token");
     if (!token) return;
-
     const ws = new WebSocket(`${BASE_WS}?token=${token}`);
     wsRef.current = ws;
-
     ws.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data);
         if (payload.type === "agreement_update" || payload.type === "rental_request") {
-          
           fetchAgreement();
           if (targetUser?.id) refreshMessages(targetUser.id);
         }
       } catch {}
     };
     ws.onerror = () => {};
-
     return () => { ws.close(); };
-  }, [user?.id]); 
+  }, [user?.id]);
 
-  
   useEffect(() => {
     if (!targetUser?.id) return;
     const interval = setInterval(fetchAgreement, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [targetUser?.id]); // hanya berdasarkan targetUser, bukan fetchAgreement
+  }, [targetUser?.id]);
 
-  
   useEffect(() => {
     if (!targetUser || !localProduct || !user || !buyerId || !sellerId) return;
     if (!isBuyer) return;
-
     const key = `${buyerId}-${sellerId}-${localProduct.id}`;
     if (initiatedRef.current.has(key)) return;
     initiatedRef.current.add(key);
-
     apiFetch("/api/rental/initiate", {
       method: "POST",
       body: JSON.stringify({ buyerId, sellerId, itemId: localProduct.id }),
     })
       .then(res => { if (res?.agreement) setAgreement(res.agreement); })
       .catch(() => {});
-  
   }, [targetUser?.id, localProduct?.id]);
-  
 
-  
   async function doAction(endpoint, body) {
     if (actionLoading) return;
     setActionLoading(true);
@@ -187,8 +166,7 @@ export default function ChatPage() {
   }
 
   const handlers = {
-    onApprove:       () => doAction("/api/rental/approve",
-                       { buyerId, sellerId, itemId: product?.id }),
+    onApprove:       () => doAction("/api/rental/approve", { buyerId, sellerId, itemId: product?.id }),
     onReceived:      () => doAction(`/api/rental/${agreement?.id}/confirm-received`),
     onReturned:      () => doAction(`/api/rental/${agreement?.id}/confirm-returned`),
     onOpenGuarantee: () => setShowGuarantee(true),
@@ -216,20 +194,23 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen" style={{ background: "#FAF8FF" }}>
 
-      {/* ── Sidebar ── */}
+      {/* Sidebar */}
       <aside
         className={`flex-shrink-0 w-72 flex flex-col border-r bg-white z-20
           ${mobileSidebar ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 md:relative absolute inset-y-0 left-0 transition-transform duration-300`}
         style={{ borderColor: "#E8DCFF" }}
       >
+        {/* Sidebar header — ungu */}
         <div className="px-5 py-4 flex items-center justify-between"
-          style={{ background: "linear-gradient(135deg,#E8DCFF,#FFD6EC)" }}>
+          style={{ background: "#7C4DFF" }}>
           <div className="flex items-center gap-2">
-            <MessageCircle size={18} style={{ color: "#9B87D9" }} />
-            <span className="font-black" style={{ color: "#3D2F6B" }}>Pesan</span>
+            <MessageCircle size={18} style={{ color: "rgba(255,255,255,0.8)" }} />
+            <span className="font-black text-white">Pesan</span>
           </div>
-          <button onClick={() => navigate(-1)} className="rp-back-btn text-xs px-2 py-1">
+          <button onClick={() => navigate(-1)}
+            className="text-xs px-2 py-1 rounded-lg font-bold"
+            style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
             <ArrowLeft size={14} />
           </button>
         </div>
@@ -246,14 +227,14 @@ export default function ChatPage() {
           onClick={() => setMobileSidebar(false)} />
       )}
 
-      {/* ── Area chat utama ── */}
+      {/* Area chat utama */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-white flex-shrink-0"
-          style={{ borderBottom: "1px solid #E8DCFF" }}>
+        {/* Header chat — ungu */}
+        <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+          style={{ background: "#7C4DFF", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
           <button onClick={() => setMobileSidebar(true)}
-            className="md:hidden p-2 rounded-xl" style={{ color: "#9B87D9" }}>
+            className="md:hidden p-2 rounded-xl" style={{ color: "rgba(255,255,255,0.8)" }}>
             <ArrowLeft size={20} />
           </button>
           {targetUser ? (
@@ -261,22 +242,22 @@ export default function ChatPage() {
               {targetUser.avatarB64 ? (
                 <img src={targetUser.avatarB64} alt={targetUser.username}
                   className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                  style={{ border: "2px solid #E8DCFF" }} />
+                  style={{ border: "2px solid rgba(255,255,255,0.4)" }} />
               ) : (
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
-                  style={{ background: targetColor, color: "#3D2F6B" }}>
+                  style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
                   {targetInitials}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-black text-sm truncate" style={{ color: "#3D2F6B" }}>
+                <h3 className="font-black text-sm truncate text-white">
                   {targetUser.name || targetUser.username}
                 </h3>
-                <p className="text-xs" style={{ color: "#9B87D9" }}>● Aktif</p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>● Aktif</p>
               </div>
             </>
           ) : (
-            <p className="text-sm" style={{ color: "#A89CC4" }}>Pilih percakapan</p>
+            <p className="text-sm text-white" style={{ opacity: 0.7 }}>Pilih percakapan</p>
           )}
         </div>
 
@@ -292,15 +273,11 @@ export default function ChatPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
                 <Tag size={10} style={{ color: "#9B87D9" }} />
-                <span className="text-[10px] font-bold uppercase" style={{ color: "#9B87D9" }}>
-                  Produk Terkait
-                </span>
+                <span className="text-[10px] font-bold uppercase" style={{ color: "#9B87D9" }}>Produk Terkait</span>
               </div>
               <p className="text-sm font-black truncate" style={{ color: "#3D2F6B" }}>{product.title}</p>
               <p className="text-xs font-bold" style={{ color: "#9B87D9" }}>
-                {new Intl.NumberFormat("id-ID", {
-                  style: "currency", currency: "IDR", maximumFractionDigits: 0,
-                }).format(product.price)}
+                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(product.price)}
                 <span className="font-normal" style={{ color: "#A89CC4" }}>/hari</span>
               </p>
             </div>
@@ -314,19 +291,12 @@ export default function ChatPage() {
         {/* Rental countdown badge */}
         {agreement?.status === "received" && daysLeft !== null && (
           <div className="flex-shrink-0 mx-4 mt-3 px-4 py-2 rounded-2xl flex items-center gap-2"
-            style={{
-              background: daysLeft <= 1 ? "#FFD6EC" : "#C9EFDC",
-              color: daysLeft <= 1 ? "#9B4070" : "#2D7A55",
-            }}>
+            style={{ background: daysLeft <= 1 ? "#FFD6EC" : "#C9EFDC", color: daysLeft <= 1 ? "#9B4070" : "#2D7A55" }}>
             <span className="text-sm font-black">
-              {daysLeft <= 0
-                ? "⚠️ Masa sewa habis hari ini!"
-                : `⏳ Sisa ${daysLeft} hari sewa`}
+              {daysLeft <= 0 ? "⚠️ Masa sewa habis hari ini!" : `⏳ Sisa ${daysLeft} hari sewa`}
             </span>
             {agreement.endDate && (
-              <span className="text-xs ml-auto">
-                s/d {new Date(agreement.endDate).toLocaleDateString("id-ID")}
-              </span>
+              <span className="text-xs ml-auto">s/d {new Date(agreement.endDate).toLocaleDateString("id-ID")}</span>
             )}
           </div>
         )}
@@ -340,15 +310,14 @@ export default function ChatPage() {
               {agreement.durationDays && (
                 <span className="ml-2 font-normal" style={{ color: "#5DAA80" }}>
                   · {agreement.durationDays} hari
-                  {agreement.endDate &&
-                    ` · s/d ${new Date(agreement.endDate).toLocaleDateString("id-ID")}`}
+                  {agreement.endDate && ` · s/d ${new Date(agreement.endDate).toLocaleDateString("id-ID")}`}
                 </span>
               )}
             </div>
           </div>
         )}
 
-        {/* ── Action bar — semua aksi rental ada di sini ── */}
+        {/* Action bar */}
         {showActionBar && (
           <div className="flex-shrink-0 px-4 py-3 bg-white" style={{ borderBottom: "1px solid #E8DCFF" }}>
             {agLoading ? (
@@ -365,7 +334,6 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* Loading state action bar saat seller baru buka chat */}
         {!showActionBar && targetUser && agreement && agLoading && (
           <div className="flex-shrink-0 px-4 py-3 bg-white" style={{ borderBottom: "1px solid #E8DCFF" }}>
             <div className="w-full h-10 rounded-2xl animate-pulse" style={{ background: "#E8DCFF" }} />
@@ -380,9 +348,7 @@ export default function ChatPage() {
               <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
                 style={{ background: "#E8DCFF" }}>💬</div>
               <h3 className="font-black text-lg" style={{ color: "#3D2F6B" }}>Selamat datang di Pesan</h3>
-              <p className="text-sm max-w-xs" style={{ color: "#A89CC4" }}>
-                Pilih percakapan dari sidebar untuk mulai chat.
-              </p>
+              <p className="text-sm max-w-xs" style={{ color: "#A89CC4" }}>Pilih percakapan dari sidebar untuk mulai chat.</p>
             </div>
           ) : loading ? (
             Array(5).fill(0).map((_, i) => (
@@ -395,9 +361,7 @@ export default function ChatPage() {
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="text-4xl mb-3">✉️</div>
               <p className="font-bold" style={{ color: "#3D2F6B" }}>Belum ada pesan</p>
-              <p className="text-sm mt-1" style={{ color: "#A89CC4" }}>
-                Mulai percakapan dengan quick reply di bawah
-              </p>
+              <p className="text-sm mt-1" style={{ color: "#A89CC4" }}>Mulai percakapan dengan quick reply di bawah</p>
             </div>
           ) : messages.map(msg => (
             <MessageBubble
@@ -417,7 +381,7 @@ export default function ChatPage() {
               {QUICK_REPLIES.map(r => (
                 <button key={r} onClick={() => setText(r)}
                   className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full border font-bold whitespace-nowrap"
-                  style={{ borderColor: "#C9B8FF", color: "#9B87D9", background: "#FAF8FF" }}>
+                  style={{ borderColor: "#7C4DFF", color: "#7C4DFF", background: "#F3EEFF" }}>
                   {r}
                 </button>
               ))}
@@ -433,7 +397,7 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* ── Modals ── */}
+      {/* Modals */}
       {showGuarantee && (
         <GuaranteeModal
           buyerId={buyerId}
@@ -450,10 +414,7 @@ export default function ChatPage() {
       {showReview && (
         <ReviewModal
           rentalId={agreement?.id}
-          onSuccess={() => {
-            setShowReview(false);
-            fetchAgreement();
-          }}
+          onSuccess={() => { setShowReview(false); fetchAgreement(); }}
           onClose={() => setShowReview(false)}
         />
       )}

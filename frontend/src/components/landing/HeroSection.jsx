@@ -14,21 +14,7 @@ function HeroSection() {
       <nav className="flex justify-between items-center px-12 py-4" style={{background: 'rgba(255,255,255,0.12)', borderBottom: '1px solid rgba(255,255,255,0.15)'}}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{background: '#fff'}}>
-            <svg width="36" height="36" viewBox="0 0 36 36">
-              <ellipse cx="18" cy="21" rx="9" ry="7" fill="#E8E8E8"/>
-              <ellipse cx="18" cy="19" rx="6" ry="4" fill="#fff"/>
-              <circle cx="15" cy="17" r="2" fill="#2D1B69"/>
-              <circle cx="21" cy="17" r="2" fill="#2D1B69"/>
-              <circle cx="15.5" cy="16.5" r="0.8" fill="#fff"/>
-              <circle cx="21.5" cy="16.5" r="0.8" fill="#fff"/>
-              <ellipse cx="18" cy="20" rx="2" ry="1.2" fill="#FFB6C1"/>
-              <ellipse cx="14" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-              <ellipse cx="22" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-              <path d="M8 10 Q6 3 13 6 Q15 7 13 12 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
-              <path d="M28 10 Q30 3 23 6 Q21 7 23 12 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
-              <path d="M8 10 Q6 3 13 6 Q15 7 13 12 Z" fill="#FFB6C1" opacity="0.5"/>
-              <path d="M28 10 Q30 3 23 6 Q21 7 23 12 Z" fill="#FFB6C1" opacity="0.5"/>
-            </svg>
+            <img src="/logo.png" alt="Logo" className="w-5" />
           </div>
           <span className="font-black text-xl text-white" style={{letterSpacing: '-0.5px'}}>Rentopia</span>
         </div>

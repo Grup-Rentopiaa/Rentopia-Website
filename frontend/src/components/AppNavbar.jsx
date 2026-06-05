@@ -74,15 +74,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
         <Link to="/home" className="flex items-center gap-2 flex-shrink-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.2)' }}>
-            <svg width="22" height="22" viewBox="0 0 36 36">
-              <ellipse cx="18" cy="21" rx="9" ry="7" fill="#E8E8E8"/>
-              <ellipse cx="18" cy="19" rx="6" ry="4" fill="#fff"/>
-              <circle cx="15" cy="17" r="2" fill="#2D1B69"/>
-              <circle cx="21" cy="17" r="2" fill="#2D1B69"/>
-              <ellipse cx="18" cy="20" rx="2" ry="1.2" fill="#FFB6C1"/>
-              <ellipse cx="14" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-              <ellipse cx="22" cy="21.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-            </svg>
+            <img src="/logo.png" alt="Logo" />
           </div>
           <span className="text-lg font-black hidden sm:block text-white" style={{letterSpacing: '-0.5px'}}>
             Rentopia
@@ -169,10 +161,15 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
               style={{ background: dropdownOpen ? 'rgba(255,255,255,0.2)' : 'transparent' }}
               onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
               onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'transparent' }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
-                style={{ background: 'rgba(255,255,255,0.3)', color: '#fff' }}>
-                {initials}
-              </div>
+              {user?.avatarB64 ? (
+  <img src={user.avatarB64} className="w-7 h-7 rounded-full object-cover" alt="avatar"
+    style={{ border: '2px solid rgba(255,255,255,0.4)' }} />
+) : (
+  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+    style={{ background: 'rgba(255,255,255,0.3)', color: '#fff' }}>
+    {initials}
+  </div>
+)}
               <span className="text-sm font-bold hidden sm:block text-white">
                 {user?.username || "Pengguna"}
               </span>

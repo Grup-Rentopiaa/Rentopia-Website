@@ -52,9 +52,9 @@ export default function ChatList({ users, targetUser, onSelect, loading }) {
   return (
     <div className="flex-1 overflow-y-auto">
       {users.map(u => {
-        const initials    = (u.name || u.username || "?")[0].toUpperCase();
-        const color       = getAvatarColor(u.name || u.username || "");
-        const isActive    = targetUser?.id === u.id;
+        const initials = (u.name || u.username || "?")[0].toUpperCase();
+        const color    = getAvatarColor(u.name || u.username || "");
+        const isActive = targetUser?.id === u.id;
 
         return (
           <div
@@ -63,22 +63,28 @@ export default function ChatList({ users, targetUser, onSelect, loading }) {
             className="flex items-center gap-3 px-4 py-3.5 cursor-pointer border-b relative transition-colors"
             style={{
               borderColor: "#E8DCFF",
-              background: isActive ? "#FAF8FF" : "transparent",
-              borderRight: isActive ? "3px solid #C9B8FF" : "3px solid transparent",
+              background: isActive ? "#F3EEFF" : "transparent",
+              borderRight: isActive ? "3px solid #7C4DFF" : "3px solid transparent",
             }}
             onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#FAF8FF"; }}
             onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
           >
             {/* Avatar */}
-            <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black"
-              style={{ background: color, color: "#3D2F6B" }}>
-              {initials}
-            </div>
+            {u.avatarB64 ? (
+              <img src={u.avatarB64} alt={u.username}
+                className="w-11 h-11 rounded-full flex-shrink-0 object-cover"
+                style={{ border: '2px solid #E8DCFF' }} />
+            ) : (
+              <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black"
+                style={{ background: color, color: "#3D2F6B" }}>
+                {initials}
+              </div>
+            )}
 
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-bold truncate" style={{ color: isActive ? "#9B87D9" : "#3D2F6B" }}>
+                <span className="text-sm font-bold truncate" style={{ color: isActive ? "#7C4DFF" : "#3D2F6B" }}>
                   {u.name || u.username}
                 </span>
                 {u.last_time && (

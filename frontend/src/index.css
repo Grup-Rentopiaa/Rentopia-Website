@@ -60,8 +60,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #C9B8FF, #B09FEF);
-  color: #3D2F6B;
+  background: #7C4DFF;
+  color: #ffffff;
   font-weight: 700;
   padding: 12px 24px;
   border-radius: 14px;
@@ -72,9 +72,9 @@ body {
   font-size: 0.9rem;
 }
 .rp-btn-primary:hover {
-  background: linear-gradient(135deg, #B09FEF, #9B87D9);
+  background: #6B3FEE;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(180, 150, 255, 0.35);
+  box-shadow: 0 6px 20px rgba(124, 77, 255, 0.35);
 }
 .rp-btn-primary:active { transform: translateY(0) scale(0.98); }
 .rp-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
@@ -85,11 +85,11 @@ body {
   justify-content: center;
   gap: 8px;
   background: transparent;
-  color: #9B87D9;
+  color: #7C4DFF;
   font-weight: 700;
   padding: 11px 24px;
   border-radius: 14px;
-  border: 2px solid #C9B8FF;
+  border: 2px solid #7C4DFF;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;

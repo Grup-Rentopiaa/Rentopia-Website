@@ -240,20 +240,17 @@ export default function ProductDetailPage() {
 
             {/* Owner card */}
             {item.owner && (
-              <div className="rp-card p-5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-base flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B" }}>
-                  {(item.owner.username || "U")[0].toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-sm" style={{ color: "#3D2F6B" }}>{item.owner.username}</p>
-                  <p className="text-xs" style={{ color: "#A89CC4" }}>Pemilik Produk</p>
-                </div>
-                <button onClick={() => navigate(`/profile/${item.owner_id}`)} className="rp-btn-outline text-sm px-3 py-2">
-                  <User size={14} /> Profil
-                </button>
-              </div>
-            )}
+  <div className="rp-card p-5 flex items-center gap-4">
+    {item.owner.avatarB64 ? (
+      <img src={item.owner.avatarB64} alt={item.owner.username}
+        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+        style={{ border: "2px solid #E8DCFF" }} />
+    ) : (
+      <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-base flex-shrink-0"
+        style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B" }}>
+        {(item.owner.username || "U")[0].toUpperCase()}
+      </div>
+    )}
           </div>
         </div>
 

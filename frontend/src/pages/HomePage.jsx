@@ -231,7 +231,8 @@ export default function HomePage() {
                 <button onClick={() => setFilter({sort:'random', minPrice:'', maxPrice:''})}
                   className="rp-btn-outline text-sm py-2 flex-1">Reset</button>
                 <button onClick={() => setShowFilter(false)}
-                  className="rp-btn-primary text-sm py-2 flex-1">Terapkan</button>
+  className="text-sm py-2 flex-1 rounded-xl font-bold text-white transition-all"
+  style={{ background: '#7C4DFF' }}>Terapkan</button>
               </div>
             </div>
           )}
@@ -287,9 +288,7 @@ export default function HomePage() {
             <p className="text-sm mb-4" style={{color: '#888'}}>
               {search ? `Tidak ada hasil untuk "${search}"` : 'Jadilah yang pertama upload produk!'}
             </p>
-            <button onClick={() => {setSearch(''); setCategory('');}} className="rp-btn-primary">
-              Reset Pencarian
-            </button>
+            <button onClick={() => navigate('/upload')} className="rp-btn-primary">Upload Produk</button>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
