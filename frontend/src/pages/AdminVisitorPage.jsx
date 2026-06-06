@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Users, MapPin, TrendingUp, Globe } from "lucide-react";
+import { ArrowLeft, Download, Users, MapPin, TrendingUp, Globe, BarChart2 } from "lucide-react";
 import apiFetch from "../api";
 
 function StatCard({ icon, label, value, color }) {
@@ -18,7 +18,7 @@ function StatCard({ icon, label, value, color }) {
   )
 }
 
-function BarChart({ data, labelKey, valueKey, color = "#9B87D9" }) {
+function BarChart({ data, labelKey, valueKey, color = "#7C4DFF" }) {
   if (!data || data.length === 0) return (
     <p className="text-center py-8 text-sm" style={{ color: "#A89CC4" }}>Belum ada data</p>
   )
@@ -74,31 +74,25 @@ function LineChart({ data }) {
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ minWidth: 300 }}>
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#9B87D9" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#9B87D9" stopOpacity="0" />
+            <stop offset="0%" stopColor="#7C4DFF" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#7C4DFF" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
           <line key={i}
             x1={padX} y1={padY + t * chartH}
             x2={padX + chartW} y2={padY + t * chartH}
             stroke="#E8DCFF" strokeWidth="1" strokeDasharray="4,4" />
         ))}
-        {/* Area */}
         <path d={areaD} fill="url(#areaGrad)" />
-        {/* Line */}
-        <path d={pathD} fill="none" stroke="#9B87D9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        {/* Points */}
+        <path d={pathD} fill="none" stroke="#7C4DFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="4" fill="#9B87D9" stroke="white" strokeWidth="2" />
+            <circle cx={p.x} cy={p.y} r="4" fill="#7C4DFF" stroke="white" strokeWidth="2" />
           </g>
         ))}
-        {/* X labels — tampilkan setiap N label agar tidak penuh */}
         {points.filter((_, i) => i % Math.ceil(points.length / 6) === 0).map((p, i) => (
-          <text key={i} x={p.x} y={height - 4} textAnchor="middle"
-            fontSize="9" fill="#A89CC4">
+          <text key={i} x={p.x} y={height - 4} textAnchor="middle" fontSize="9" fill="#A89CC4">
             {p.date?.slice(5)}
           </text>
         ))}
@@ -143,17 +137,27 @@ export default function AdminVisitorPage() {
   }
 
   return (
-    <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
-      <nav className="rp-navbar">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-            style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)" }}>R</div>
-          <span className="font-black text-lg" style={{ color: "#9B87D9" }}>Rentopia Admin</span>
-          <span className="ml-2 rp-badge rp-badge-mint text-xs">Visitor Analytics</span>
+    <div className="min-h-screen" style={{ background: "#FAF8FF" }}>
+
+      {/* Navbar ungu */}
+      <nav style={{
+        background: '#7C4DFF',
+        borderBottom: '1px solid rgba(255,255,255,0.15)',
+        position: 'sticky', top: 0, zIndex: 100,
+      }}>
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3">
+          <img src="/logo.png" alt="Rentopia" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <span className="font-black text-lg text-white" style={{ letterSpacing: '-0.5px' }}>Rentopia</span>
+          <span className="text-xs font-bold px-3 py-1 rounded-full ml-1"
+            style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+            Admin Panel
+          </span>
         </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="rp-back-btn">
             <ArrowLeft size={16} /> Kembali
@@ -162,7 +166,7 @@ export default function AdminVisitorPage() {
             onClick={handleExportCSV}
             disabled={exporting || loading}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
-            style={{ background: "#C9EFDC", color: "#2D7A55" }}
+            style={{ background: "#7C4DFF", color: "#fff" }}
           >
             <Download size={15} />
             {exporting ? "Mengekspor..." : "Export CSV"}
@@ -170,12 +174,12 @@ export default function AdminVisitorPage() {
         </div>
 
         <div className="flex items-center gap-3 mb-6">
-          <TrendingUp size={24} style={{ color: "#9B87D9" }} />
+          <BarChart2 size={24} style={{ color: "#7C4DFF" }} />
           <h1 className="text-xl font-black" style={{ color: "#3D2F6B" }}>Data Pengunjung</h1>
         </div>
 
         {error && (
-          <div className="rp-card p-6 text-center">
+          <div className="rp-card p-6 text-center mb-6">
             <div className="text-4xl mb-3">⚠️</div>
             <p className="font-bold" style={{ color: "#3D2F6B" }}>Gagal memuat data</p>
             <p className="text-sm mt-1" style={{ color: "#A89CC4" }}>{error}</p>
@@ -193,7 +197,7 @@ export default function AdminVisitorPage() {
           <>
             {/* Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <StatCard icon={<Users size={20} />} label="Total Pengunjung" value={stats.total} color="#9B87D9" />
+              <StatCard icon={<Users size={20} />} label="Total Pengunjung" value={stats.total} color="#7C4DFF" />
               <StatCard icon={<TrendingUp size={20} />} label="Hari Aktif" value={stats.perDay.length} color="#2D7A55" />
               <StatCard icon={<MapPin size={20} />} label="Kota Unik" value={stats.perCity.length} color="#C9873D" />
               <StatCard icon={<Globe size={20} />} label="Negara Unik" value={stats.perCountry.length} color="#2660A4" />
@@ -206,25 +210,25 @@ export default function AdminVisitorPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              {/* Grafik per kota */}
               <div className="rp-card p-6">
                 <h2 className="font-black mb-4" style={{ color: "#3D2F6B" }}>Top Kota</h2>
-                <BarChart data={stats.perCity} labelKey="city" valueKey="count" color="#C9873D" />
+                <BarChart data={stats.perCity} labelKey="city" valueKey="count" color="#7C4DFF" />
               </div>
-
-              {/* Grafik per negara */}
               <div className="rp-card p-6">
                 <h2 className="font-black mb-4" style={{ color: "#3D2F6B" }}>Top Negara</h2>
-                <BarChart data={stats.perCountry} labelKey="country" valueKey="count" color="#2660A4" />
+                <BarChart data={stats.perCountry} labelKey="country" valueKey="count" color="#C9B8FF" />
               </div>
             </div>
 
-            {/* Tabel pengunjung lengkap */}
+            {/* Tabel */}
             <div className="rp-card overflow-hidden">
               <div className="px-6 py-4 border-b" style={{ borderColor: "#E8DCFF" }}>
                 <h2 className="font-black" style={{ color: "#3D2F6B" }}>Tabel Pengunjung</h2>
                 <p className="text-xs mt-0.5" style={{ color: "#A89CC4" }}>
-                  {stats.visitors.length} record · <button onClick={handleExportCSV} className="font-bold" style={{ color: "#9B87D9" }}>Download CSV</button>
+                  {stats.visitors.length} record ·{" "}
+                  <button onClick={handleExportCSV} className="font-bold" style={{ color: "#7C4DFF" }}>
+                    Download CSV
+                  </button>
                 </p>
               </div>
               <div className="overflow-x-auto">
@@ -245,7 +249,7 @@ export default function AdminVisitorPage() {
                       </tr>
                     ) : stats.visitors.slice(0, 50).map(v => (
                       <tr key={v.id} style={{ borderBottom: "1px solid #E8DCFF" }}>
-                        <td className="px-4 py-3 text-xs font-mono" style={{ color: "#9B87D9" }}>
+                        <td className="px-4 py-3 text-xs font-mono" style={{ color: "#7C4DFF" }}>
                           {v.visitor_id?.slice(0, 20)}...
                         </td>
                         <td className="px-4 py-3 text-xs" style={{ color: "#3D2F6B" }}>{v.page}</td>
