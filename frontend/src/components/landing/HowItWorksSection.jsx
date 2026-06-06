@@ -23,7 +23,7 @@ function HowItWorksSection() {
   ]
 
   return (
-    <section id="how-it-works"className="py-16 px-12" style={{background: '#F8F4FF'}}>
+    <section id="how-it-works" className="py-16 px-12" style={{background: '#F8F4FF'}}>
       <h2 className="font-black text-4xl mb-3" style={{color: '#1A1A2E', letterSpacing: '-1px'}}>
         Barang nganggur? <span style={{color: '#7C4DFF'}}>Jadi cuan.</span>
       </h2>

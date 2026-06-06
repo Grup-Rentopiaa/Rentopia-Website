@@ -74,7 +74,6 @@ export default function ProductDetailPage() {
     try { await likeItemService(id, user.id); } catch {}
   }
 
-  
   function handleChatAsBuyer() {
     if (!user) { navigate("/login"); return; }
     localStorage.setItem("targetChatId", String(item.owner_id));
@@ -89,7 +88,6 @@ export default function ProductDetailPage() {
     navigate("/chat");
   }
 
-  
   function handleChatAsSeller() {
     localStorage.removeItem("targetChatProduct");
     navigate("/chat");
@@ -134,7 +132,7 @@ export default function ProductDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* ── Gambar ── */}
+          {/* Gambar */}
           <div>
             <div className="rp-card overflow-hidden aspect-[4/3] relative">
               {item.image ? (
@@ -167,7 +165,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* ── Detail ── */}
+          {/* Detail */}
           <div className="flex flex-col gap-5">
             <div className="rp-card p-6">
               <h1 className="text-2xl font-black mb-2" style={{ color: "#3D2F6B" }}>{item.title}</h1>
@@ -240,26 +238,34 @@ export default function ProductDetailPage() {
 
             {/* Owner card */}
             {item.owner && (
-  <div className="rp-card p-5 flex items-center gap-4">
-    {item.owner.avatarB64 ? (
-      <img src={item.owner.avatarB64} alt={item.owner.username}
-        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-        style={{ border: "2px solid #E8DCFF" }} />
-    ) : (
-      <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-base flex-shrink-0"
-        style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B" }}>
-        {(item.owner.username || "U")[0].toUpperCase()}
-      </div>
-    )}
+              <div className="rp-card p-5 flex items-center gap-4">
+                {item.owner.avatarB64 ? (
+                  <img src={item.owner.avatarB64} alt={item.owner.username}
+                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                    style={{ border: "2px solid #E8DCFF" }} />
+                ) : (
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-base flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #C9B8FF, #FFD6EC)", color: "#3D2F6B" }}>
+                    {(item.owner.username || "U")[0].toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm" style={{ color: "#3D2F6B" }}>{item.owner.username}</p>
+                  <p className="text-xs" style={{ color: "#A89CC4" }}>Pemilik Produk</p>
+                </div>
+                <button onClick={() => navigate(`/profile/${item.owner_id}`)} className="rp-btn-outline text-sm px-3 py-2">
+                  <User size={14} /> Profil
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── Reviews ── */}
+        {/* Reviews */}
         <div className="mt-10">
           <h2 className="text-xl font-black mb-6" style={{ color: "#3D2F6B" }}>
             Ulasan ({reviews.length})
           </h2>
-          {/* Catatan: tombol tulis ulasan ada di ChatPage setelah sewa selesai */}
 
           {reviews.length === 0 ? (
             <div className="rp-card py-12 text-center">
@@ -305,12 +311,7 @@ export default function ProductDetailPage() {
                     {(r.photoB64 || r.photo_url) && (
                       <div style={{ width: 200, height: 200, marginTop: 12 }}>
                         <img src={r.photoB64 || r.photo_url} alt="review"
-                          style={{ 
-                            width: "100%", 
-                            height: "100%",
-                            objectFit: "cover",
-                            borderRadius: 12,
-                          }} />
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
                       </div>
                     )}
                   </div>
