@@ -5,13 +5,17 @@ import {
   Search, Upload, ChevronDown, Home, BarChart2,
 } from "lucide-react";
 import apiFetch from "../api";
+import { useUserContext } from "../context/UserContext";
+
+const BASE_URL = "http://localhost:3000";
 
 export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const { user, logout } = useUserContext();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [unreadCount,  setUnreadCount]  = useState(0);
-  const [localSearch,  setLocalSearch]  = useState(searchValue);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [localSearch, setLocalSearch] = useState(searchValue);
   const dropRef = useRef(null);
 
   useEffect(() => {
@@ -24,6 +28,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Notifikasi unread
   const fetchUnread = useCallback(async () => {
     if (!user?.id) return;
     try {
@@ -38,14 +43,44 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     return () => clearInterval(interval);
   }, [fetchUnread]);
 
+  // Chat unread — fetch awal
+  const fetchUnreadChat = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await apiFetch("/api/chat/unread-count");
+      setUnreadChatCount(data?.count || 0);
+    } catch {}
+  }, [user?.id]);
+
+  // Chat unread — real-time via SSE
+  useEffect(() => {
+    if (!user?.id) return;
+
+    fetchUnreadChat();
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const source = new EventSource(`${BASE_URL}/api/chat/sse?token=${token}`);
+
+    source.onmessage = (e) => {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload.message === "SSE connected") return;
+        if (payload.from !== user.id) {
+          fetchUnreadChat();
+        }
+      } catch {}
+    };
+
+    source.onerror = () => source.close();
+
+    return () => source.close();
+  }, [user?.id, fetchUnreadChat]);
+
   function handleLogout() {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-    if (storedUser?.id) {
-      localStorage.removeItem(`rentopia_wishlist_${storedUser.id}`);
-    }
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    logout();
     navigate("/", { replace: true });
   }
 
@@ -71,34 +106,32 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
     }}>
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
 
+        {/* Logo */}
         <Link to="/home" className="flex items-center gap-2 flex-shrink-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.2)' }}>
-            <img src="/logo.png" alt="Logo" />
+            <img src="/logo.png" alt="Logo" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           </div>
-          <span className="text-lg font-black hidden sm:block text-white" style={{letterSpacing: '-0.5px'}}>
+          <span className="text-lg font-black hidden sm:block text-white" style={{ letterSpacing: '-0.5px' }}>
             Rentopia
           </span>
         </Link>
 
+        {/* Search */}
         <div className="flex-1 max-w-lg">
           <div className="relative flex items-center">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ color: 'rgba(255,255,255,0.6)' }} />
+              style={{ color: '#9B87D9' }} />
             <input
-  id="navbar-search-input"
-  type="text"
-  placeholder="Cari barang atau pengguna..."
-  value={localSearch}
-  onChange={e => setLocalSearch(e.target.value)}
-  onKeyDown={handleSearchKeyDown}
-  className="w-full pl-10 pr-12 py-2.5 text-sm rounded-xl outline-none"
-  style={{
-    background: '#fff',
-    border: 'none',
-    color: '#3D2F6B',
-  }}
-/>
+              id="navbar-search-input"
+              type="text"
+              placeholder="Cari barang atau pengguna..."
+              value={localSearch}
+              onChange={e => setLocalSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="w-full pl-10 pr-12 py-2.5 text-sm rounded-xl outline-none"
+              style={{ background: '#fff', border: 'none', color: '#3D2F6B' }}
+            />
             <button
               id="navbar-search-btn"
               onClick={handleSearchButtonClick}
@@ -110,21 +143,43 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
           </div>
         </div>
 
+        {/* Actions */}
         <div className="flex items-center gap-1 ml-auto">
-          {[
-            { icon: <Home size={20} />, onClick: () => navigate("/home"), title: "Beranda" },
-            { icon: <MessageCircle size={20} />, onClick: () => navigate("/chat"), title: "Pesan" },
-            { icon: <Upload size={20} />, onClick: () => navigate("/upload"), title: "Upload" },
-          ].map((btn, i) => (
-            <button key={i} onClick={btn.onClick} title={btn.title}
-              className="p-2 rounded-xl transition-colors"
-              style={{ color: 'rgba(255,255,255,0.85)' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              {btn.icon}
-            </button>
-          ))}
 
+          {/* Beranda */}
+          <button onClick={() => navigate("/home")} title="Beranda"
+            className="p-2 rounded-xl transition-colors"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <Home size={20} />
+          </button>
+
+          {/* Chat dengan badge real-time */}
+          <button onClick={() => { navigate("/chat"); setUnreadChatCount(0); }} title="Pesan"
+            className="relative p-2 rounded-xl transition-colors"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <MessageCircle size={20} />
+            {unreadChatCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-[10px] font-black flex items-center justify-center"
+                style={{ background: "#FFB3D9", color: "#7B3F68" }}>
+                {unreadChatCount > 9 ? "9+" : unreadChatCount}
+              </span>
+            )}
+          </button>
+
+          {/* Upload */}
+          <button onClick={() => navigate("/upload")} title="Upload Produk"
+            className="p-2 rounded-xl transition-colors"
+            style={{ color: 'rgba(255,255,255,0.85)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <Upload size={20} />
+          </button>
+
+          {/* Wishlist */}
           <button onClick={() => navigate("/wishlist")}
             className="relative p-2 rounded-xl transition-colors"
             style={{ color: 'rgba(255,255,255,0.85)' }}
@@ -139,6 +194,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
             )}
           </button>
 
+          {/* Notifikasi */}
           <button id="navbar-bell-btn"
             onClick={() => { navigate("/notifications"); setUnreadCount(0); }}
             className="relative p-2 rounded-xl transition-colors"
@@ -154,6 +210,7 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
             )}
           </button>
 
+          {/* User dropdown */}
           <div className="relative" ref={dropRef}>
             <button id="navbar-user-menu-btn"
               onClick={() => setDropdownOpen(v => !v)}
@@ -162,14 +219,14 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
               onMouseEnter={e => { if (!dropdownOpen) e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
               onMouseLeave={e => { if (!dropdownOpen) e.currentTarget.style.background = 'transparent' }}>
               {user?.avatarB64 ? (
-  <img src={user.avatarB64} className="w-7 h-7 rounded-full object-cover" alt="avatar"
-    style={{ border: '2px solid rgba(255,255,255,0.4)' }} />
-) : (
-  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
-    style={{ background: 'rgba(255,255,255,0.3)', color: '#fff' }}>
-    {initials}
-  </div>
-)}
+                <img src={user.avatarB64} className="w-7 h-7 rounded-full object-cover" alt="avatar"
+                  style={{ border: '2px solid rgba(255,255,255,0.4)' }} />
+              ) : (
+                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
+                  style={{ background: 'rgba(255,255,255,0.3)', color: '#fff' }}>
+                  {initials}
+                </div>
+              )}
               <span className="text-sm font-bold hidden sm:block text-white">
                 {user?.username || "Pengguna"}
               </span>

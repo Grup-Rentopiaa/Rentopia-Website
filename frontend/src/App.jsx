@@ -1,9 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute  from "./components/PublicRoute";
 import CookieConsent from "./components/CookieConsent";
 import ErrorBoundary from "./components/ErrorBoundary";
-import ServerErrorPage  from "./pages/ServerErrorPage";
+import { UserProvider } from "./context/UserContext";
+
 import LandingPage         from "./pages/LandingPage";
 import LoginPage           from "./pages/LoginPage";
 import SignUpPage          from "./pages/SignUpPage";
@@ -27,49 +28,51 @@ import FollowersPage       from "./pages/FollowersPage";
 import FollowingPage       from "./pages/FollowingPage";
 import AdminVisitorPage    from "./pages/AdminVisitorPage";
 import NotFoundPage        from "./pages/NotFoundPage";
+import ServerErrorPage     from "./pages/ServerErrorPage";
 
 import "./index.css";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/admin/visitors" element={<AdminVisitorPage />} />
-          <Route path="/" element={
-            <PublicRoute>
-              <LandingPage />
-              <CookieConsent />
-            </PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><SignUpPage /></PublicRoute>} />
+      <UserProvider>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/admin/visitors" element={<AdminVisitorPage />} />
+            <Route path="/" element={
+              <PublicRoute>
+                <LandingPage />
+                <CookieConsent />
+              </PublicRoute>} />
+            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><SignUpPage /></PublicRoute>} />
 
-          <Route path="/verify-otp" element={<VerifyOtpPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/verify-otp-forgot" element={<VerifyOtpForgotPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-otp" element={<VerifyOtpPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/verify-otp-forgot" element={<VerifyOtpForgotPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-          <Route path="/home"        element={<PrivateRoute><HomePage /></PrivateRoute>} />
-          <Route path="/search"      element={<PrivateRoute><SearchPage /></PrivateRoute>} />
-          <Route path="/products"    element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
-          <Route path="/chat"        element={<PrivateRoute><ChatPage /></PrivateRoute>} />
-          <Route path="/offer"       element={<PrivateRoute><OfferPage /></PrivateRoute>} />
-          <Route path="/profile"     element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
-          <Route path="/profile/:id" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
-          <Route path="/profile/:userId/followers" element={<PrivateRoute><FollowersPage /></PrivateRoute>} />
-          <Route path="/profile/:userId/following" element={<PrivateRoute><FollowingPage /></PrivateRoute>} />
-          <Route path="/dashboard"   element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-          <Route path="/wishlist"    element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
-          <Route path="/upload"      element={<PrivateRoute><UploadPage /></PrivateRoute>} />
-          <Route path="/product/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
-          <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
-          <Route path="/admin/guarantees" element={<PrivateRoute><AdminGuaranteesPage /></PrivateRoute>} />
+            <Route path="/home"        element={<PrivateRoute><HomePage /></PrivateRoute>} />
+            <Route path="/search"      element={<PrivateRoute><SearchPage /></PrivateRoute>} />
+            <Route path="/products"    element={<PrivateRoute><ProductsPage /></PrivateRoute>} />
+            <Route path="/chat"        element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+            <Route path="/offer"       element={<PrivateRoute><OfferPage /></PrivateRoute>} />
+            <Route path="/profile"     element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
+            <Route path="/profile/:id" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
+            <Route path="/profile/:userId/followers" element={<PrivateRoute><FollowersPage /></PrivateRoute>} />
+            <Route path="/profile/:userId/following" element={<PrivateRoute><FollowingPage /></PrivateRoute>} />
+            <Route path="/dashboard"   element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+            <Route path="/wishlist"    element={<PrivateRoute><WishlistPage /></PrivateRoute>} />
+            <Route path="/upload"      element={<PrivateRoute><UploadPage /></PrivateRoute>} />
+            <Route path="/product/:id" element={<PrivateRoute><ProductDetailPage /></PrivateRoute>} />
+            <Route path="/notifications" element={<PrivateRoute><NotificationsPage /></PrivateRoute>} />
+            <Route path="/admin/guarantees" element={<PrivateRoute><AdminGuaranteesPage /></PrivateRoute>} />
 
-          <Route path="/error-500"  element={<ServerErrorPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-          
-        </Routes>
-      </ErrorBoundary>
+            <Route path="/error-500" element={<ServerErrorPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </ErrorBoundary>
+      </UserProvider>
     </BrowserRouter>
   );
 }

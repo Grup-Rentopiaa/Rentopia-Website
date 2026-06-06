@@ -2,14 +2,15 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useUserContext } from "../context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { loading, error, login } = useAuth();
+  const { loading, error, login: authLogin } = useAuth();
+  const { login } = useUserContext();
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -27,11 +28,9 @@ export default function LoginPage() {
     const errs = validate();
     if (Object.keys(errs).length) { setFieldErrors(errs); return; }
     setFieldErrors({});
-    const result = await login({ email, password });
+    const result = await authLogin({ email, password });
     if (result) {
-      localStorage.clear();
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("user",  JSON.stringify(result.user));
+      login(result.user, result.token);
       navigate("/home", { replace: true });
     }
   }
@@ -39,29 +38,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
 
-      {/* Kiri - Ungu dengan Reni */}
+      {/* Kiri */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden" style={{background: '#7C4DFF'}}>
-
         <div style={{position:'absolute', top:'-60px', left:'-60px', width:'250px', height:'250px', background:'rgba(255,255,255,0.06)', borderRadius:'50%'}}></div>
         <div style={{position:'absolute', bottom:'-80px', right:'-80px', width:'300px', height:'300px', background:'rgba(255,255,255,0.06)', borderRadius:'50%'}}></div>
-        <div style={{position:'absolute', top:'40%', left:'-40px', width:'150px', height:'150px', background:'rgba(255,255,255,0.04)', borderRadius:'50%'}}></div>
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background:'rgba(255,255,255,0.2)'}}>
-              <svg width="28" height="28" viewBox="0 0 28 28">
-                <ellipse cx="14" cy="17" rx="8" ry="6" fill="#E0E0E0"/>
-                <ellipse cx="14" cy="15" rx="7" ry="5" fill="#fff"/>
-                <circle cx="11" cy="13" r="1.5" fill="#2D1B69"/>
-                <circle cx="17" cy="13" r="1.5" fill="#2D1B69"/>
-                <ellipse cx="14" cy="15" rx="2" ry="1.2" fill="#FFB6C1"/>
-                <ellipse cx="10.5" cy="16.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-                <ellipse cx="17.5" cy="16.5" rx="2.5" ry="1.2" fill="#FFB6C1"/>
-                <path d="M6 8 Q4 2 10 5 Q12 6 10 9 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
-                <path d="M22 8 Q24 2 18 5 Q16 6 18 9 Z" fill="#fff" stroke="#E0E0E0" strokeWidth="0.5"/>
-                <path d="M6 8 Q4 2 10 5 Q12 6 10 9 Z" fill="#FFB6C1" opacity="0.5"/>
-                <path d="M22 8 Q24 2 18 5 Q16 6 18 9 Z" fill="#FFB6C1" opacity="0.5"/>
-              </svg>
+              <img src="/logo.png" alt="Rentopia" style={{width: 28, height: 28, objectFit: 'contain'}} />
             </div>
             <span className="font-black text-xl text-white">Rentopia</span>
           </div>
@@ -91,8 +76,6 @@ export default function LoginPage() {
             <path d="M218 272 Q237 247 223 218 Q210 192 197 202 Q204 233 201 268 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
             <path d="M76 308 Q62 332 71 350 Q80 360 94 350 Q103 332 94 308 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
             <path d="M244 308 Q258 332 249 350 Q240 360 226 350 Q217 332 226 308 Z" fill="#E8E8E8" stroke="#D0D0D0" strokeWidth="0.5"/>
-            <circle cx="240" cy="155" r="22" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" strokeWidth="1"/>
-            <text x="240" y="161" textAnchor="middle" fontSize="14" fill="rgba(255,255,255,0.8)">👋</text>
           </svg>
         </div>
 
@@ -111,9 +94,7 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
 
           <div className="lg:hidden flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{background: '#7C4DFF'}}>
-              <span className="text-white font-black text-sm">R</span>
-            </div>
+            <img src="/logo.png" alt="Rentopia" style={{width: 32, height: 32, objectFit: 'contain'}} />
             <span className="font-black text-lg" style={{color: '#7C4DFF'}}>Rentopia</span>
           </div>
 
@@ -187,9 +168,8 @@ export default function LoginPage() {
             className="w-full mt-6 text-sm font-semibold flex items-center justify-center gap-2"
             style={{color: '#888'}}
           >
-            ← Kembali ke Landing Page
+            Kembali ke Landing Page
           </button>
-
         </div>
       </div>
     </div>

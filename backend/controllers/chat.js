@@ -115,5 +115,38 @@ const sseConnect = (req, res) => {
         res.status(401).json({ error: "Unauthorized" });
     }
 };
+const getUnreadCount = async (req, res) => {
+  try {
+    const auth = getAuthPayload(req);
+    const count = await prisma.message.count({
+      where: {
+        receiver_id: auth.id,
+        is_read: false,
+        is_system: false,
+      }
+    });
+    res.status(200).json({ count });
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+};
 
-module.exports = { getUsers, getMessages, sendMessage, pollMessage, sseConnect };
+const markMessagesRead = async (req, res) => {
+  try {
+    const auth = getAuthPayload(req);
+    const senderId = Number(req.params.id);
+    await prisma.message.updateMany({
+      where: {
+        sender_id: senderId,
+        receiver_id: auth.id,
+        is_read: false,
+      },
+      data: { is_read: true }
+    });
+    res.status(200).json({ message: "Pesan ditandai sudah dibaca" });
+  } catch {
+    res.status(401).json({ error: "Unauthorized" });
+  }
+};
+
+module.exports = { getUsers, getMessages, sendMessage, pollMessage, sseConnect, getUnreadCount, markMessagesRead };

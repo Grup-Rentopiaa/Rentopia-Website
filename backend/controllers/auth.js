@@ -34,15 +34,16 @@ const login = async (req, res) => {
     res.cookie('token', token, {httpOnly: true, secure: true})
     
     res.status(200).json({
-        message: 'login berhasil',
-        token,
-        user: {
-            id: existingUser.id,
-            username: existingUser.username,
-            email: existingUser.email,
-            isAdmin: existingUser.isAdmin
-        }
-    })
+  message: 'login berhasil',
+  token,
+  user: {
+    id: existingUser.id,
+    username: existingUser.username,
+    email: existingUser.email,
+    isAdmin: existingUser.isAdmin,
+    avatarB64: existingUser.avatarB64,  // ← tambahkan ini
+  }
+})
 }
 const verifyOtp = async (req, res) => {
     const {otp} = req.body

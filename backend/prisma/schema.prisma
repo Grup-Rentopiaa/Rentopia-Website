@@ -223,6 +223,7 @@ model Message {
   sender_id   Int?
   receiver_id Int
   is_system   Boolean  @default(false) @map("is_system")
+  is_read     Boolean  @default(false)
   sender      Users?   @relation("SentMessages", fields: [sender_id], references: [id])
   receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
   isi_pesan   String

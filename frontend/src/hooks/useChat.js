@@ -4,6 +4,7 @@ import {
   getUsersService,
   sendMessageService,
 } from "../services/chatService";
+import apiFetch from "../api";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -13,20 +14,27 @@ function useChat(myId) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(true);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const sseRef = useRef(null);
   const targetUserRef = useRef(null);
 
-  
   useEffect(() => {
     targetUserRef.current = targetUser;
   }, [targetUser]);
+
+  const fetchUnreadChatCount = useCallback(async () => {
+    if (!myId) return;
+    try {
+      const data = await apiFetch("/api/chat/unread-count");
+      setUnreadChatCount(data?.count || 0);
+    } catch {}
+  }, [myId]);
 
   const connectSSE = useCallback(() => {
     if (!myId) return;
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    
     if (sseRef.current) {
       sseRef.current.close();
     }
@@ -38,7 +46,6 @@ function useChat(myId) {
       try {
         const payload = JSON.parse(e.data);
 
-        
         if (payload.message === "SSE connected") return;
 
         if (payload.type === "agreement_update" || payload.type === "rental_request") {
@@ -48,6 +55,12 @@ function useChat(myId) {
         }
 
         const current = targetUserRef.current;
+
+        // Ada pesan masuk — update unread count
+        if (payload.from !== myId) {
+          fetchUnreadChatCount();
+        }
+
         if (!current) return;
 
         const isSystemMsg = payload.from === null && payload.is_system === true;
@@ -55,7 +68,6 @@ function useChat(myId) {
 
         if (isSystemMsg || isFromCurrent) {
           setMessages((prev) => {
-            
             const alreadyExists = prev.some(
               (m) =>
                 m.isi_pesan === payload.text &&
@@ -77,14 +89,12 @@ function useChat(myId) {
           });
         }
 
-        
         loadUsers(false);
       } catch (_) {}
     };
 
     source.onerror = () => {
       source.close();
-      
       setTimeout(() => connectSSE(), 3000);
     };
 
@@ -100,7 +110,6 @@ function useChat(myId) {
       const savedTargetId = Number(localStorage.getItem("targetChatId"));
       setTargetUser((prev) => {
         if (prev) {
-          
           const updated = result.find((u) => u.id === prev.id);
           return updated || prev;
         }
@@ -123,6 +132,9 @@ function useChat(myId) {
     try {
       const result = await getMessagesService(targetId);
       setMessages(Array.isArray(result) ? result : []);
+      // Mark pesan dari targetId sebagai sudah dibaca
+      await apiFetch(`/api/chat/messages/${targetId}/read`, { method: "PUT" }).catch(() => {});
+      fetchUnreadChatCount();
     } catch (error) {
       console.error("LOAD MESSAGES ERROR:", error);
       setMessages([]);
@@ -135,7 +147,6 @@ function useChat(myId) {
     if (!targetUser?.id || !text.trim()) return false;
     const trimmed = text.trim();
 
-   
     const optimistic = {
       pesan_id: `opt_${Date.now()}`,
       sender_id: myId,
@@ -150,7 +161,6 @@ function useChat(myId) {
       return true;
     } catch (error) {
       console.error("SEND MESSAGE ERROR:", error);
-      
       setMessages((prev) =>
         prev.filter((m) => m.pesan_id !== optimistic.pesan_id)
       );
@@ -167,6 +177,7 @@ function useChat(myId) {
     if (myId) {
       loadUsers();
       connectSSE();
+      fetchUnreadChatCount();
     }
     return () => {
       if (sseRef.current) sseRef.current.close();
@@ -184,6 +195,7 @@ function useChat(myId) {
     messages,
     loading,
     usersLoading,
+    unreadChatCount,
     sendMessage,
     chooseUser,
     refreshMessages: loadMessages,
