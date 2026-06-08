@@ -11,9 +11,93 @@ const {
   clearWishlist
 } = require('../models/item')
 const { prisma } = require('../lib/prisma')
+const { getCityCoords, haversine } = require('../utils/cityCoords')
 
 const getItems = async (req, res) => {
   try {
+    const { sort, userId } = req.query
+
+    // Kalau nearest, lookup koordinat user dulu
+    if (sort === 'nearest') {
+  console.log('========== NEAREST REQUEST ==========')
+  console.log('QUERY:', req.query)
+
+  if (!userId) {
+    console.log('ERROR: userId kosong')
+    return res.status(200).json({ empty: true, reason: 'no_city' })
+  }
+
+  const user = await prisma.users.findUnique({
+    where: { id: parseInt(userId) },
+    select: { city: true }
+  })
+
+  console.log('USER:', user)
+
+  if (!user?.city) {
+    console.log('ERROR: user.city kosong')
+    return res.status(200).json({ empty: true, reason: 'no_city' })
+  }
+
+  const userCoords = await getCityCoords(user.city)
+
+  console.log('USER CITY:', user.city)
+  console.log('USER COORDS:', userCoords)
+
+  if (!userCoords) {
+    console.log('ERROR: kota user tidak ditemukan')
+    return res.status(200).json({ empty: true, reason: 'city_not_found' })
+  }
+
+  const items = await findAllItems({
+    ...req.query,
+    sort: 'random'
+  })
+
+  console.log('TOTAL ITEMS:', items.length)
+
+  if (items.length > 0) {
+    console.log('FIRST ITEM:')
+    console.dir(items[0], { depth: null })
+  }
+
+  const withDistance = await Promise.all(
+    items.map(async (item, index) => {
+
+      console.log(`\nITEM #${index + 1}`)
+      console.log('ID:', item.id)
+      console.log('LOCATION:', item.location)
+
+      const itemCoords = await getCityCoords(item.location)
+
+      console.log('ITEM COORDS:', itemCoords)
+
+      const distance = itemCoords
+        ? haversine(
+            userCoords.lat,
+            userCoords.lng,
+            itemCoords.lat,
+            itemCoords.lng
+          )
+        : Infinity
+
+      console.log('DISTANCE:', distance)
+
+      return {
+        ...item,
+        distance
+      }
+    })
+  )
+
+  withDistance.sort((a, b) => a.distance - b.distance)
+
+  console.log('SORTED SUCCESS')
+  console.log('RESULT COUNT:', withDistance.length)
+
+  return res.status(200).json(withDistance)
+}
+
     const items = await findAllItems(req.query)
     res.status(200).json(items)
   } catch (err) {
@@ -98,12 +182,12 @@ const likeItem = async (req, res) => {
 
 const clearAllLikedItems = async (req, res) => {
   try {
-    const userId = req.query.userId || req.body.userId;
-    if (!userId) return res.status(400).json({ message: 'User ID diperlukan' });
-    const result = await clearWishlist(userId);
-    res.json(result);
+    const userId = req.query.userId || req.body.userId
+    if (!userId) return res.status(400).json({ message: 'User ID diperlukan' })
+    const result = await clearWishlist(userId)
+    res.json(result)
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message })
   }
 }
 
@@ -127,8 +211,8 @@ const getReviews = async (req, res) => {
         user: { select: { username: true, name: true, avatarB64: true } }
       },
       orderBy: { createdAt: 'desc' }
-    });
-    res.json(reviews);
+    })
+    res.json(reviews)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -138,35 +222,30 @@ const createReview = async (req, res) => {
   try {
     const itemId = parseInt(req.params.id)
     const userId = parseInt(req.body.userId)
-    const { rating, comment } = req.body;
-    
-    if (!userId || !rating || !comment) return res.status(400).json({ message: 'Missing fields' });
+    const { rating, comment } = req.body
+
+    if (!userId || !rating || !comment) return res.status(400).json({ message: 'Missing fields' })
 
     const review = await prisma.review.create({
-      data: {
-        itemId,
-        userId,
-        rating: parseInt(rating),
-        comment
-      }
-    });
+      data: { itemId, userId, rating: parseInt(rating), comment }
+    })
 
-    const allReviews = await prisma.review.findMany({ where: { itemId } });
+    const allReviews = await prisma.review.findMany({ where: { itemId } })
     if (allReviews.length > 0) {
-      const item = await prisma.item.findUnique({ where: { id: itemId } });
+      const item = await prisma.item.findUnique({ where: { id: itemId } })
       if (item && item.owner_id) {
-        const ownerReviews = await prisma.review.findMany({ 
-          where: { item: { owner_id: item.owner_id } } 
-        });
-        const avgRating = ownerReviews.reduce((sum, r) => sum + r.rating, 0) / ownerReviews.length;
+        const ownerReviews = await prisma.review.findMany({
+          where: { item: { owner_id: item.owner_id } }
+        })
+        const avgRating = ownerReviews.reduce((sum, r) => sum + r.rating, 0) / ownerReviews.length
         await prisma.users.update({
           where: { id: item.owner_id },
           data: { rating: avgRating }
-        });
+        })
       }
     }
 
-    res.status(201).json(review);
+    res.status(201).json(review)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

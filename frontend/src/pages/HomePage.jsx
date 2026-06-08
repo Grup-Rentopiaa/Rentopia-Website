@@ -32,18 +32,20 @@ export default function HomePage() {
   const [followingItems,   setFollowingItems]   = useState([]);
   const [followingLoading, setFollowingLoading] = useState(false);
 
-  const { items, loading } = useProducts(search, category, filter, user?.id);
+  // FIX: destructure noCityError dari useProducts
+  const { items, loading, noCityError } = useProducts(search, category, filter, user?.id);
 
   useEffect(() => {
     const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
   }, []);
 
+  // FIX: tambah user?.id di dependency array
   useEffect(() => {
-    if (recommendTab === 'semua')    setFilter(p => ({ ...p, sort: 'random',   filter: null }));
-    if (recommendTab === 'trending') setFilter(p => ({ ...p, sort: 'trending', filter: null }));
-    if (recommendTab === 'terdekat') setFilter(p => ({ ...p, sort: 'nearest',  filter: null }));
-  }, [recommendTab]);
+    if (recommendTab === 'semua')    setFilter(p => ({ ...p, sort: 'random',   userId: null }));
+    if (recommendTab === 'trending') setFilter(p => ({ ...p, sort: 'trending', userId: null }));
+    if (recommendTab === 'terdekat') setFilter(p => ({ ...p, sort: 'nearest',  userId: user?.id ?? null }));
+  }, [recommendTab, user?.id]);
 
   useEffect(() => {
     if (recommendTab !== 'diikuti' || !user?.id) return;
@@ -231,8 +233,8 @@ export default function HomePage() {
                 <button onClick={() => setFilter({sort:'random', minPrice:'', maxPrice:''})}
                   className="rp-btn-outline text-sm py-2 flex-1">Reset</button>
                 <button onClick={() => setShowFilter(false)}
-  className="text-sm py-2 flex-1 rounded-xl font-bold text-white transition-all"
-  style={{ background: '#7C4DFF' }}>Terapkan</button>
+                  className="text-sm py-2 flex-1 rounded-xl font-bold text-white transition-all"
+                  style={{ background: '#7C4DFF' }}>Terapkan</button>
               </div>
             </div>
           )}
@@ -279,6 +281,22 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+        // FIX: tampilkan pesan khusus kalau noCityError (kota user belum diisi)
+        ) : recommendTab === 'terdekat' && noCityError ? (
+          <div className="rp-card py-16 text-center">
+            <div className="text-5xl mb-3">📍</div>
+            <h3 className="font-black text-base mb-1" style={{color: '#1A1A2E'}}>
+              Kota kamu belum diatur
+            </h3>
+            <p className="text-sm mb-4" style={{color: '#888'}}>
+              Lengkapi profil kamu dengan kota tempat tinggal agar fitur Terdekat bisa bekerja.
+            </p>
+            <button onClick={() => navigate('/profile')} className="rp-btn-primary">
+              Lengkapi Profil
+            </button>
+          </div>
+
         ) : displayItems.length === 0 ? (
           <div className="rp-card py-16 text-center">
             <div className="text-5xl mb-3">🔍</div>

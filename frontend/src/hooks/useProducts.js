@@ -4,46 +4,46 @@ import { saveCatalogToIndexedDB, getCatalogFromIndexedDB, triggerDataChanged } f
 
 const DEBOUNCE_MS = 300;
 
-export default function useProducts(search, category, filter, followerId) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function useProducts(search, category, filter, userId) {
+  const [items,       setItems]       = useState([]);
+  const [loading,     setLoading]     = useState(false);
+  const [noCityError, setNoCityError] = useState(false);
   const debounceTimer = useRef(null);
 
-  const loadItems = useCallback(async (searchVal, categoryVal, filterVal, follower) => {
+  const loadItems = useCallback(async (searchVal, categoryVal, filterVal, uid) => {
     setLoading(true);
+    setNoCityError(false);
     try {
       const params = new URLSearchParams();
       if (searchVal?.trim()) params.set('search', searchVal.trim());
-      if (categoryVal) params.set('category', categoryVal);
-      
-      
-      if (filterVal?.sort) {
-        params.set('sort', filterVal.sort);
-      }
-      
-      if (filterVal?.filter === 'following' && follower) {
-        params.set('followerId', follower);
+      if (categoryVal)       params.set('category', categoryVal);
+      if (filterVal?.sort)   params.set('sort', filterVal.sort);
+
+      if (filterVal?.filter === 'following' && uid) {
+        params.set('followerId', uid);
       }
 
       if (filterVal?.minPrice) params.set('min_price', filterVal.minPrice);
       if (filterVal?.maxPrice) params.set('max_price', filterVal.maxPrice);
-      
-      
-      if (filterVal?.sort === 'nearest' && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          params.set('lat', pos.coords.latitude);
-          params.set('lng', pos.coords.longitude);
-          const data = await apiFetch(`/api/items?${params.toString()}`);
-          setItems(data);
-        });
+
+      // Nearest — pakai userId + kota, bukan GPS
+      if (filterVal?.sort === 'nearest') {
+        if (uid) params.set('userId', uid);
+        const data = await apiFetch(`/api/items?${params.toString()}`);
+        if (data?.empty) {
+          setNoCityError(data.reason || 'no_city');
+          setItems([]);
+        } else {
+          setItems(Array.isArray(data) ? data : []);
+        }
+        return;
       }
 
       const data = await apiFetch(`/api/items?${params.toString()}`);
-      setItems(data);
-
-      await saveCatalogToIndexedDB(data);
+      setItems(Array.isArray(data) ? data : []);
+      await saveCatalogToIndexedDB(Array.isArray(data) ? data : []);
     } catch {
-      
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -52,11 +52,10 @@ export default function useProducts(search, category, filter, followerId) {
   useEffect(() => {
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      loadItems(search, category, filter, followerId);
+      loadItems(search, category, filter, userId);
     }, DEBOUNCE_MS);
-
     return () => clearTimeout(debounceTimer.current);
-  }, [search, category, filter, followerId, loadItems]);
+  }, [search, category, filter, userId, loadItems]);
 
-  return { items, loading };
+  return { items, loading, noCityError };
 }
