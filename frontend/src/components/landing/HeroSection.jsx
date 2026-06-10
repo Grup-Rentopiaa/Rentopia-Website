@@ -20,11 +20,12 @@ function HeroSection() {
         </div>
 
         <div className="flex gap-7 text-sm font-medium" style={{color: 'rgba(255,255,255,0.9)'}}>
-          <span className="cursor-pointer hover:text-white" onClick={() => scrollTo('how-it-works')}>About</span>
-          <span className="cursor-pointer hover:text-white" onClick={() => navigate('/upload')}>Sewakan</span>
-          <span className="cursor-pointer hover:text-white">Harga</span>
-          <span className="cursor-pointer hover:text-white">Tentang</span>
-        </div>
+  <span className="cursor-pointer hover:text-white" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>Get Started</span>
+  <span className="cursor-pointer hover:text-white" onClick={() => scrollTo('how-it-works')}>About</span>
+  <span className="cursor-pointer hover:text-white" onClick={() => scrollTo('reviews')}>Review</span>
+  <span className="cursor-pointer hover:text-white" onClick={() => scrollTo('how-to-rent')}>How to Rent</span>
+  <span className="cursor-pointer hover:text-white" onClick={() => scrollTo('contact')}>Contact</span>
+</div>
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate('/login')} className="rounded-full text-white border-white/50 hover:bg-white/20 bg-white/20">
@@ -50,7 +51,7 @@ function HeroSection() {
           padding: '48px',
         }}>
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold text-white w-fit" style={{background: 'rgba(255,255,255,0.25)', border: '1.5px solid rgba(255,255,255,0.5)'}}>
-            Platform Sewa Barang #1 Indonesia
+            Platform Sewa Barang #1 Asia
           </div>
 
           <h1 className="font-black text-white" style={{fontSize: '52px', lineHeight: '1.05', letterSpacing: '-2px', margin: 0}}>

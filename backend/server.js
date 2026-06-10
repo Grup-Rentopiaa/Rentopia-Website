@@ -13,10 +13,14 @@ const wss = new WebSocket.Server({ server })
 
 app.use(helmet())
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', /^http:\/\/192\.168\./],
+  origin: ['http://localhost:5173', 'http://localhost:5174', /^http:\/\/20\.5\./],
   credentials: true
 }))
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }))
+app.use(rateLimit({ 
+  windowMs: 15 * 60 * 1000, 
+  max: 500,
+  skip: (req) => req.path.includes('/sse') || req.path.includes('/rental') || req.path.includes('/chat')
+}))
 app.use(express.json({ limit: '10mb' }))
 
 // ── Load semua routes ──

@@ -15,7 +15,7 @@ export default function Hero() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 mb-6">
               <Zap className="h-4 w-4 fill-purple-600 text-purple-600" />
-              Platform Sewa #1 di Indonesia
+              Platform Sewa #1 se Asia
             </div>
 
             <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">

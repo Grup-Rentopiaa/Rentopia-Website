@@ -9,7 +9,7 @@ function StatsSection() {
   ]
 
   return (
-    <section className="py-10 px-12" style={{background: '#fff'}}>
+    <section id="reviews"  className="py-10 px-12" style={{background: '#fff'}}>
       <div className="grid grid-cols-4 gap-3">
         {stats.map(s => (
           <div key={s.num} className="rounded-2xl p-5 text-center" style={{background: '#F3EEFF', border: '2.5px solid #7C4DFF'}}>
