@@ -10,25 +10,27 @@
 ```bash
 git clone https://github.com/Grup-Rentopiaa/Rentopia-Website.git
 cd Rentopia-Website
+cd backend
+npm install
+npx prisma db push
+cd ..
+cd frontend
+npm install
+cd ..
+npm install 
 ```
- 
- 
+
 ### Jalankan Database dengan Docker
+buka docker desktop
 
 ```bash
 docker compose up -d
 ```
+klik frontend
 
 ---
 
-### Jalankan Backend
 
-```bash
-cd backend
-npm install
-npx prisma db push
-npm start
-```
 
 API berjalan di `http://localhost:3000`.
 

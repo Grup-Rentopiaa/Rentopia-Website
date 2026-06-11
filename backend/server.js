@@ -13,7 +13,7 @@ const wss = new WebSocket.Server({ server })
 
 app.use(helmet())
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', /^http:\/\/192\.168\./],
+  origin: ['http://localhost:5173', 'http://localhost:5174', /^http:\/\/20\.5\./],
   credentials: true
 }))
 app.use(rateLimit({ 
