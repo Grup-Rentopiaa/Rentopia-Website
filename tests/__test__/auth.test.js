@@ -35,7 +35,7 @@ const {
 } = require('../../backend/models/user')
 
 const sendEmail = require('../../backend/utils/sendEmail')
-const { prisma } = require('../../backend/lib/prisma')
+const { prisma } = require('../../backend/config/prisma')
 
 const mockReq = (body = {}, headers = {}) => ({ body, headers })
 const mockRes = () => {
