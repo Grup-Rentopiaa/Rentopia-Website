@@ -3,7 +3,6 @@
  
 - [Node.js](https://nodejs.org/) v18+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/) — `npm install -g expo-cli`
 ---
  
 ### 1. Clone the Repository
@@ -13,6 +12,27 @@ git clone https://github.com/Grup-Rentopiaa/Rentopia-Website.git
 cd Rentopia-Website
 ```
  
+ 
+### Jalankan Database dengan Docker
+
+```bash
+docker compose up -d
+```
+
+---
+
+### Jalankan Backend
+
+```bash
+cd backend
+npm install
+npx prisma db push
+npm start
+```
+
+API berjalan di `http://localhost:3000`.
+
+---
 ---
 # Use an application
 
