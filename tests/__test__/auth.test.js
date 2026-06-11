@@ -21,7 +21,7 @@ const {
   verifyOtpForgot,
   resetPassword,
   getMe
-} = require('../controllers/auth')
+} = require('../../backend/controllers/auth')
 
 const {
   findByEmail,
@@ -32,10 +32,10 @@ const {
   findAuthByOtp,
   updatePassword,
   findById
-} = require('../models/user')
+} = require('../../backend/models/user')
 
-const sendEmail = require('../utils/sendEmail')
-const { prisma } = require('../lib/prisma')
+const sendEmail = require('../../backend/utils/sendEmail')
+const { prisma } = require('../../backend/lib/prisma')
 
 const mockReq = (body = {}, headers = {}) => ({ body, headers })
 const mockRes = () => {

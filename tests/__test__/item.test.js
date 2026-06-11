@@ -36,15 +36,15 @@ getItems, getLikedItems, getItemById, getCategories,
 createNewItem, updateExistingItem, removeExistingItem,
 likeItem, clearAllLikedItems, updateStatus,
 getReviews, createReview, getFollowingFeed,
-} = require('../controllers/item')
+} = require('../../backend/controllers/item')
 
 const {
 findAllItems, findLikedItems, findItemById, findAllCategories,
 createItem, updateItem, deleteItem, toggleLike,
 updateItemStatus, clearWishlist,
-} = require('../models/item')
+} = require('../../backend/models/item')
 
-const { prisma } = require('../lib/prisma')
+const { prisma } = require('../../backend/lib/prisma')
 
 const mockRes = () => {
 const res = {}
