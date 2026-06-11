@@ -10,6 +10,54 @@ Pastikan perangkat kamu telah menginstal:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ---
+ 
+## Library yang Digunakan
+ 
+### Frontend
+ 
+| Library | Versi | Kegunaan |
+|---|---|---|
+| react | ^19.2.4 | Library utama antarmuka pengguna |
+| react-dom | ^19.2.4 | Render komponen React ke DOM |
+| react-router-dom | ^7.14.1 | Routing dan navigasi antar halaman |
+| axios | ^1.7.2 | HTTP client untuk komunikasi dengan API |
+| zod | ^3.23.8 | Validasi skema data di sisi klien |
+| lucide-react | ^1.16.0 | Ikon berbasis SVG |
+| radix-ui | ^1.4.3 | Komponen UI accessible tanpa styling bawaan |
+| shadcn | ^4.8.1 | Komponen UI siap pakai berbasis Radix + Tailwind |
+| tailwindcss | ^4.2.4 | Utility-first CSS framework |
+| tailwind-merge | ^3.6.0 | Menggabungkan class Tailwind tanpa konflik |
+| class-variance-authority | ^0.7.1 | Membuat varian komponen berbasis class |
+| clsx | ^2.1.1 | Menggabungkan kondisi class secara dinamis |
+| tw-animate-css | ^1.4.0 | Animasi CSS untuk Tailwind |
+| @fontsource/inter | ^5.2.8 | Font Inter (static) |
+| @fontsource-variable/inter | ^5.2.8 | Font Inter (variable) |
+| vite | ^8.0.4 | Build tool dan dev server |
+| vitest | ^4.1.8 | Framework pengujian unit |
+| @testing-library/react | ^16.3.2 | Utilitas pengujian komponen React |
+| @testing-library/jest-dom | ^6.9.1 | Matcher tambahan untuk pengujian DOM |
+ 
+### Backend
+ 
+| Library | Versi | Kegunaan |
+|---|---|---|
+| express | ^5.2.1 | Framework HTTP server |
+| @prisma/client | ^5.22.0 | ORM untuk query database PostgreSQL |
+| prisma | ^5.22.0 | CLI Prisma untuk migrasi dan generate client |
+| jsonwebtoken | ^9.0.3 | Membuat dan memverifikasi token JWT |
+| bcrypt | ^6.0.0 | Hash dan verifikasi password |
+| cors | ^2.8.6 | Mengatur kebijakan Cross-Origin Resource Sharing |
+| dotenv | ^16.6.1 | Memuat environment variable dari file `.env` |
+| helmet | ^8.1.0 | Mengatur HTTP security headers |
+| express-rate-limit | ^8.4.1 | Membatasi jumlah request per IP |
+| zod | ^3.25.76 | Validasi skema data di sisi server |
+| ws | ^8.20.0 | WebSocket server untuk komunikasi real-time |
+| nodemailer | ^8.0.5 | Mengirim email dari server |
+| idn-area-data | ^4.0.0 | Data wilayah Indonesia (provinsi, kota, kecamatan) |
+| jest | ^29.7.0 | Framework pengujian backend |
+| jest-mock-extended | ^3.0.7 | Utilitas mock untuk pengujian dengan TypeScript/Jest |
+ 
+---
 
 ### Clone Repositori
 
@@ -53,124 +101,289 @@ Aplikasi web dapat diakses di `http://localhost:5173`.
 
 ---
 
-## ✨ Fitur Aplikasi
+## Fitur Aplikasi
+# Fitur Aplikasi
 
-### 1. Beranda
+## 1. Beranda dan Pencarian
 
-Halaman beranda adalah titik masuk utama bagi pengguna untuk menjelajahi dan menemukan barang yang ingin disewa.
+Halaman beranda berfungsi sebagai pusat eksplorasi produk yang tersedia untuk disewa. Saat halaman dimuat, frontend mengambil data produk melalui endpoint:
 
-**Fitur yang tersedia:**
-- **Banner Hero** — tampilan visual promosi di bagian atas halaman
-- **Filter Kategori** — daftar kategori yang dapat digeser secara horizontal, menyaring produk melalui `GET /api/items?category=...`
-- **Tab Pengurutan** — menyaring produk berdasarkan:
-  - *Semua* — menampilkan seluruh produk secara acak
-  - *Trending* — produk yang sedang populer
-  - *Terdekat* — produk terdekat berdasarkan kota pengguna (kalkulasi jarak Haversine)
-  - *Diikuti* — produk dari penjual yang diikuti melalui `GET /api/feed/following/:userId`
-- **Bilah Pencarian** — pencarian dengan dua mode yang dapat dialihkan:
-  - Cari produk → `GET /api/items?search=...`
-  - Cari pengguna → `GET /api/search/users?q=...`
-- **Kartu Produk** — klik kartu untuk membuka halaman detail produk
+http
+GET /api/items
 
----
 
-### 2. Manajemen Produk
+Pengguna dapat melakukan pencarian produk menggunakan parameter search, memfilter berdasarkan kategori menggunakan parameter category, serta mengurutkan hasil berdasarkan mode tertentu seperti trending, terdekat, dan produk dari pengguna yang diikuti.
 
-Pengguna dapat menambahkan dan mengelola produk yang ingin disewakan.
+Pencarian pengguna dilakukan melalui endpoint:
 
-**Fitur yang tersedia:**
-- **Tambah Produk** — mengisi form dengan:
-  - Gambar produk, nama produk, lokasi, deskripsi, kategori, dan status ketersediaan
-  - Data tersimpan setelah menekan tombol **Upload Produk Sekarang**
-- **Detail Produk** — menampilkan informasi lengkap produk:
-  - Foto, nama, kategori, status ketersediaan, harga sewa, lokasi, tanggal unggah, informasi pemilik, jumlah dilihat, dan ulasan
-- **Aksi pada Produk:**
-  - Melihat profil pemilik
-  - Menghubungi pemilik melalui chat
-  - Mengedit produk (khusus pemilik)
+http
+GET /api/search/users?q=
+
+
+Hasil pencarian ditampilkan dalam dua tab, yaitu tab Produk dan tab Pengguna.
 
 ---
 
-### 3. Profil & Sosial
+## 2. Manajemen Produk
 
-Mengelola identitas pengguna, pengeditan profil, dan sistem sosial (follow/unfollow).
+Fitur ini memungkinkan pengguna menambahkan, mengubah, dan melihat detail produk.
 
-**Fitur yang tersedia:**
-- **Halaman Profil** — menampilkan nama, username, kota, deskripsi, avatar, serta statistik barang, rental aktif, pengikut, dan yang diikuti
-  - `frontend/src/pages/ProfilePage.jsx`
-- **Edit Profil** — mengubah nama lengkap, kota, nomor HP, deskripsi, dan foto profil (dikonversi ke format Base64)
-  - Web: Form edit di `ProfilePage.jsx` · Backend: `PUT /api/users/:id`
-- **Ikuti / Berhenti Mengikuti** — mengikuti atau berhenti mengikuti pengguna lain; jumlah pengikut dan yang diikuti diperbarui otomatis
-  - Backend: `POST /api/users/:id/follow` · `DELETE /api/users/:id/follow`
-- **Daftar Pengikut** — melihat daftar pengikut dan yang diikuti; setiap pengguna dapat dikunjungi profilnya, di-follow/unfollow, atau diajak chat
+Saat menambahkan produk, pengguna mengisi informasi berupa:
 
----
+* Nama produk
+* Harga sewa
+* Lokasi
+* Deskripsi
+* Kategori
+* Foto produk
 
-### 4. Chat & Alur Sewa
+Gambar yang dipilih akan dikonversi menjadi format Base64 sebelum dikirim ke server.
 
-Chat privat secara real-time antara penyewa dan pemilik barang, terintegrasi dengan alur transaksi sewa.
+Data dikirim melalui endpoint:
 
-**Fitur yang tersedia:**
-- **Daftar Percakapan** — menampilkan semua pengguna yang pernah bertukar pesan melalui `GET /api/chat/users`
-- **Ruang Obrolan** — riwayat pesan antar pengguna melalui `GET /api/chat/messages/:userId`
-- **Inisiasi Chat** — dari halaman detail produk, klik *"Hubungi Pemilik"* untuk membuka ruang chat privat dengan konteks produk yang termuat otomatis (nama, foto, harga dasar)
-- **Form Penawaran Sewa** — penyewa menekan *"Buat Penawaran"* untuk mengisi durasi sewa dan data jaminan
-- **Status Tombol Dinamis** — setelah penawaran dikirim, tombol *"Buat Penawaran"* berganti menjadi *"Ubah Penawaran"* dan *"Batalkan Penawaran"*
-- **Hitung Mundur Masa Sewa** — periode sewa dilacak dengan `start_time` dan `end_time`; kedua pihak mendapat notifikasi saat masa sewa berakhir
-- **Badge Pesan Belum Dibaca (SSE)** — penghitung pesan belum dibaca secara real-time menggunakan Server-Sent Events
+http
+POST /api/users/:id/items
 
-**Alur Transaksi Sewa (6 Tahap):**
 
-| Tahap | Status | Aksi |
-|---|---|---|
-| 1 | `pending` | Pembeli buka chat → sistem kirim permintaan sewa otomatis via `POST /api/rental/initiate` |
-| 2 | `approved` | Penjual tekan "Setujui Sewa" → `POST /api/rental/approve` |
-| 3 | `guaranteed` | Pembeli isi form jaminan (nama, HP, alamat, durasi, foto KTP Base64) → `POST /api/rental/guarantee` |
-| 4 | `received` | Pembeli konfirmasi barang diterima → `POST /api/rental/:id/confirm-received`; hitung mundur aktif |
-| 5 | `returned` | Penjual konfirmasi barang kembali → `POST /api/rental/:id/confirm-returned` |
-| 6 | `reviewed` | Pembeli tulis ulasan (bintang 1–5 + komentar) → `POST /api/rental/:id/review` |
+Detail produk dapat diakses melalui:
+
+http
+GET /api/items/:id
+
+
+Halaman detail menampilkan informasi produk, profil pemilik, statistik produk, serta daftar ulasan yang terkait.
 
 ---
 
-### 5. Wishlist & Rekomendasi
+## 3. Profil Pengguna
 
-Membantu pengguna menyimpan produk favorit dan menemukan produk yang relevan.
+Halaman profil mengambil beberapa data secara paralel menggunakan Promise.all() untuk mengurangi waktu tunggu.
 
-**Fitur yang tersedia:**
-- **Wishlist** — menambahkan produk ke daftar favorit dengan menekan tombol **Wishlist/Favorit** pada halaman produk
-  - Aksi yang tersedia: tambah, lihat daftar, hapus dari wishlist, dan buka detail produk langsung dari halaman Wishlist
-- **Rekomendasi Produk** — sistem menampilkan produk serupa di halaman detail berdasarkan kategori, jenis barang, dan preferensi pengguna; klik rekomendasi untuk langsung membuka halaman Detail Produk
+Data yang diambil meliputi:
 
----
+http
+GET /api/users/:id
+GET /api/items?ownerId=:id
+GET /api/rental/active/:id
 
-### 6. Rating & Ulasan
 
-Sistem umpan balik pasca-transaksi untuk menjaga transparansi dan kualitas katalog produk.
+Informasi yang ditampilkan meliputi identitas pengguna, daftar produk milik pengguna, jumlah pengikut, jumlah mengikuti, dan daftar penyewaan aktif.
 
-**Fitur yang tersedia:**
-- **Pemicu Ulasan** — tombol *"Beri Ulasan"* hanya aktif ketika status transaksi berubah menjadi `Selesai`
-- **Form Ulasan (Modal)** — muncul sebagai pop-up tanpa meninggalkan halaman riwayat pesanan:
-  - Input bintang (skala 1–5)
-  - Kolom teks ulasan / testimoni
-- **Sinkronisasi Katalog Langsung** — setelah ulasan dikirim:
-  - Data ulasan tersimpan melalui `POST /api/reviews`
-  - Halaman detail produk memuat ulasan terbaru secara real-time
-  - Badge rating produk diperbarui otomatis berdasarkan rata-rata terbaru (contoh: `4.2★ → 4.5★`)
+Pengguna juga dapat memperbarui profil melalui:
+
+http
+PUT /api/users/:id
+
 
 ---
 
-### 7. Pusat Notifikasi
+## 4. Chat
 
-Sistem notifikasi real-time untuk aktivitas-aktivitas penting di platform.
+Fitur chat digunakan sebagai media komunikasi antara penyewa dan pemilik barang.
 
-**Fitur yang tersedia:**
-- **Pemicu Otomatis** — backend membuat notifikasi baru setiap kali ada aktivitas penting (ulasan baru masuk, pesanan sewa baru diterima)
-- **Ikon Lonceng dengan Counter** — badge jumlah notifikasi belum dibaca ditampilkan pada ikon lonceng di navbar
-- **Status Baca / Belum Dibaca** — notifikasi tampil tebal saat belum dibaca (`isRead: false`); mengkliknya mengubah status menjadi sudah dibaca (`isRead: true`) dan mengurangi counter
-- **Aksi Massal:**
-  - *"Tandai Semua Telah Dibaca"* — menandai semua notifikasi sekaligus
-  - *"Hapus Riwayat Notifikasi"* — membersihkan seluruh riwayat notifikasi
+Daftar percakapan diambil melalui:
+
+http
+GET /api/chat/users
+
+
+Sedangkan riwayat pesan diambil melalui:
+
+http
+GET /api/chat/messages/:userId
+
+
+Saat pengguna mengirim pesan, frontend mengirimkan data ke:
+
+http
+POST /api/chat/messages/:userId
+
+
+Data pesan disimpan pada tabel MESSAGES yang memiliki relasi dengan tabel USERS melalui kolom sender_id dan receiver_id.
+
+Sistem melakukan polling setiap 8 detik untuk mengambil pesan baru dan memperbarui status transaksi secara otomatis.
 
 ---
 
-> "Sewa lebih mudah, hidup lebih efisien." — **Grup Rentopiaa**, Sistem Informasi UINSA
+## 5. Proses Sewa
+
+Proses sewa merupakan fitur utama yang menghubungkan penyewa dan pemilik barang melalui tabel RENTAL_AGREEMENTS.
+
+### Tahap 1 — Pending
+
+Saat penyewa membuka chat dari halaman detail produk, sistem membuat data rental baru:
+
+http
+POST /api/rental/initiate
+
+
+Data yang disimpan meliputi:
+
+* buyer_id
+* seller_id
+* item_id
+* status = pending
+
+### Tahap 2 — Approved
+
+Pemilik barang menyetujui permintaan sewa:
+
+http
+POST /api/rental/approve
+
+
+Status berubah menjadi:
+
+text
+approved
+
+
+### Tahap 3 — Guaranteed
+
+Penyewa mengirim data jaminan berupa:
+
+* Nama lengkap
+* Nomor telepon
+* Alamat
+* Durasi sewa
+* Foto KTP
+
+Data disimpan ke tabel GUARANTEES melalui:
+
+http
+POST /api/rental/guarantee
+
+
+Status berubah menjadi:
+
+text
+guaranteed
+
+
+### Tahap 4 — Received
+
+Setelah barang diterima:
+
+http
+POST /api/rental/:id/confirm-received
+
+
+Status berubah menjadi:
+
+text
+received
+
+
+Pada tahap ini sistem mulai menghitung masa sewa berdasarkan start_date, end_date, dan duration_days.
+
+### Tahap 5 — Returned
+
+Setelah barang dikembalikan:
+
+http
+POST /api/rental/:id/confirm-returned
+
+
+Status berubah menjadi:
+
+text
+returned
+
+
+### Tahap 6 — Reviewed
+
+Penyewa memberikan penilaian dan ulasan:
+
+http
+POST /api/rental/:id/review
+
+
+Data disimpan pada tabel REVIEWS dan status berubah menjadi:
+
+text
+reviewed
+
+
+Setiap perubahan status juga menghasilkan pesan sistem yang disimpan pada tabel MESSAGES dengan atribut:
+
+text
+is_system = true
+
+
+---
+
+## 6. Wishlist
+
+Wishlist digunakan untuk menyimpan produk favorit pengguna.
+
+Relasi wishlist disimpan pada tabel WISHLISTS yang menghubungkan tabel USERS dan ITEMS.
+
+Fitur yang tersedia meliputi:
+
+* Menambahkan produk ke wishlist
+* Menghapus produk dari wishlist
+* Menampilkan seluruh wishlist pengguna
+
+---
+
+## 7. Rating dan Ulasan
+
+Setelah transaksi selesai, penyewa dapat memberikan ulasan terhadap pemilik atau produk yang disewa.
+
+Data ulasan disimpan pada tabel:
+
+text
+REVIEWS
+
+
+Data yang tersimpan meliputi:
+
+* rental_id
+* reviewer_id
+* reviewed_user_id
+* item_id
+* rating
+* comment
+
+Nilai rating digunakan untuk menghitung rata-rata penilaian yang ditampilkan pada halaman detail produk.
+
+---
+
+## 8. Notifikasi
+
+Sistem notifikasi menggunakan tabel NOTIFICATIONS.
+
+Notifikasi dibuat secara otomatis ketika terjadi:
+
+* Permintaan sewa baru
+* Perubahan status rental
+* Ulasan baru
+* Aktivitas sosial tertentu
+
+Setiap notifikasi menyimpan informasi:
+
+* user_id
+* title
+* message
+* type
+* is_read
+
+Pengguna dapat menandai notifikasi sebagai telah dibaca maupun menghapus seluruh riwayat notifikasi.
+
+---
+
+## Struktur Database Utama
+
+Sistem menggunakan beberapa tabel utama yang saling berelasi:
+
+* USERS → data pengguna
+* ITEMS → data barang
+* RENTAL_AGREEMENTS → transaksi penyewaan
+* GUARANTEES → data jaminan penyewa
+* MESSAGES → pesan antar pengguna
+* REVIEWS → ulasan transaksi
+* NOTIFICATIONS → notifikasi sistem
+* WISHLISTS → daftar favorit pengguna
+* OTP_CODES → verifikasi akun dan reset password
+
+Seluruh tabel tersebut diakses melalui REST API berbasis Express.js dan dikelola menggunakan Prisma ORM sebagai penghubung antara backend dan database.
