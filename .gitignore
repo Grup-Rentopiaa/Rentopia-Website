@@ -10,3 +10,4 @@ build
 .expo
 package-lock.json
 yarn.lock
+.tests
