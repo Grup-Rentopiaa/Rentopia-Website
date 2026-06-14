@@ -1,34 +1,20 @@
 const express = require('express')
-const { 
-  getItems, 
-  getLikedItems,
-  getItemById, 
-  getCategories, 
-  createNewItem, 
-  updateExistingItem, 
-  removeExistingItem,
-  likeItem,
-  updateStatus,
-  clearAllLikedItems,
-  getReviews,
-  createReview,
-  getFollowingFeed,
-} = require('../controllers/item')
-
+const { getItems, getLikedItems, getItemById, getCategories, createNewItem, updateExistingItem, removeExistingItem, likeItem, updateStatus, clearAllLikedItems, getReviews, createReview, getFollowingFeed } = require('../controllers/item')
+const { authenticate } = require('../middlewares/auth')
 const router = express.Router({ mergeParams: true })
 
-router.get('/', getItems)
-router.get('/liked', getLikedItems)
-router.delete('/liked/clear', clearAllLikedItems)
-router.get('/users/:userId/liked', getLikedItems)
-router.post('/', createNewItem)
-router.put('/:id', updateExistingItem)
-router.delete('/:id', removeExistingItem)
-router.get('/categories', getCategories)
-router.get('/:id', getItemById)
-router.post('/:id/like', likeItem)
-router.patch('/:id/status', updateStatus)
-router.get('/:id/reviews', getReviews)
-router.post('/:id/reviews', createReview)
+router.get('/',                    getItems)                       
+router.get('/categories',          getCategories)                   
+router.get('/:id',                 getItemById)                    
+router.get('/:id/reviews',         getReviews)                     
+router.get('/liked',               authenticate, getLikedItems)       
+router.get('/users/:userId/liked', authenticate, getLikedItems)     
+router.delete('/liked/clear',      authenticate, clearAllLikedItems)  
+router.post('/',                   authenticate, createNewItem)       
+router.put('/:id',                 authenticate, updateExistingItem)  
+router.delete('/:id',              authenticate, removeExistingItem)   
+router.post('/:id/like',           authenticate, likeItem)            
+router.patch('/:id/status',        authenticate, updateStatus)         
+router.post('/:id/reviews',        authenticate, createReview)        
 
 module.exports = router

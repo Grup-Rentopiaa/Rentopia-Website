@@ -3,10 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Heart, Eye, MapPin, Star,
   MessageCircle, Calendar, User, ShoppingBag,
+  MoreVertical, Trash2,
 } from "lucide-react";
 import { getItemByIdService, likeItemService } from "../services/itemService";
 import apiFetch from "../api";
 import AppNavbar from "../components/AppNavbar";
+import { useConfirm } from "../hooks/useConfirm";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 
 function formatPrice(price) {
   return new Intl.NumberFormat("id-ID", {
@@ -39,6 +42,9 @@ export default function ProductDetailPage() {
   const [liked,      setLiked]      = useState(wishlist.includes(Number(id)));
   const [likesCount, setLikesCount] = useState(0);
   const [reviews,    setReviews]    = useState([]);
+  const [menuOpen,   setMenuOpen]   = useState(false);
+
+  const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm();
 
   useEffect(() => { fetchItem(); }, [id]);
 
@@ -93,6 +99,17 @@ export default function ProductDetailPage() {
     navigate("/chat");
   }
 
+  function handleDelete() {
+    confirm({
+      title: "Hapus Produk?",
+      description: "Produk yang dihapus tidak bisa dikembalikan.",
+      onConfirm: async () => {
+        await apiFetch(`/api/items/${id}`, { method: "DELETE" });
+        navigate("/home");
+      },
+    });
+  }
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF8FF" }}>
       <div className="text-center">
@@ -124,6 +141,14 @@ export default function ProductDetailPage() {
   return (
     <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
       <AppNavbar wishlistCount={wishlist.length} />
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <button onClick={() => navigate(-1)} className="rp-back-btn mb-6">
@@ -204,7 +229,7 @@ export default function ProductDetailPage() {
                 </p>
               )}
 
-              {/* Buyer CTA */}
+            
               {!isOwner && (
                 <div className="flex flex-col gap-3">
                   <button
@@ -223,20 +248,50 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Owner CTA */}
+              
               {isOwner && (
                 <div className="flex gap-3">
                   <button onClick={handleChatAsSeller} className="rp-btn-primary flex-1 py-3">
                     <ShoppingBag size={16} /> Lihat Chat Penyewa
                   </button>
-                  <button onClick={() => navigate(`/upload?edit=${id}`)} className="rp-btn-outline flex-1 py-3">
-                    ✏️ Edit
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setMenuOpen(v => !v)}
+                      className="rp-btn-outline px-3 py-3"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+                    {menuOpen && (
+                      <div
+                        className="absolute right-0 top-full mt-2 w-44 py-2 rounded-2xl z-50"
+                        style={{ background: "#fff", boxShadow: "0 8px 32px rgba(124,77,255,0.2)", border: "1px solid #E8DCFF" }}
+                      >
+                        <button
+                          onClick={() => { setMenuOpen(false); navigate(`/upload?edit=${id}`); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left"
+                          style={{ color: "#7B6AAA" }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#F3EEFF"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        >
+                          ✏️ Edit Produk
+                        </button>
+                        <button
+                          onClick={() => { setMenuOpen(false); handleDelete(); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-left"
+                          style={{ color: "#FF8FC5" }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#FFD6EC"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        >
+                          <Trash2 size={15} /> Hapus Produk
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Owner card */}
+        
             {item.owner && (
               <div className="rp-card p-5 flex items-center gap-4">
                 {item.owner.avatarB64 ? (
@@ -261,7 +316,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Reviews */}
+        
         <div className="mt-10">
           <h2 className="text-xl font-black mb-6" style={{ color: "#3D2F6B" }}>
             Ulasan ({reviews.length})

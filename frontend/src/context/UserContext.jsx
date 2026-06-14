@@ -23,7 +23,6 @@ export function UserProvider({ children }) {
   }
   localStorage.removeItem("token")
   localStorage.removeItem("user")
-  // rentopia_cookie_consent TIDAK dihapus
   setUser(null)
 }
   function updateUserData(newData) {

@@ -1,7 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const { createPenawaran } = require('../controllers/penawaran');
+const express = require('express')
+const router = express.Router()
+const { authenticate } = require('../middlewares/auth')
+const { createPenawaran } = require('../controllers/penawaran')
 
-router.post('/', createPenawaran);
+router.post('/', authenticate, createPenawaran)         
 
-module.exports = router;
+module.exports = router

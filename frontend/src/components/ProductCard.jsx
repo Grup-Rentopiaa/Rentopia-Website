@@ -39,7 +39,7 @@ export default function ProductCard({ item }) {
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden" style={{ background: "#E8DCFF" }}>
         {item.image ? (
-          <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
         )}

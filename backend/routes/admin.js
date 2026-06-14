@@ -1,11 +1,9 @@
 const express = require('express')
 const router = express.Router()
+const { authenticate } = require('../middlewares/auth')
 const { getVisitorStats, exportVisitorCSV } = require('../controllers/admin')
 
-// Grafik pengunjung (untuk admin)
-router.get('/visitor-stats', getVisitorStats)
-
-// Export CSV (tanpa admin, publik)
-router.get('/visitor-export', exportVisitorCSV)
+router.get('/visitor-stats',  authenticate, getVisitorStats)  
+router.get('/visitor-export', authenticate, exportVisitorCSV) 
 
 module.exports = router

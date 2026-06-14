@@ -1,34 +1,21 @@
 const express = require('express')
 const router  = express.Router()
-const {
-  getChatStatus, getAgreement,
-  initiateRental,
-  approveRental, submitGuarantee,
-  confirmHandover, confirmReceived, confirmReturned,
-  submitReview, checkReviewEligibility,
-  getActiveRentals, listGuarantees, getGuaranteeDetail,
-  getAgreementBetween,
-} = require('../controllers/rentalFlow')
+const { authenticate } = require('../middlewares/auth')
+const { getChatStatus, getAgreement, initiateRental, approveRental, submitGuarantee, confirmHandover, confirmReceived, confirmReturned, submitReview, checkReviewEligibility, getActiveRentals, listGuarantees, getGuaranteeDetail, getAgreementBetween } = require('../controllers/rentalFlow')
 
-
-router.get('/agreement',                         getAgreement)           
-router.get('/between',                           getAgreementBetween)    
-router.get('/active/:userId',                    getActiveRentals)
-
-
-router.get('/eligibility/:userId/:productId',    checkReviewEligibility)
-
-
-router.get('/guarantees',                        listGuarantees)
-router.get('/:rentalId/guarantee-detail',        getGuaranteeDetail)
-
-
-router.post('/initiate',                         initiateRental)         
-router.post('/approve',                          approveRental)          
-router.post('/guarantee',                        submitGuarantee)        
-router.post('/:rentalId/confirm-handover',       confirmHandover)        
-router.post('/:rentalId/confirm-received',       confirmReceived)        
-router.post('/:rentalId/confirm-returned',       confirmReturned)        
-router.post('/:rentalId/review',                 submitReview)           
+// semua rental flow harus login
+router.get('/agreement',                      authenticate, getAgreement)
+router.get('/between',                        authenticate, getAgreementBetween)
+router.get('/active/:userId',                 authenticate, getActiveRentals)
+router.get('/eligibility/:userId/:productId', authenticate, checkReviewEligibility)
+router.get('/guarantees',                     authenticate, listGuarantees)
+router.get('/:rentalId/guarantee-detail',     authenticate, getGuaranteeDetail)
+router.post('/initiate',                      authenticate, initiateRental)
+router.post('/approve',                       authenticate, approveRental)
+router.post('/guarantee',                     authenticate, submitGuarantee)
+router.post('/:rentalId/confirm-handover',    authenticate, confirmHandover)
+router.post('/:rentalId/confirm-received',    authenticate, confirmReceived)
+router.post('/:rentalId/confirm-returned',    authenticate, confirmReturned)
+router.post('/:rentalId/review',              authenticate, submitReview)
 
 module.exports = router
