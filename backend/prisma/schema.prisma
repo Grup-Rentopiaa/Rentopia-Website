@@ -1,0 +1,262 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Auth {
+  id             Int       @id @default(autoincrement())
+  user_id        Int       @unique
+  user           Users     @relation(fields: [user_id], references: [id])
+  password       String
+  otp            String?
+  otp_expired_at DateTime?
+}
+
+model Users {
+  id               Int            @id @default(autoincrement())
+  auth             Auth?
+  username         String         @unique
+  email            String         @unique
+  name             String?
+  city             String?
+  description      String?
+  phone            String?        @db.VarChar(20)
+  avatarB64        String?        @map("avatar_b64")
+  followers        Int            @default(0)
+  following        Int            @default(0)
+  rating           Float          @default(0)
+  totalSewa        Int            @default(0)  @map("total_sewa")
+  isAdmin          Boolean        @default(false) @map("is_admin")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  items            Item[]
+  listings         Listing[]
+  rentals          Rental[]
+  savedKeywords    SavedKeyword[]
+  notifications    Notification[]
+  sentMessages     Message[]      @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+  penawaran        Penawaran[]
+  itemLikes        ItemLike[]
+  reviews          Review[]
+  followedBy       Follows[]      @relation("following")
+  followingRelation Follows[]     @relation("follower")
+  buyerAgreements  RentalAgreement[] @relation("BuyerAgreements")
+  sellerAgreements RentalAgreement[] @relation("SellerAgreements")
+
+  @@map("users")
+}
+
+model Follows {
+  follower    Users @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  Int
+  following   Users @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId Int
+
+  @@id([followerId, followingId])
+}
+
+model Listing {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @map("user_id")
+  title     String        @db.VarChar(255)
+  price     String        @db.VarChar(64)
+  brand     String        @db.VarChar(64)
+  category  String        @db.VarChar(64) @default("Lainnya")
+  image     String?
+  status    ListingStatus @default(available)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("listings")
+}
+
+model Rental {
+  id        Int          @id @default(autoincrement())
+  userId    Int          @map("user_id")
+  title     String       @db.VarChar(255)
+  price     String       @db.VarChar(64)
+  store     String       @db.VarChar(128)
+  status    RentalStatus @default(ongoing)
+  note      String?      @db.VarChar(128)
+  image     String?
+  itemId    Int?         @map("item_id")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation("ItemRentals", fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("rentals")
+}
+
+// Full rental agreement model for the rental flow
+model RentalAgreement {
+  id              Int                   @id @default(autoincrement())
+  conversationKey String                @unique @map("conversation_key")
+  buyerId         Int                   @map("buyer_id")
+  sellerId        Int                   @map("seller_id")
+  itemId          Int?                  @map("item_id")
+  status          RentalAgreementStatus @default(pending)
+  rentalCode      String?               @unique @map("rental_code")
+  durationDays    Int?                  @map("duration_days")
+  startDate       DateTime?             @map("start_date")
+  endDate         DateTime?             @map("end_date")
+  guaranteeData   String?               @db.Text @map("guarantee_data")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  buyer  Users @relation("BuyerAgreements",  fields: [buyerId],  references: [id], onDelete: Cascade)
+  seller Users @relation("SellerAgreements", fields: [sellerId], references: [id], onDelete: Cascade)
+  item   Item? @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  @@map("rental_agreements")
+}
+
+model Visitor {
+  id                  Int      @id @default(autoincrement())
+  visitor_id          String
+  page                String
+  path                String?
+  browser             String?
+  language            String?
+  screen_width        Int?
+  screen_height       Int?
+  visited_at          String?
+  consent_necessary   Boolean  @default(true)
+  consent_preferences Boolean  @default(false)
+  consent_statistics  Boolean  @default(false)
+  consent_marketing   Boolean  @default(false)
+  country             String?
+  city                String?
+  latitude            Float?
+  longitude           Float?
+  created_at          DateTime @default(now())
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  items Item[]
+}
+
+model Item {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  price_per_day Decimal        @db.Decimal(10, 2)
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  image         String?
+  status        ListingStatus  @default(available)
+  views         Int            @default(0)
+  created_at    DateTime       @default(now())
+  category      Category?      @relation(fields: [category_id], references: [id])
+  category_id   Int?
+  owner         Users?         @relation(fields: [owner_id], references: [id])
+  owner_id      Int?
+  notifications Notification[]
+  penawaran     Penawaran[]
+  likes         ItemLike[]
+  reviews       Review[]       @relation("ItemReviews")
+  rentals       Rental[]       @relation("ItemRentals")
+  rentalAgreements RentalAgreement[]
+}
+
+model ItemLike {
+  id         Int      @id @default(autoincrement())
+  item_id    Int
+  user_id    Int
+  created_at DateTime @default(now())
+  item       Item     @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  user       Users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([item_id, user_id])
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  itemId     Int      @map("item_id")
+  rating     Int      @default(5)
+  comment    String   @db.Text
+  photoB64   String?  @db.Text @map("photo_b64")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item       Item     @relation("ItemReviews", fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model SavedKeyword {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  keyword    String
+  created_at DateTime @default(now())
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+// Redesigned Notification model — flexible, user-scoped, type-driven
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  type       String   @default("general")
+  message    String
+  is_read    Boolean  @default(false)
+  related_id Int?
+  created_at DateTime @default(now())
+  // Optional item link (kept for backward compat, now nullable)
+  item_id    Int?
+  item       Item?    @relation(fields: [item_id], references: [id], onDelete: SetNull)
+  user       Users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  pesan_id    Int      @id @default(autoincrement())
+  sender_id   Int?
+  receiver_id Int
+  is_system   Boolean  @default(false) @map("is_system")
+  is_read     Boolean  @default(false)
+  sender      Users?   @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver    Users    @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  isi_pesan   String
+  waktu       DateTime @default(now())
+}
+
+model Penawaran {
+  penawaran_id String   @id
+  produk_id    Int?
+  user_id      Int
+  user         Users    @relation(fields: [user_id], references: [id])
+  item         Item?    @relation(fields: [produk_id], references: [id])
+  harga        Int
+  waktu        DateTime @default(now())
+}
+
+enum ListingStatus {
+  available
+  rented
+}
+
+enum RentalStatus {
+  ongoing
+  done
+  urgent
+}
+
+enum RentalAgreementStatus {
+  pending
+  approved
+  guarantee_submitted
+  handover_confirmed
+  received
+  returned
+  reviewed
+}

@@ -3,20 +3,12 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --verbose",
     "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Grup-Rentopiaa/Web-Kelompok.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Grup-Rentopiaa/Web-Kelompok/issues"
-  },
-  "homepage": "https://github.com/Grup-Rentopiaa/Web-Kelompok#readme",
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -24,8 +16,21 @@
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
+    "helmet": "^8.1.0",
+    "idn-area-data": "^4.0.0",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.5",
+    "ws": "^8.20.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^3.0.7",
     "prisma": "^5.22.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
   }
 }

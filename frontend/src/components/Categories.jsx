@@ -1,21 +1,6 @@
-import {
-  Layers, Zap, Car, Shirt, Home, Bike,
-  Camera, Music, BookOpen, Baby, Tag, LayoutGrid,
-} from 'lucide-react';
 
-export const CATEGORIES = [
-  { id: '',  name: 'Semua',        Icon: LayoutGrid },
-  { id: 1,   name: 'Elektronik',   Icon: Zap },
-  { id: 2,   name: 'Kendaraan',    Icon: Car },
-  { id: 3,   name: 'Pakaian',      Icon: Shirt },
-  { id: 4,   name: 'Rumah',        Icon: Home },
-  { id: 5,   name: 'Olahraga',     Icon: Bike },
-  { id: 6,   name: 'Kamera',       Icon: Camera },
-  { id: 7,   name: 'Alat Musik',   Icon: Music },
-  { id: 8,   name: 'Edukasi',      Icon: BookOpen },
-  { id: 9,   name: 'Bayi & Anak',  Icon: Baby },
-  { id: 10,  name: 'Lainnya',      Icon: Tag },
-];
+
+import { CATEGORIES } from '../constants/categories';
 
 export default function Categories({ selected, onSelect }) {
   return (
@@ -32,16 +17,16 @@ export default function Categories({ selected, onSelect }) {
                   flex flex-col items-center gap-1 px-4 py-3 text-xs font-medium whitespace-nowrap
                   border-b-2 transition-all duration-150 flex-shrink-0
                   ${isActive
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-300'
+                    ? 'border-purple-600 text-purple-600'
+                    : 'border-transparent text-gray-500 hover:text-purple-600 hover:border-purple-300'
                   }
                 `}
               >
                 <div className={`
                   w-10 h-10 rounded-full flex items-center justify-center transition-colors
-                  ${isActive ? 'bg-blue-50' : 'bg-gray-100'}
+                  ${isActive ? 'bg-purple-50' : 'bg-gray-100'}
                 `}>
-                  <Icon size={20} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
+                  <Icon size={20} className={isActive ? 'text-purple-600' : 'text-gray-400'} />
                 </div>
                 {name}
               </button>

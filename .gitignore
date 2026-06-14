@@ -1,0 +1,14 @@
+node_modules
+.env
+dist
+build
+.DS_Store
+*.log
+.vscode
+.idea
+.next
+.expo
+package-lock.json
+yarn.lock
+.tests
+docker-compose.yml

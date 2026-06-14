@@ -1,6 +1,6 @@
-const prisma = require('../db')
+const { prisma } = require('../lib/prisma')
 
-const findAllItems = async ({ search, category, sort, min_price, max_price, lat, lng }) => {
+const findAllItems = async ({ search, category, sort, min_price, max_price, lat, lng, ownerId, followerId, limit }) => {
   const where = {}
 
   if (search?.trim()) {
@@ -11,7 +11,26 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   }
 
   if (category) {
-    where.category_id = parseInt(category)
+    const cat = await prisma.category.findFirst({ where: { name: category } });
+    if (cat) {
+      where.category_id = cat.id;
+    } else {
+      where.category_id = -1; 
+    }
+  }
+
+  if (ownerId) {
+    where.owner_id = parseInt(ownerId)
+  }
+
+  if (followerId) {
+    
+    const following = await prisma.follows.findMany({
+      where: { followerId: parseInt(followerId) },
+      select: { followingId: true }
+    })
+    const followedIds = following.map(f => f.followingId)
+    where.owner_id = { in: followedIds }
   }
 
   if (min_price || max_price) {
@@ -23,21 +42,29 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   let orderBy = { created_at: 'desc' }
   if (sort === 'price_asc') orderBy = { price_per_day: 'asc' }
   if (sort === 'price_desc') orderBy = { price_per_day: 'desc' }
+  if (sort === 'trending') orderBy = { views: 'desc' }
 
   const items = await prisma.item.findMany({
     where,
     orderBy,
+    take: limit ? parseInt(limit) : undefined,
     include: {
       category: { select: { name: true } },
       owner: { select: { username: true } },
+      likes: { select: { user_id: true } }
     },
   })
 
-  const result = items.map(item => ({
+  let result = items.map(item => ({
     ...item,
     category_name: item.category?.name || null,
     owner_name: item.owner?.username || null,
   }))
+
+  
+  if (sort === 'random') {
+    result = result.sort(() => Math.random() - 0.5)
+  }
 
   if (sort === 'nearest' && lat && lng) {
     result.sort((a, b) => {
@@ -54,12 +81,56 @@ const findAllItems = async ({ search, category, sort, min_price, max_price, lat,
   return result
 }
 
+const findLikedItems = async (userId) => {
+  const likes = await prisma.itemLike.findMany({
+    where: { user_id: parseInt(userId) },
+    include: {
+      item: {
+        include: {
+          category: { select: { name: true } },
+          owner: { select: { username: true } },
+          likes: { select: { user_id: true } }
+        }
+      }
+    },
+    orderBy: { created_at: 'desc' }
+  })
+  
+  return likes.map(l => ({
+    ...l.item,
+    category_name: l.item.category?.name || null,
+    owner_name: l.item.owner?.username || null
+  }))
+}
+
+const clearWishlist = async (userId) => {
+  return await prisma.itemLike.deleteMany({
+    where: { user_id: parseInt(userId) }
+  })
+}
+
 const findItemById = async (id) => {
+
+  await prisma.item.update({
+    where: { id: parseInt(id) },
+    data: { views: { increment: 1 } }
+  })
+
   const item = await prisma.item.findUnique({
     where: { id: parseInt(id) },
     include: {
       category: { select: { name: true } },
-      owner: { select: { username: true } },
+      owner: { select: { id: true, username: true, avatarB64: true } },
+      likes: {
+        include: {
+          user: { select: { id: true, username: true, avatarB64: true } }
+        }
+      },
+      penawaran: {
+        include: {
+          user: { select: { id: true, username: true, avatarB64: true } }
+        }
+      }
     },
   })
   if (!item) return null
@@ -74,4 +145,107 @@ const findAllCategories = async () => {
   return await prisma.category.findMany({ orderBy: { id: 'asc' } })
 }
 
-module.exports = { findAllItems, findItemById, findAllCategories }
+const createItem = async (ownerId, data) => {
+  let category_id = null
+  if (data.category) {
+    let cat = await prisma.category.findFirst({ where: { name: data.category } })
+    if (!cat) cat = await prisma.category.create({ data: { name: data.category } })
+    category_id = cat.id
+  }
+
+  return await prisma.item.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      price_per_day: parseFloat(data.price),
+      location: data.location,
+      image: data.image,
+      status: data.status || 'available',
+      category_id,
+      owner_id: parseInt(ownerId)
+    }
+  })
+}
+
+const updateItem = async (id, ownerId, data) => {
+  const existing = await prisma.item.findUnique({ where: { id: parseInt(id) } })
+  if (!existing || existing.owner_id !== parseInt(ownerId)) return null
+
+  let category_id = existing.category_id
+  if (data.category) {
+    let cat = await prisma.category.findFirst({ where: { name: data.category } })
+    if (!cat) cat = await prisma.category.create({ data: { name: data.category } })
+    category_id = cat.id
+  }
+
+  const updateData = {}
+  if (data.title !== undefined) updateData.title = data.title
+  if (data.description !== undefined) updateData.description = data.description
+  if (data.price !== undefined) updateData.price_per_day = parseFloat(data.price)
+  if (data.location !== undefined) updateData.location = data.location
+  if (data.image !== undefined) updateData.image = data.image
+  if (data.status !== undefined) updateData.status = data.status
+  updateData.category_id = category_id
+
+  return await prisma.item.update({
+    where: { id: parseInt(id) },
+    data: updateData
+  })
+}
+
+const deleteItem = async (id, ownerId) => {
+  const existing = await prisma.item.findUnique({ where: { id: parseInt(id) } })
+  if (!existing || existing.owner_id !== parseInt(ownerId)) return null
+  return await prisma.item.delete({ where: { id: parseInt(id) } })
+}
+
+const toggleLike = async (itemId, userId) => {
+  const existing = await prisma.itemLike.findUnique({
+    where: {
+      item_id_user_id: {
+        item_id: parseInt(itemId),
+        user_id: parseInt(userId)
+      }
+    }
+  })
+
+  if (existing) {
+    await prisma.itemLike.delete({
+      where: {
+        item_id_user_id: {
+          item_id: parseInt(itemId),
+          user_id: parseInt(userId)
+        }
+      }
+    })
+    return { liked: false }
+  } else {
+    await prisma.itemLike.create({
+      data: {
+        item_id: parseInt(itemId),
+        user_id: parseInt(userId)
+      }
+    })
+    return { liked: true }
+  }
+}
+
+const updateItemStatus = async (id, status) => {
+  return await prisma.item.update({
+    where: { id: parseInt(id) },
+    data: { status }
+  })
+}
+
+module.exports = { 
+  findAllItems, 
+  findLikedItems,
+  findItemById, 
+  findAllCategories, 
+  createItem, 
+  updateItem, 
+  deleteItem, 
+  toggleLike, 
+  updateItemStatus,
+  clearWishlist
+}
