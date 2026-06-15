@@ -42,6 +42,7 @@ export default function ChatPage() {
   const localProduct = (() => {
     try {
       const s = localStorage.getItem("targetChatProduct");
+      console.log('localProduct raw:', s);
       return s ? JSON.parse(s) : null;
     } catch { return null; }
   })();
@@ -66,6 +67,7 @@ export default function ChatPage() {
 
   const fetchAgreement = useCallback(async () => {
     if (!targetUser || !user) return;
+    console.log('fetchAgreement:', { localProduct, buyerId, sellerId });
     setAgLoading(true);
     try {
       let data = null;

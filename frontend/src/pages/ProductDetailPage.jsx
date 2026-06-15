@@ -91,6 +91,7 @@ export default function ProductDetailPage() {
       status:  item.status,
       ownerId: item.owner_id,
     }));
+    console.log('targetChatProduct saved:', localStorage.getItem("targetChatProduct")); // ← tambah ini
     navigate("/chat");
   }
 

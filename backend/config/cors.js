@@ -5,7 +5,7 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:5174',
-    /^http:\/\/192\.168\./,
+    /^http:\/\/20\.5\./,
   ],
   credentials: true,
 }

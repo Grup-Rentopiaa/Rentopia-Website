@@ -392,19 +392,22 @@ const getAgreementBetween = async (req, res) => {
   try {
     const { userId, otherId } = req.query
     if (!userId || !otherId) return res.json(null)
-    const agreement = await prisma.rentalAgreement.findFirst({
-      where: {
-        OR: [
-          { buyerId: +userId, sellerId: +otherId },
-          { buyerId: +otherId, sellerId: +userId },
-        ],
-        status: { notIn: ['reviewed'] },
-      },
-      orderBy: { updatedAt: 'desc' },
-    })
-    res.json(agreement || null)
-  } catch (err) { res.status(500).json({ message: err.message }) }
-}
+    
+    // Cari agreement aktif dulu (belum reviewed)
+    const active = await prisma.rentalAgreement.findFirst({
+        where: {
+          OR: [
+            { buyerId: +userId, sellerId: +otherId },
+            { buyerId: +otherId, sellerId: +userId },
+          ],
+          status: { notIn: ['reviewed'] },
+        },
+        orderBy: { updatedAt: 'desc' },
+      })
+      
+      res.json(active || null)
+    } catch (err) { res.status(500).json({ message: err.message }) }
+  }
 
 module.exports = {
   getChatStatus, getAgreement,
