@@ -38,7 +38,7 @@ export default function App() {
       <UserProvider>
         <ErrorBoundary>
           <Routes>
-            <Route path="/admin/visitors" element={<AdminVisitorPage />} />
+            <Route path="/admin/visitors" element={<PrivateRoute><AdminVisitorPage /></PrivateRoute>} />
             <Route path="/" element={
               <PublicRoute>
                 <LandingPage />

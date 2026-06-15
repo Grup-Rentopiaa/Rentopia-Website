@@ -53,7 +53,7 @@ async function trackVisitor() {
   }
 
   localStorage.setItem("landingVisitorId", visitorId);
-  setCookie("landingVisitorId", visitorId, 7);
+  setCookie("landingVisitorId", visitorId, 180);
 
   const visitorData = {
     visitorId,
@@ -70,7 +70,7 @@ async function trackVisitor() {
 
   localStorage.setItem("landingLastVisit", JSON.stringify(visitorData));
   sessionStorage.setItem("landingSessionVisit", JSON.stringify(visitorData));
-  setCookie("landingLastVisit", JSON.stringify(visitorData), 7);
+  setCookie("landingLastVisit", JSON.stringify(visitorData), 180);
 
   try {
     await fetch(TRACKING_SERVER, {
@@ -87,7 +87,7 @@ export function useCookieConsent() {
   const [showCookie, setShowCookie] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookieConsent") || getCookie("cookieConsent");
+    const consent = getCookie("cookieConsent") || localStorage.getItem("cookieConsent");
 
     if (consent !== "accepted") {
       setShowCookie(true);
@@ -102,7 +102,7 @@ export function useCookieConsent() {
 
     localStorage.setItem("cookieConsent", "accepted");
     localStorage.setItem("cookiePreferences", JSON.stringify(finalPrefs));
-    setCookie("cookieConsent", "accepted", 7);
+    setCookie("cookieConsent", "accepted", 180);
     setShowCookie(false);
     trackVisitor();
   }

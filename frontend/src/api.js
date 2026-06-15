@@ -16,9 +16,8 @@ export default async function apiFetch(path, options = {}) {
         ...(options.headers || {}),
       },
     });
-  }  catch {
-      window.location.href = "/error-500";
-      return;
+  } catch {
+    throw new Error("Tidak dapat terhubung ke server");
   }
 
   if (res.status >= 500) {

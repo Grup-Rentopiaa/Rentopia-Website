@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Trash2, Search, Package } from 'lucide-react';
+import { ArrowLeft, Heart, Trash2, Search } from 'lucide-react';
 import { getLikedItemsService, clearLikedItemsService, likeItemService } from '../services/itemService';
 import AppNavbar from '../components/AppNavbar';
+import { useConfirm } from '../hooks/useConfirm';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 
 function formatPrice(price) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
@@ -11,10 +13,12 @@ function formatPrice(price) {
 export default function WishlistPage() {
   const navigate  = useNavigate();
   const user      = JSON.parse(localStorage.getItem('user') || 'null');
-  const [items, setItems]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch]   = useState('');
+  const [items, setItems]       = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [search, setSearch]     = useState('');
   const [clearing, setClearing] = useState(false);
+
+  const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm();
 
   useEffect(() => {
     if (user) fetchItems();
@@ -37,7 +41,7 @@ export default function WishlistPage() {
     finally { setLoading(false); }
   }
 
-  async function handleRemoveItem(id) {
+  async function doRemoveItem(id) {
     const wishlistKey = `rentopia_wishlist_${user.id}`;
     const existing = JSON.parse(localStorage.getItem(wishlistKey) || '[]');
     localStorage.setItem(wishlistKey, JSON.stringify(existing.filter(x => x !== id)));
@@ -46,8 +50,7 @@ export default function WishlistPage() {
     try { await likeItemService(id, user.id); } catch {}
   }
 
-  async function handleClearAll() {
-    if (!window.confirm("Hapus semua item dari wishlist?")) return;
+  async function doClearAll() {
     setClearing(true);
     try {
       await clearLikedItemsService(user.id);
@@ -55,6 +58,22 @@ export default function WishlistPage() {
       setItems([]);
       window.dispatchEvent(new CustomEvent('likeChanged'));
     } catch {} finally { setClearing(false); }
+  }
+
+  function handleRemoveItem(id) {
+    confirm({
+      title: 'Hapus dari Wishlist?',
+      description: 'Produk ini akan dihapus dari wishlist kamu.',
+      onConfirm: () => doRemoveItem(id),
+    });
+  }
+
+  function handleClearAll() {
+    confirm({
+      title: 'Hapus Semua Wishlist?',
+      description: 'Semua produk di wishlist akan dihapus dan tidak bisa dikembalikan.',
+      onConfirm: () => doClearAll(),
+    });
   }
 
   const filtered = items.filter(i =>
@@ -66,6 +85,14 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen rp-page" style={{ background: "#FAF8FF" }}>
       <AppNavbar wishlistCount={wishlistCount} />
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
@@ -153,8 +180,13 @@ export default function WishlistPage() {
                   )}
                 </div>
                 <div className="p-3">
-                  <h3 className="text-sm font-bold line-clamp-2 mb-1" style={{ color: "#3D2F6B" }}
-                    onClick={() => navigate(`/product/${item.id}`)}>{item.title}</h3>
+                  <h3
+                    className="text-sm font-bold line-clamp-2 mb-1 cursor-pointer"
+                    style={{ color: "#3D2F6B" }}
+                    onClick={() => navigate(`/product/${item.id}`)}
+                  >
+                    {item.title}
+                  </h3>
                   <p className="font-black text-sm" style={{ color: "#9B87D9" }}>
                     {formatPrice(item.price_per_day || item.price)}
                     <span className="font-normal text-xs" style={{ color: "#A89CC4" }}>/hari</span>

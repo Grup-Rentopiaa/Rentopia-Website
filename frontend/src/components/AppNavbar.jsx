@@ -210,7 +210,8 @@ export default function AppNavbar({ wishlistCount = 0, searchValue = "" }) {
             )}
           </button>
 
-          {/* User dropdown */}
+
+
           <div className="relative" ref={dropRef}>
             <button id="navbar-user-menu-btn"
               onClick={() => setDropdownOpen(v => !v)}

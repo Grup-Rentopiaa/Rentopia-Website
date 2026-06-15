@@ -160,7 +160,7 @@ const updateExistingItem = async (req, res) => {
 const removeExistingItem = async (req, res) => {
   try {
     const id = parseInt(req.params.id)
-    const userId = parseInt(req.params.userId)
+    const userId = req.user?.userId  
     const deleted = await deleteItem(id, userId)
     if (!deleted) return res.status(404).json({ message: 'Item tidak ditemukan atau Anda tidak memiliki akses.' })
     res.json({ id })
